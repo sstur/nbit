@@ -5,5 +5,5 @@
     "declaration": true,
     "emitDeclarationOnly": true
   },
-  "exclude": ["src/**/*.test.ts"]
+  "exclude": ["src/**/*.test.ts", "src/demo/**/*.ts"]
 }

@@ -7,6 +7,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
+    "demo": "ts-node-dev --no-notify --respawn --transpile-only src/demo/server.ts",
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write src",
@@ -17,10 +18,14 @@
     "build": "yarn clean && rollup -c && tsc -p tsconfig.build.json",
     "prepublishOnly": "yarn build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.18.1"
+  },
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.3.3",
+    "@types/express": "^4.17.13",
     "@types/jest": "^28.1.4",
+    "@types/node": "^18.0.3",
     "eslint": "^8.19.0",
     "eslint-config-xt": "^1.7.0",
     "jest": "^28.1.2",
@@ -29,6 +34,7 @@
     "rollup-plugin-prettier": "^2.2.2",
     "rollup-plugin-terser": "^7.0.2",
     "ts-jest": "^28.0.5",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^4.7.4"
   },
   "jest": {

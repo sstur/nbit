@@ -11,7 +11,9 @@ export default {
     esModule: false,
   },
   plugins: [
-    typescript(),
+    typescript({
+      module: 'esnext',
+    }),
     terser({
       format: {
         comments: false,
