@@ -5,6 +5,24 @@ import type { Router } from '../Router';
 import type { Method } from '../types';
 import type { Request as BaseRequest } from '../builtins/Request';
 
+function createWrappedRequest<M extends Method, Params extends string>(
+  baseRequest: BaseRequest,
+  params: Record<Params, string>,
+): Request<M, Params> {
+  // TODO: This probably shouldn't be necessary.
+  Object.setPrototypeOf(baseRequest, Request.prototype);
+  const { url } = baseRequest;
+  const { pathname, search, searchParams } = new URL(url);
+  Object.assign(baseRequest, {
+    path: pathname,
+    search,
+    query: searchParams,
+    params,
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return baseRequest as any;
+}
+
 function createRequestHandler<T>(
   router: Router<T>,
   getContext?: (request: Request<Method, string>) => object | undefined,
@@ -24,7 +42,10 @@ async function routeRequest<T>(
   try {
     const baseRequest = request;
     const result = await router.route(method, path, (captures) => {
-      const request = new Request(baseRequest, Object.fromEntries(captures));
+      const request = createWrappedRequest(
+        baseRequest,
+        Object.fromEntries(captures),
+      );
       const context = getContext?.(request);
       const requestWithContext =
         context === undefined ? request : Object.assign(request, context);
