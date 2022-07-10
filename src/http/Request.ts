@@ -1,12 +1,6 @@
 import { URL, type URLSearchParams } from 'url';
 import { PassThrough as PassThroughStream } from 'stream';
-import type { IncomingHttpHeaders } from 'http';
-
-import {
-  json,
-  type Request as ExpressRequest,
-  type Response as ExpressResponse,
-} from 'express';
+import type { IncomingHttpHeaders, IncomingMessage } from 'http';
 
 import type { Method, MethodWithBody } from './types';
 
@@ -16,16 +10,6 @@ type ReadableStream = NodeJS.ReadableStream;
 // this has since it's not used.
 // See: https://nodejs.org/docs/latest-v12.x/api/url.html#url_url
 const URL_BASE = 'https://0.0.0.0';
-
-const jsonParserMiddleware = json();
-
-function parseJsonBody(request: ExpressRequest, response: ExpressResponse) {
-  return new Promise<JSONValue>((resolve, reject) => {
-    jsonParserMiddleware(request, response, (error) => {
-      error ? reject(error) : resolve(request.body);
-    });
-  });
-}
 
 function canHaveBody(method: Method): method is MethodWithBody {
   return method === 'POST' || method === 'PUT';
@@ -45,8 +29,8 @@ class Headers {
 }
 
 export class Request<M extends Method, Params extends string> {
-  private request: ExpressRequest;
-  private response: ExpressResponse;
+  private request: IncomingMessage;
+  // TODO
   private parsedBodyPromise: Promise<JSONValue> | undefined;
 
   readonly method: M;
@@ -56,13 +40,12 @@ export class Request<M extends Method, Params extends string> {
   readonly query: URLSearchParams;
   readonly params: { [K in Params]: string };
 
-  constructor(request: ExpressRequest, response: ExpressResponse) {
+  constructor(request: IncomingMessage, params: Record<string, string>) {
     this.request = request;
-    this.response = response;
-    const { method, headers, url, params } = request;
-    const { pathname, search, searchParams } = new URL(url, URL_BASE);
+    const { method, headers, url } = request;
+    const { pathname, search, searchParams } = new URL(url ?? '', URL_BASE);
     this.headers = new Headers(headers);
-    this.method = method as M;
+    this.method = (method ?? 'GET').toUpperCase() as M;
     this.path = pathname;
     this.search = search;
     this.query = searchParams;
@@ -74,10 +57,7 @@ export class Request<M extends Method, Params extends string> {
     if (!canHaveBody(this.method)) {
       return null as never;
     }
-    const promise: Promise<JSONValue> =
-      this.parsedBodyPromise ||
-      (this.parsedBodyPromise = parseJsonBody(this.request, this.response));
-    return promise as never;
+    throw new Error('request.json() not implemented');
   }
 
   getReadStream(): M extends MethodWithBody ? ReadableStream : null {

@@ -1,19 +1,11 @@
+import { type IncomingMessage, type ServerResponse } from 'http';
 import path from 'path';
 
-import type {
-  Express,
-  Request as ExpressRequest,
-  Response as ExpressResponse,
-  RequestHandler as ExpressHandler,
-  NextFunction,
-} from 'express';
-
+import { Router } from './Router';
 import { Request } from './Request';
 import { isStream, isStaticFile, Response } from './Response';
 import { HttpError } from './HttpError';
-import type { Handler, Method, Route } from './types';
-
-const weakMap = new WeakMap<ExpressRequest, Request<Method, string>>();
+import { type Method, type Route } from './types';
 
 type Options = {
   /** The root from which file names will be resolved when serving files */
@@ -27,110 +19,76 @@ type Options = {
 
 export function createApplication(options: Options) {
   const projectRoot = path.resolve(options.root);
-  const allowedRoot = path.join(projectRoot, options.allowStaticFrom[0]);
+  const _allowedRoot = path.join(projectRoot, options.allowStaticFrom[0]);
 
-  const attachRoutes = (app: Express, routes: Array<Route>) => {
-    for (let [method, path, handler] of routes) {
-      attach(app, method, path, toExpressHandler(handler));
-    }
-  };
-
-  const toExpressHandler = (handler: Handler<Method, string>) => {
-    return async (
-      expressRequest: ExpressRequest,
-      expressResponse: ExpressResponse,
-      next: NextFunction,
-    ) => {
-      // Use WeakMap to ensure only one Request instance is created per instance
-      // of ExpressRequest
-      const request =
-        weakMap.get(expressRequest) ||
-        new Request(expressRequest, expressResponse);
-      weakMap.set(expressRequest, request);
-      try {
-        const result = await handler(request);
-        if (result) {
-          // TODO: If result is an object containing a circular reference, this
-          // next line will throw, resulting in a 500 response with no
-          // indication of which handler caused it.
-          const response =
-            result instanceof Response ? result : Response.json(result);
-          send(response, expressRequest, expressResponse, next);
-        } else {
-          next();
-        }
-      } catch (error) {
-        if (error instanceof HttpError) {
-          const response = new Response(error.message, {
-            status: error.status,
-            headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
-          });
-          send(response, expressRequest, expressResponse, next);
-        } else {
-          next(error);
-        }
+  const attachRoutes = (...routeLists: Array<Array<Route>>) => {
+    const router = new Router<Request<Method, string>>();
+    for (const routeList of routeLists) {
+      for (const [method, path, handler] of routeList) {
+        router.attachRoute(method, path, handler);
       }
-    };
-  };
-
-  const send = (
-    response: Response,
-    expressRequest: ExpressRequest,
-    expressResponse: ExpressResponse,
-    next: NextFunction,
-  ) => {
-    const { status, headers, body } = response;
-    expressResponse.status(status);
-    if (isStaticFile(body)) {
-      // Resolve the file path relative to the project root.
-      const fullFilePath = path.join(projectRoot, body.filePath);
-      expressResponse.sendFile(
-        // For Express, pass the file path relative to allowedRoot. Express will
-        // not serve the file if it does not exist within the allowed root.
-        path.relative(allowedRoot, fullFilePath),
-        {
-          root: allowedRoot,
-          headers,
-        },
-        next,
-      );
-    } else if (isStream(body)) {
-      expressResponse.set(headers);
-      body.pipe(expressResponse);
-    } else {
-      expressResponse.set(headers);
-      if (body != null) {
-        expressResponse.write(body);
-      }
-      expressResponse.end();
     }
+    return getRequestHandler(router);
   };
 
   return { attachRoutes };
 }
 
-function attach(
-  app: Express,
-  method: Method,
-  path: string,
-  handler: ExpressHandler,
-) {
-  switch (method) {
-    case 'GET': {
-      app.get(path, handler);
-      break;
+function getRequestHandler(router: Router<Request<Method, string>>) {
+  return async (nodeRequest: IncomingMessage, nodeResponse: ServerResponse) => {
+    const response = await routeRequest(router, nodeRequest);
+    const { status, headers, body } = response;
+    if (isStaticFile(body)) {
+      // TODO: Send file
+      nodeResponse.writeHead(500);
+      nodeResponse.end('Error: File serving not yet implemented');
+    } else if (isStream(body)) {
+      nodeResponse.writeHead(status, headers);
+      body.pipe(nodeResponse);
+    } else {
+      nodeResponse.writeHead(status, headers);
+      if (body != null) {
+        nodeResponse.write(body);
+      }
+      nodeResponse.end();
     }
-    case 'POST': {
-      app.post(path, handler);
-      break;
+  };
+}
+
+async function routeRequest(
+  router: Router<Request<Method, string>>,
+  nodeRequest: IncomingMessage,
+): Promise<Response> {
+  const method = (nodeRequest.method ?? 'GET').toUpperCase();
+  const path = nodeRequest.url ?? '/';
+  try {
+    const result = await router.route(
+      method,
+      path,
+      (captures) => new Request(nodeRequest, Object.fromEntries(captures)),
+    );
+    if (result) {
+      // TODO: If result is an object containing a circular reference, this
+      // next line will throw, resulting in a 500 response with no
+      // indication of which handler caused it.
+      return result instanceof Response ? result : Response.json(result);
+    } else {
+      return new Response('Not found', {
+        status: 404,
+        headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
+      });
     }
-    case 'PUT': {
-      app.put(path, handler);
-      break;
-    }
-    case 'DELETE': {
-      app.delete(path, handler);
-      break;
+  } catch (e) {
+    if (e instanceof HttpError) {
+      return new Response(e.message, {
+        status: e.status,
+        headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
+      });
+    } else {
+      return new Response(String(e), {
+        status: 500,
+        headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
+      });
     }
   }
 }
