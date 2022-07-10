@@ -1,1 +1,2 @@
-export { createApplication } from './http';
+// TODO: Export node and express separately
+export { createApplication } from './http/adapters/node/node';

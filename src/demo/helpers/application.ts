@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { createApplication } from '../../http/adapters/node';
+import { createApplication } from '../../http/adapters/node/node';
 
 const { defineRoutes, attachRoutes } = createApplication({
   root: path.resolve(__dirname, '../..'),
