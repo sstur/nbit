@@ -1,4 +1,5 @@
-import { defineRoutes, Response } from '../../http';
+import { Response } from '../../http';
+import { defineRoutes } from '../helpers/application';
 
 export default defineRoutes(({ get, post }) => [
   get('/hello', (_request) => {
