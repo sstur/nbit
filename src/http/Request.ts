@@ -1,4 +1,3 @@
-import { URL, type URLSearchParams } from 'url';
 import { PassThrough as PassThroughStream } from 'stream';
 import type { IncomingMessage } from 'http';
 
