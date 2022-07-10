@@ -1,8 +1,9 @@
 import { URL, type URLSearchParams } from 'url';
 import { PassThrough as PassThroughStream } from 'stream';
-import type { IncomingHttpHeaders, IncomingMessage } from 'http';
+import type { IncomingMessage } from 'http';
 
 import type { Method, MethodWithBody } from './types';
+import { Headers } from './Headers';
 
 type ReadableStream = NodeJS.ReadableStream;
 
@@ -13,19 +14,6 @@ const URL_BASE = 'https://0.0.0.0';
 
 function canHaveBody(method: Method): method is MethodWithBody {
   return method === 'POST' || method === 'PUT';
-}
-
-class Headers {
-  private headers: IncomingHttpHeaders;
-
-  constructor(headers: IncomingHttpHeaders) {
-    this.headers = headers;
-  }
-
-  get(name: string) {
-    const value = this.headers[name.toLowerCase()];
-    return Array.isArray(value) ? value.join(', ') : value;
-  }
 }
 
 export class Request<M extends Method, Params extends string> {
