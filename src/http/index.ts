@@ -1,4 +1,3 @@
-export { createApplication } from './createApplication';
 export { HttpError } from './HttpError';
 export { Request } from './Request';
 export { Response } from './Response';

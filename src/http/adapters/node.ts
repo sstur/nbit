@@ -1,12 +1,13 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 
-import { Request } from './Request';
-import { isStaticFile, isStream, Response } from './Response';
-import { HttpError } from './HttpError';
-import { type Router } from './Router';
-import { type Method } from './types';
+import { Request } from '../Request';
+import { isStaticFile, isStream, Response } from '../Response';
+import { HttpError } from '../HttpError';
+import { type Router } from '../Router';
+import { type Method } from '../types';
+import { createCreateApplication } from '../createApplication';
 
-export function createNodeRequestHandler<T>(
+function createRequestHandler<T>(
   router: Router<T>,
   getContext?: (request: Request<Method, string>) => object | undefined,
 ) {
@@ -70,3 +71,5 @@ async function routeRequest<T>(
     }
   }
 }
+
+export const createApplication = createCreateApplication(createRequestHandler);
