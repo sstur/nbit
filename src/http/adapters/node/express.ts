@@ -4,12 +4,13 @@ import type {
   NextFunction,
 } from 'express';
 
-import { Request } from '../../Request';
 import { isStaticFile, isStream, Response } from '../../Response';
 import { HttpError } from '../../HttpError';
 import { type Router } from '../../Router';
 import { type Method } from '../../types';
 import { createCreateApplication } from '../../createApplication';
+
+import { Request } from './Request';
 
 function createExpressMiddleware<T>(
   router: Router<T>,

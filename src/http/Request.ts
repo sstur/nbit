@@ -1,23 +1,19 @@
-import { PassThrough as PassThroughStream } from 'stream';
-import type { IncomingMessage } from 'http';
-
 import type { Method, MethodWithBody } from './types';
-import { Headers } from './Headers';
+import { Headers, type HeadersObject } from './Headers';
 
-type ReadableStream = NodeJS.ReadableStream;
+type RequestInit = {
+  method: string;
+  headers: HeadersObject;
+  url: string;
+};
 
 // This is required by `new URL()` for parsing but it doesn't matter what value
 // this has since it's not used.
 // See: https://nodejs.org/docs/latest-v12.x/api/url.html#url_url
 const URL_BASE = 'https://0.0.0.0';
 
-function canHaveBody(method: Method): method is MethodWithBody {
-  return method === 'POST' || method === 'PUT';
-}
-
 export class Request<M extends Method, Params extends string> {
-  private request: IncomingMessage;
-  // TODO
+  // TODO: Need to attach this to the underlying request object
   private parsedBodyPromise: Promise<JSONValue> | undefined;
 
   readonly method: M;
@@ -27,12 +23,11 @@ export class Request<M extends Method, Params extends string> {
   readonly query: URLSearchParams;
   readonly params: { [K in Params]: string };
 
-  constructor(request: IncomingMessage, params: Record<string, string>) {
-    this.request = request;
+  constructor(request: RequestInit, params: Record<string, string>) {
     const { method, headers, url } = request;
     const { pathname, search, searchParams } = new URL(url ?? '', URL_BASE);
     this.headers = new Headers(headers);
-    this.method = (method ?? 'GET').toUpperCase() as M;
+    this.method = method.toUpperCase() as M;
     this.path = pathname;
     this.search = search;
     this.query = searchParams;
@@ -46,14 +41,8 @@ export class Request<M extends Method, Params extends string> {
     }
     throw new Error('request.json() not implemented');
   }
+}
 
-  getReadStream(): M extends MethodWithBody ? ReadableStream : null {
-    if (!canHaveBody(this.method)) {
-      return null as never;
-    }
-    // TODO: I'm not sure if this PassThroughSteam is necessary.
-    const passThroughStream = new PassThroughStream();
-    this.request.pipe(passThroughStream);
-    return passThroughStream as never;
-  }
+export function canHaveBody(method: Method): method is MethodWithBody {
+  return method === 'POST' || method === 'PUT';
 }
