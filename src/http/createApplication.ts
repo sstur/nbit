@@ -32,7 +32,7 @@ export function createCreateApplication<RequestHandler>(
       request: Request<Method, string>,
     ) => undefined,
   >(
-    options: Options<T>,
+    options: Options<T> = {},
   ) => {
     const { getContext } = options;
     type RequestContext = ReturnType<T>;
