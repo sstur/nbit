@@ -1,11 +1,5 @@
 import type { Method, MethodWithBody } from './types';
-import { Headers, type HeadersObject } from './Headers';
-
-type RequestInit = {
-  method: string;
-  headers: HeadersObject;
-  url: string;
-};
+import type { Request as BaseRequest } from './builtins/Request';
 
 // This is required by `new URL()` for parsing but it doesn't matter what value
 // this has since it's not used.
@@ -13,9 +7,6 @@ type RequestInit = {
 const URL_BASE = 'https://0.0.0.0';
 
 export class Request<M extends Method, Params extends string> {
-  // TODO: Need to attach this to the underlying request object
-  private parsedBodyPromise: Promise<JSONValue> | undefined;
-
   readonly method: M;
   readonly headers: Headers;
   readonly path: string;
@@ -23,11 +14,11 @@ export class Request<M extends Method, Params extends string> {
   readonly query: URLSearchParams;
   readonly params: { [K in Params]: string };
 
-  constructor(request: RequestInit, params: Record<string, string>) {
+  constructor(request: BaseRequest, params: Record<string, string>) {
     const { method, headers, url } = request;
     const { pathname, search, searchParams } = new URL(url ?? '', URL_BASE);
-    this.headers = new Headers(headers);
-    this.method = method.toUpperCase() as M;
+    this.headers = headers;
+    this.method = method as M;
     this.path = pathname;
     this.search = search;
     this.query = searchParams;

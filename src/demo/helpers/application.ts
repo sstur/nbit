@@ -1,12 +1,9 @@
-import path from 'path';
-
-import { createApplication } from '../../http/adapters/node/node';
+import { createApplication } from '../../http/adapters/bun';
 
 const { defineRoutes, attachRoutes } = createApplication({
-  root: path.resolve(__dirname, '../..'),
-  allowStaticFrom: ['assets'],
   getContext: (request) => ({
     auth: async () => {
+      request.json;
       const authHeader = request.headers.get('Authorization') ?? '';
       const token = authHeader.startsWith('Bearer')
         ? authHeader.split(' ')[1]
