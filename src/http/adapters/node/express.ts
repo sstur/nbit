@@ -4,7 +4,7 @@ import type {
   NextFunction,
 } from 'express';
 
-import { isStaticFile, isStream, Response } from '../../Response';
+import { isStaticFile, Response } from '../../Response';
 import { HttpError } from '../../HttpError';
 import { type Router } from '../../Router';
 import { type Method } from '../../types';
@@ -33,10 +33,12 @@ function createExpressMiddleware<T>(
       // TODO: Send file
       expressResponse.writeHead(500);
       expressResponse.end('Error: File serving not yet implemented');
-    } else if (isStream(body)) {
-      expressResponse.writeHead(status, headers);
-      body.pipe(expressResponse);
-    } else {
+    }
+    // else if (body instanceof ReadableStream) {
+    //   expressResponse.writeHead(status, headers);
+    //   body.pipe(expressResponse);
+    // }
+    else {
       expressResponse.writeHead(status, headers);
       if (body != null) {
         expressResponse.write(body);

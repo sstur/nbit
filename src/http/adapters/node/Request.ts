@@ -6,6 +6,11 @@ import type { Method, MethodWithBody } from '../../types';
 
 type ReadableStream = NodeJS.ReadableStream;
 
+// This is required by `new URL()` for parsing but it doesn't matter what value
+// this has since it's not used.
+// See: https://nodejs.org/docs/latest-v12.x/api/url.html#url_url
+const URL_BASE = 'https://0.0.0.0';
+
 export class Request<
   M extends Method,
   Params extends string,
@@ -13,8 +18,20 @@ export class Request<
   private request: IncomingMessage;
 
   constructor(request: IncomingMessage, params: Record<string, string>) {
-    const { method = 'GET', headers, url = '' } = request;
-    super({ method, headers, url }, params);
+    const { method = 'GET' } = request;
+    const url = new URL(request.url ?? '', URL_BASE);
+    // TODO: Is there a more performant way to populate the request headers?
+    const headers = new Headers();
+    for (const [name, value] of Object.entries(request.headers)) {
+      if (value != null) {
+        for (let header of Array.isArray(value) ? value : [value]) {
+          headers.append(name, header);
+        }
+      }
+    }
+    super(url.toString(), { method, headers });
+    // @ts-expect-error - TODO: Find a better way to instantiate params
+    this.params = params;
     this.request = request;
   }
 

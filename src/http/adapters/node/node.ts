@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 
-import { isStaticFile, isStream, Response } from '../../Response';
+import { isStaticFile, Response } from '../../Response';
 import { HttpError } from '../../HttpError';
 import { type Router } from '../../Router';
 import { type Method } from '../../types';
@@ -19,10 +19,12 @@ function createRequestHandler<T>(
       // TODO: Send file
       nodeResponse.writeHead(500);
       nodeResponse.end('Error: File serving not yet implemented');
-    } else if (isStream(body)) {
-      nodeResponse.writeHead(status, headers);
-      body.pipe(nodeResponse);
-    } else {
+    }
+    // else if (body instanceof ReadableStream) {
+    //   nodeResponse.writeHead(status, headers);
+    //   body.pipe(nodeResponse);
+    // }
+    else {
       nodeResponse.writeHead(status, headers);
       if (body != null) {
         nodeResponse.write(body);
