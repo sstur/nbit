@@ -1,4 +1,4 @@
-export type HeadersObject = { [name: string]: string | Array<string> };
+type HeadersObject = { [name: string]: string | Array<string> };
 export type HeadersInit = HeadersObject | Array<[string, string]> | Headers;
 
 export class Headers {

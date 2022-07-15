@@ -1,4 +1,4 @@
-import type { Method, MethodWithBody } from './types';
+import type { Method } from './types';
 import { Request as BaseRequest } from './builtins/Request';
 
 // TODO: Use types to ensure .json() can't be called on a GET request
@@ -30,8 +30,4 @@ export class Request<
   //   }
   //   throw new Error('request.json() not implemented');
   // }
-}
-
-export function canHaveBody(method: Method): method is MethodWithBody {
-  return method === 'POST' || method === 'PUT';
 }
