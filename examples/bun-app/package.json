@@ -7,25 +7,17 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
-    "jest": "jest --coverage --passWithNoTests",
-    "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
+    "test": "yarn lint && yarn typecheck && yarn format:check",
     "clean": "rm -rf .turbo coverage"
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/jest": "^28.1.4",
     "bun-types": "^0.1.4",
     "eslint": "^8.19.0",
     "eslint-config-xt": "^1.7.0",
-    "jest": "^28.1.2",
     "nodemon": "^2.0.19",
     "prettier": "^2.7.1",
-    "ts-jest": "^28.0.5",
     "typescript": "^4.7.4"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node"
   },
   "eslintConfig": {
     "extends": "xt",
