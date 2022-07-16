@@ -1,0 +1,40 @@
+{
+  "name": "@nbit/core",
+  "version": "0.1.0",
+  "scripts": {
+    "lint": "eslint --max-warnings 0 \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src",
+    "jest": "jest --coverage --passWithNoTests",
+    "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
+    "clean": "rm -rf .turbo lib coverage"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^28.1.4",
+    "eslint": "^8.19.0",
+    "eslint-config-xt": "^1.7.0",
+    "jest": "^28.1.2",
+    "prettier": "^2.7.1",
+    "ts-jest": "^28.0.5",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.7.4"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  },
+  "eslintConfig": {
+    "extends": "xt",
+    "rules": {
+      "@typescript-eslint/consistent-type-imports": "warn"
+    }
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all",
+    "arrowParens": "always"
+  },
+  "license": "ISC"
+}

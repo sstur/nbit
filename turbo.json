@@ -1,0 +1,21 @@
+{
+  "$schema": "https://turborepo.org/schema.json",
+  "baseBranch": "upstream/master",
+  "pipeline": {
+    "lint": {
+      "outputs": []
+    },
+    "typecheck": {
+      "outputs": []
+    },
+    "format:check": {
+      "outputs": []
+    },
+    "jest": {
+      "outputs": []
+    },
+    "build": {
+      "outputs": []
+    }
+  }
+}
