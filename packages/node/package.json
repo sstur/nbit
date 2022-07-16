@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
-    "jest": "jest --coverage --passWithNoTests",
+    "jest": "jest --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
     "clean": "rm -rf .turbo lib coverage",
     "build": "rm -rf lib && rollup -c && tsc -p tsconfig.build.json",
