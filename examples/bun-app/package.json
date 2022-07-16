@@ -2,7 +2,7 @@
   "name": "bun-app",
   "version": "0.1.0",
   "scripts": {
-    "dev": "nodemon --exec \"bun\" src/server.ts -e js,ts,json",
+    "dev": "nodemon --exec \"bun\" src/server.ts -e js,ts,json --watch src --watch ../../packages/bun/src --watch ../../packages/core/src",
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write src",
