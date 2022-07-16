@@ -15,6 +15,7 @@
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
     "clean": "rm -rf .turbo lib coverage",
     "build": "rm -rf lib && rollup -c && tsc -p tsconfig.build.json",
+    "build:watch": "rollup -wc",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {},
