@@ -1,5 +1,5 @@
 import typescript from '@rollup/plugin-typescript';
-import { terser } from 'rollup-plugin-terser';
+// import { terser } from 'rollup-plugin-terser';
 import prettier from 'rollup-plugin-prettier';
 
 export default {
@@ -16,13 +16,13 @@ export default {
       module: 'esnext',
       include: ['../**/*.ts'],
     }),
-    terser({
-      format: {
-        comments: false,
-      },
-      compress: false,
-      mangle: false,
-    }),
+    // terser({
+    //   format: {
+    //     comments: false,
+    //   },
+    //   compress: false,
+    //   mangle: false,
+    // }),
     prettier({
       parser: 'babel',
     }),
