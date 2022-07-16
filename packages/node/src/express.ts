@@ -60,14 +60,13 @@ async function routeRequest<T>(
         context === undefined ? request : Object.assign(request, context);
       return requestWithContext as unknown as T;
     });
-    if (result) {
-      // TODO: If result is an object containing a circular reference, this
-      // next line will throw, resulting in a 500 response with no
-      // indication of which handler caused it.
-      return result instanceof Response ? result : Response.json(result);
-    } else {
+    if (result === undefined) {
       return null;
     }
+    // TODO: If result is an object containing a circular reference, this
+    // next line will throw, resulting in a 500 response with no
+    // indication of which handler caused it.
+    return result instanceof Response ? result : Response.json(result);
   } catch (e) {
     if (e instanceof HttpError) {
       return new Response(e.message, {
