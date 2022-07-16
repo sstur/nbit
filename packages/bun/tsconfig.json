@@ -14,5 +14,5 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["bun-types", "@types/jest"]
   },
-  "include": ["src"]
+  "include": ["src", "../core/src"]
 }

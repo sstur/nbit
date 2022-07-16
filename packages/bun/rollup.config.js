@@ -13,6 +13,7 @@ export default {
   plugins: [
     typescript({
       module: 'esnext',
+      include: ['../**/*.ts'],
     }),
     terser({
       format: {

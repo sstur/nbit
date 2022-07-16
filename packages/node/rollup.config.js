@@ -10,9 +10,11 @@ export default {
     strict: false,
     esModule: false,
   },
+  external: ['stream'],
   plugins: [
     typescript({
       module: 'esnext',
+      include: ['../**/*.ts'],
     }),
     terser({
       format: {
