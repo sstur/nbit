@@ -1,8 +1,7 @@
 import { createCreateApplication, HttpError } from './core';
 import { Request } from './Request';
-import { Response } from './Response';
+import { Response as CustomResponse } from './Response';
 import type { Request as BaseRequest } from './builtins';
-import { toNativeResponse } from './support/toNativeResponse';
 
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
@@ -46,6 +45,9 @@ export const createApplication = createCreateApplication((router, options) => {
 
   return async (request: BaseRequest) => {
     const response = await routeRequest(request);
-    return toNativeResponse(response, options);
+    if (response instanceof CustomResponse) {
+      return response.toNativeResponse(options);
+    }
+    return response;
   };
 });

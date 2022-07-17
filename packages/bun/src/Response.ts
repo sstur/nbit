@@ -1,57 +1,47 @@
-type Body = StaticFile | string | Blob | ArrayBufferView | ArrayBuffer;
-
-type RedirectStatus = 301 | 302 | 303 | 304 | 307 | 308;
+import { Response as ResponseBase } from './builtins';
+import { resolveFilePath } from './support/resolveFilePath';
+import type { FileServingOptions } from './types';
 
 export class StaticFile {
-  filePath: string;
-
-  constructor(filePath: string) {
-    this.filePath = filePath;
-  }
+  constructor(readonly filePath: string) {}
 }
 
-export class Response {
-  readonly status: number;
-  readonly headers: Headers;
-  readonly body: Body;
+export class Response extends ResponseBase {
+  private _body: StaticFile | BlobPart | Array<BlobPart>;
+  private _init: ResponseInit | undefined;
 
-  constructor(body: Body, init?: ResponseInit) {
-    const { status, headers } = init ?? {};
-    this.status = status ?? 200;
-    this.headers = new Headers(headers);
-    this.body = body;
+  constructor(
+    body: StaticFile | BlobPart | Array<BlobPart>,
+    init?: ResponseInit,
+  ) {
+    if (body instanceof StaticFile) {
+      super('', init);
+    } else {
+      super(body, init);
+    }
+    this._body = body;
+    this._init = init;
   }
 
-  static redirect(url: string, init?: { status?: RedirectStatus }) {
-    const { status } = init ?? {};
-    return new Response('', {
-      status: status ?? 302,
-      headers: { Location: url },
-    });
-  }
-
-  static json(payload: unknown, init?: ResponseInit) {
-    const { status, headers } = init ?? {};
-    // Note: This next line will throw if payload has circular references
-    const body = JSON.stringify(payload) ?? 'null';
-    return new Response(body, {
-      status: status ?? 200,
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        ...headers,
-      },
-    });
+  toNativeResponse(options: FileServingOptions) {
+    const body = this._body;
+    const init = this._init;
+    if (body instanceof StaticFile) {
+      const { filePath } = body;
+      const fullFilePath = resolveFilePath(filePath, options);
+      if (fullFilePath == null) {
+        // TODO: Better error
+        return new Response('Unable to serve file', { status: 403 });
+      }
+      // TODO: Deal with caching headers
+      // TODO: Ensure file exists
+      return new Response(Bun.file(fullFilePath), init);
+    } else {
+      return new Response(body, init);
+    }
   }
 
   static sendFile(filePath: string, init?: ResponseInit) {
-    const { status, headers } = init ?? {};
-    return new Response(new StaticFile(filePath), {
-      status: status ?? 200,
-      headers: headers ?? {},
-    });
+    return new Response(new StaticFile(filePath), init);
   }
-}
-
-export function isStaticFile(object: unknown): object is StaticFile {
-  return object instanceof StaticFile;
 }
