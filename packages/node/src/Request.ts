@@ -18,9 +18,9 @@ export class Request<M extends Method, Params extends string> {
 
   constructor(request: IncomingMessage, params: Record<string, string>) {
     this.request = request;
-    const { method = 'GET', rawHeaders } = request;
+    const { method = 'GET', url, rawHeaders } = request;
     this.method = method as M;
-    const { pathname, search, searchParams } = parseUrl(request.url ?? '');
+    const { pathname, search, searchParams } = parseUrl(url ?? '');
     this.path = pathname;
     this.search = search;
     this.query = searchParams;
