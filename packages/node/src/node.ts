@@ -1,8 +1,10 @@
+import { createReadStream } from 'fs';
 import type { IncomingMessage, ServerResponse } from 'http';
 
 import { createCreateApplication, HttpError } from './core';
 import { isStaticFile, Response } from './Response';
 import { Request } from './Request';
+import { resolveFilePath } from './support/resolveFilePath';
 
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
@@ -50,9 +52,21 @@ export const createApplication = createCreateApplication((router, options) => {
     const response = await routeRequest(nodeRequest);
     const { status, headers, body } = response;
     if (isStaticFile(body)) {
-      // TODO: Send file
-      nodeResponse.writeHead(500);
-      nodeResponse.end('Error: File serving not yet implemented');
+      const { filePath } = body;
+      const resolved = resolveFilePath(filePath, options);
+      if (!resolved) {
+        // TODO: Better error
+        nodeResponse.writeHead(403);
+        nodeResponse.end('Unable to serve file');
+        return;
+      }
+      const [fullFilePath] = resolved;
+      // TODO: Deal with caching headers
+      // TODO: Ensure file exists
+      // TODO: Content-Type, .on('error')
+      nodeResponse.writeHead(status, headers);
+      createReadStream(fullFilePath).pipe(nodeResponse);
+      return;
     }
     // else if (body instanceof ReadableStream) {
     //   nodeResponse.writeHead(status, headers);
