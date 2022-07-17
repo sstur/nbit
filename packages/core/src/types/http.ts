@@ -1,6 +1,19 @@
 import type { Request } from '../Request';
 import type { Response } from '../Response';
 
+export type FileServingOptions = {
+  /**
+   * The root from which file names will be resolved when serving files.
+   * Defaults to current working directory.
+   */
+  root?: string;
+  /**
+   * An array of paths (relative to root) from which static files are _allowed_
+   * to be served.
+   */
+  allowStaticFrom?: Array<string>;
+};
+
 type MaybePromise<T> = T | Promise<T>;
 
 export type MaybeIntersect<T, U> = U extends undefined ? T : T & U;

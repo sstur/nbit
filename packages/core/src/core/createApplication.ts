@@ -1,42 +1,43 @@
-import type { Handler, Route, MaybeIntersect, Method } from '../types';
+import type {
+  FileServingOptions,
+  Handler,
+  MaybeIntersect,
+  Method,
+  Route,
+} from '../types';
 import type { Request } from '../Request';
 
 import { Router } from './Router';
 
-type Options<T> = {
-  /** The root from which file names will be resolved when serving files */
-  root?: string;
-  /**
-   * An array of paths (relative to root) from which static files are _allowed_
-   * to be served. For now this only supports a single path.
-   */
-  allowStaticFrom?: [string];
+type Options<CtxGetter> = FileServingOptions & {
   /**
    * An optional way to define extra context (e.g. an auth method) that will be
    * added to each Request instance.
    */
-  getContext?: T;
+  getContext?: CtxGetter;
 };
 
 type ContextGetter = (request: Request<Method, string>) => object | undefined;
 
-type RequestHandlerCreator<RequestHandler> = <T>(
-  router: Router<T>,
-  getContext?: ContextGetter,
+type RequestHandlerCreator<RequestHandler> = <
+  ReqWithCtx,
+  CtxGetter extends ContextGetter,
+>(
+  router: Router<ReqWithCtx>,
+  options: Options<CtxGetter>,
 ) => RequestHandler;
 
 export function createCreateApplication<RequestHandler>(
   createRequestHandler: RequestHandlerCreator<RequestHandler>,
 ) {
   const createApplication = <
-    T extends (request: Request<Method, string>) => object | undefined = (
+    CtxGetter extends ContextGetter = (
       request: Request<Method, string>,
     ) => undefined,
   >(
-    options: Options<T> = {},
+    options: Options<CtxGetter> = {},
   ) => {
-    const { getContext } = options;
-    type RequestContext = ReturnType<T>;
+    type RequestContext = ReturnType<CtxGetter>;
     const app = getApp<RequestContext>();
     type App = typeof app;
     type RequestWithContext = MaybeIntersect<
@@ -55,7 +56,7 @@ export function createCreateApplication<RequestHandler>(
           router.attachRoute(method, pattern, handler);
         }
       }
-      return createRequestHandler(router, getContext);
+      return createRequestHandler(router, options);
     };
     return { defineRoutes, attachRoutes };
   };
