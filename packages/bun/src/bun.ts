@@ -1,7 +1,9 @@
 import { createCreateApplication, HttpError, type Router } from './core';
 import { Request } from './Request';
+import { Response } from './Response';
 import type { Method } from './types';
-import type { Request as BaseRequest } from './builtins/Request';
+import type { Request as BaseRequest } from './builtins';
+import { toNativeResponse } from './support/toNativeResponse';
 
 function createWrappedRequest<M extends Method, Params extends string>(
   baseRequest: BaseRequest,
@@ -26,7 +28,8 @@ function createRequestHandler<T>(
   getContext?: (request: Request<Method, string>) => object | undefined,
 ) {
   return async (request: BaseRequest) => {
-    return await routeRequest(router, request, getContext);
+    const response = await routeRequest(router, request, getContext);
+    return toNativeResponse(response);
   };
 }
 

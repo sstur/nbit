@@ -1,5 +1,5 @@
 import type { Method } from './types';
-import { Request as BaseRequest } from './builtins/Request';
+import { Request as BaseRequest } from './builtins';
 
 // TODO: Use types to ensure .json() can't be called on a GET request
 export class Request<
