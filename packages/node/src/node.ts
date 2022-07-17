@@ -1,12 +1,11 @@
 import { createReadStream } from 'fs';
-import { Readable } from 'stream';
 import type { IncomingMessage, ServerResponse } from 'http';
 
 import { createCreateApplication, HttpError } from './core';
 import { isStaticFile, Response } from './Response';
 import { Request } from './Request';
 import { resolveFilePath } from './support/resolveFilePath';
-import { isReadStream, isWebStream } from './support/streams';
+import { isReadable, toReadStream } from './support/streams';
 
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
@@ -69,12 +68,9 @@ export const createApplication = createCreateApplication((router, options) => {
       nodeResponse.writeHead(status, headers);
       createReadStream(fullFilePath).pipe(nodeResponse);
       return;
-    } else if (isReadStream(body)) {
+    } else if (isReadable(body)) {
       nodeResponse.writeHead(status, headers);
-      body.pipe(nodeResponse);
-    } else if (isWebStream(body)) {
-      nodeResponse.writeHead(status, headers);
-      Readable.fromWeb(body).pipe(nodeResponse);
+      toReadStream(body).pipe(nodeResponse);
     } else {
       nodeResponse.writeHead(status, headers);
       if (body != null) {

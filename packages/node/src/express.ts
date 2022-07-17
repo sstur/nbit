@@ -1,5 +1,4 @@
 import path from 'path';
-import { Readable } from 'stream';
 
 import type {
   Request as ExpressRequest,
@@ -11,7 +10,7 @@ import { createCreateApplication, HttpError } from './core';
 import { isStaticFile, Response } from './Response';
 import { Request } from './Request';
 import { resolveFilePath } from './support/resolveFilePath';
-import { isReadStream, isWebStream } from './support/streams';
+import { isReadable, toReadStream } from './support/streams';
 
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
@@ -86,12 +85,9 @@ export const createApplication = createCreateApplication((router, options) => {
         },
         next,
       );
-    } else if (isReadStream(body)) {
+    } else if (isReadable(body)) {
       expressResponse.writeHead(status, headers);
-      body.pipe(expressResponse);
-    } else if (isWebStream(body)) {
-      expressResponse.writeHead(status, headers);
-      Readable.fromWeb(body).pipe(expressResponse);
+      toReadStream(body).pipe(expressResponse);
     } else {
       expressResponse.writeHead(status, headers);
       if (body != null) {
