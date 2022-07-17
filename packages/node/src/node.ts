@@ -5,32 +5,6 @@ import { isStaticFile, Response } from './Response';
 import { Request } from './Request';
 import type { Method } from './types';
 
-function createRequestHandler<T>(
-  router: Router<T>,
-  getContext?: (request: Request<Method, string>) => object | undefined,
-) {
-  return async (nodeRequest: IncomingMessage, nodeResponse: ServerResponse) => {
-    const response = await routeRequest(router, nodeRequest, getContext);
-    const { status, headers, body } = response;
-    if (isStaticFile(body)) {
-      // TODO: Send file
-      nodeResponse.writeHead(500);
-      nodeResponse.end('Error: File serving not yet implemented');
-    }
-    // else if (body instanceof ReadableStream) {
-    //   nodeResponse.writeHead(status, headers);
-    //   body.pipe(nodeResponse);
-    // }
-    else {
-      nodeResponse.writeHead(status, headers);
-      if (body != null) {
-        nodeResponse.write(body);
-      }
-      nodeResponse.end();
-    }
-  };
-}
-
 async function routeRequest<T>(
   router: Router<T>,
   nodeRequest: IncomingMessage,
@@ -71,4 +45,30 @@ async function routeRequest<T>(
   }
 }
 
-export const createApplication = createCreateApplication(createRequestHandler);
+export const createApplication = createCreateApplication(
+  (router, getContext) => {
+    return async (
+      nodeRequest: IncomingMessage,
+      nodeResponse: ServerResponse,
+    ) => {
+      const response = await routeRequest(router, nodeRequest, getContext);
+      const { status, headers, body } = response;
+      if (isStaticFile(body)) {
+        // TODO: Send file
+        nodeResponse.writeHead(500);
+        nodeResponse.end('Error: File serving not yet implemented');
+      }
+      // else if (body instanceof ReadableStream) {
+      //   nodeResponse.writeHead(status, headers);
+      //   body.pipe(nodeResponse);
+      // }
+      else {
+        nodeResponse.writeHead(status, headers);
+        if (body != null) {
+          nodeResponse.write(body);
+        }
+        nodeResponse.end();
+      }
+    };
+  },
+);
