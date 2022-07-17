@@ -23,16 +23,6 @@ function createWrappedRequest<M extends Method, Params extends string>(
   return baseRequest as any;
 }
 
-function createRequestHandler<T>(
-  router: Router<T>,
-  getContext?: (request: Request<Method, string>) => object | undefined,
-) {
-  return async (request: BaseRequest) => {
-    const response = await routeRequest(router, request, getContext);
-    return toNativeResponse(response);
-  };
-}
-
 async function routeRequest<T>(
   router: Router<T>,
   baseRequest: BaseRequest,
@@ -76,4 +66,11 @@ async function routeRequest<T>(
   }
 }
 
-export const createApplication = createCreateApplication(createRequestHandler);
+export const createApplication = createCreateApplication(
+  (router, getContext) => {
+    return async (request: BaseRequest) => {
+      const response = await routeRequest(router, request, getContext);
+      return toNativeResponse(response);
+    };
+  },
+);
