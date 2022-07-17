@@ -1,33 +1,48 @@
-import type { Method } from './types';
-import { Request as BaseRequest } from './builtins';
+import type { JSONValue, Method, MethodWithBody } from './types';
+import type { Request as BaseRequest } from './builtins';
 
-// TODO: Use types to ensure .json() can't be called on a GET request
-export class Request<
-  M extends Method,
-  Params extends string,
-> extends BaseRequest {
+// TODO: request.body getter to return ReadableStream
+export class Request<M extends Method, Params extends string> {
+  private request: BaseRequest;
   readonly method: M;
   readonly path: string;
   readonly search: string;
   readonly query: URLSearchParams;
+  readonly headers: Headers;
   readonly params: { [K in Params]: string };
 
-  constructor(...args: ConstructorParameters<typeof BaseRequest>) {
-    super(...args);
-    const { method, url } = this;
-    const { pathname, search, searchParams } = new URL(url);
+  constructor(request: BaseRequest, params: Record<string, string>) {
+    this.request = request;
+    const { method, url, headers } = request;
     this.method = method as M;
+    const { pathname, search, searchParams } = new URL(url);
     this.path = pathname;
     this.search = search;
     this.query = searchParams;
+    this.headers = headers;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.params = {} as any;
+    this.params = params as any;
   }
 
-  // json(): M extends MethodWithBody ? Promise<JSONValue> : null {
-  //   if (!canHaveBody(this.method)) {
-  //     return null as never;
-  //   }
-  //   throw new Error('request.json() not implemented');
-  // }
+  // TODO: What happens if we call one of these body methods and then later call
+  // the same one or a different one?
+  text(): M extends MethodWithBody ? Promise<string> : null {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.request.text() as any;
+  }
+
+  arrayBuffer(): M extends MethodWithBody ? Promise<ArrayBuffer> : null {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.request.arrayBuffer() as any;
+  }
+
+  json(): M extends MethodWithBody ? Promise<JSONValue> : null {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.request.json() as any;
+  }
+
+  blob(): M extends MethodWithBody ? Promise<Blob> : null {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.request.blob() as any;
+  }
 }
