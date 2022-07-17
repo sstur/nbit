@@ -1,3 +1,5 @@
+import path from 'path';
+
 import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
@@ -7,6 +9,7 @@ import type {
 import { createCreateApplication, HttpError } from './core';
 import { isStaticFile, Response } from './Response';
 import { Request } from './Request';
+import { resolveFilePath } from './support/resolveFilePath';
 
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
@@ -61,9 +64,26 @@ export const createApplication = createCreateApplication((router, options) => {
     }
     const { status, headers, body } = response;
     if (isStaticFile(body)) {
-      // TODO: Send file
-      expressResponse.writeHead(500);
-      expressResponse.end('Error: File serving not yet implemented');
+      // Resolve the file path relative to the project root.
+      const { filePath } = body;
+      const resolved = resolveFilePath(filePath, options);
+      if (!resolved) {
+        // TODO: Better error
+        expressResponse.writeHead(403);
+        expressResponse.end('Unable to serve file');
+        return;
+      }
+      const [fullFilePath, allowedRoot] = resolved;
+      expressResponse.sendFile(
+        // For Express, pass the file path relative to allowedRoot. Express will
+        // not serve the file if it does not exist within the allowed root.
+        path.relative(allowedRoot, fullFilePath),
+        {
+          root: allowedRoot,
+          headers,
+        },
+        next,
+      );
     }
     // else if (body instanceof ReadableStream) {
     //   expressResponse.writeHead(status, headers);
