@@ -4,12 +4,12 @@
     "packages/*"
   ],
   "scripts": {
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
-    "format:check": "turbo run format:check",
-    "jest": "turbo run jest",
-    "test": "turbo run lint typecheck format:check jest",
-    "clean": "yarn workspaces run clean",
+    "lint": "turbo run --force lint",
+    "typecheck": "turbo run --force typecheck",
+    "format:check": "turbo run --force format:check",
+    "jest": "turbo run --force jest",
+    "test": "turbo run --force lint typecheck format:check jest",
+    "clean": "rm -rf node_modules/.cache && yarn workspaces run clean",
     "build": "turbo run build"
   },
   "dependencies": {},
