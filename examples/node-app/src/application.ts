@@ -1,6 +1,10 @@
+import { join } from 'path';
+
 import { createApplication } from '@nbit/node';
 
 const { defineRoutes, attachRoutes } = createApplication({
+  root: join(__dirname, '..'),
+  allowStaticFrom: ['public'],
   getContext: (request) => ({
     auth: async () => {
       const authHeader = request.headers.get('Authorization') ?? '';
