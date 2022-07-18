@@ -5,7 +5,7 @@ import type {
   Method,
   Route,
 } from '../types';
-import type { Request } from '../Request';
+import type { Request } from '../applicationTypes';
 
 import { Router } from './Router';
 
