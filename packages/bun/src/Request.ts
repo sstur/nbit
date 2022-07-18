@@ -20,8 +20,7 @@ export class Request<M extends Method, Params extends string> {
     this.search = search;
     this.query = searchParams;
     this.headers = headers;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.params = params as any;
+    this.params = params as { [K in Params]: string };
   }
 
   // TODO: What happens if we call one of these body methods and then later call
