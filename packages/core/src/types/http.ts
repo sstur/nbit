@@ -1,5 +1,4 @@
-import type { Request } from '../Request';
-import type { Response } from '../Response';
+import type { Request, Response } from '../applicationTypes';
 
 export type FileServingOptions = {
   /**
