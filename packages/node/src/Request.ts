@@ -31,8 +31,7 @@ export class Request<M extends Method, Params extends string> {
       headers.append(name, value);
     }
     this.headers = headers;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.params = params as any;
+    this.params = params as { [K in Params]: string };
   }
 
   getReadStream(): M extends MethodWithBody ? ReadableStream : null {
