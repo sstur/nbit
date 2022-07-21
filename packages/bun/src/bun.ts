@@ -6,9 +6,11 @@ import type { Request as BaseRequest } from './builtins';
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
 
+  // TODO: Rename this to processRequest or getResponse?
   const routeRequest = async (baseRequest: BaseRequest): Promise<Response> => {
     const { method, url } = baseRequest;
     const { pathname } = new URL(url);
+    // TODO: Factor this getResult up into core? Would need the old approach of Captures -> Request
     const getResult = async () => {
       const matches = router.getMatches(method, pathname);
       for (const [handler, captures] of matches) {

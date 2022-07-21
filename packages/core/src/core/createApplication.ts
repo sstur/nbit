@@ -14,13 +14,13 @@ type Options<CtxGetter> = FileServingOptions & {
 
 type ContextGetter = (request: Request<Method, string>) => object | undefined;
 
-type RequestHandlerCreator<RequestHandler> = <CtxGetter extends ContextGetter>(
+type NativeHandlerCreator<NativeHandler> = <CtxGetter extends ContextGetter>(
   router: Router<any>,
   options: Options<CtxGetter>,
-) => RequestHandler;
+) => NativeHandler;
 
-export function createCreateApplication<RequestHandler>(
-  createRequestHandler: RequestHandlerCreator<RequestHandler>,
+export function createCreateApplication<NativeHandler>(
+  createNativeHandler: NativeHandlerCreator<NativeHandler>,
 ) {
   const createApplication = <
     CtxGetter extends ContextGetter = (
@@ -44,7 +44,7 @@ export function createCreateApplication<RequestHandler>(
           router.insert(method, pattern, handler);
         }
       }
-      return createRequestHandler(router, options);
+      return createNativeHandler(router, options);
     };
     return { defineRoutes, attachRoutes };
   };
