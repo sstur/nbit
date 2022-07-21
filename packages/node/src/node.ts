@@ -10,11 +10,13 @@ import { isReadable, toReadStream } from './support/streams';
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
 
+  // TODO: Rename this to processRequest or getResponse?
   const routeRequest = async (
     nodeRequest: IncomingMessage,
   ): Promise<Response> => {
     const method = (nodeRequest.method ?? 'GET').toUpperCase();
     const pathname = nodeRequest.url ?? '/';
+    // TODO: Factor this getResult up into core? Would need the old approach of Captures -> Request
     const getResult = async () => {
       const matches = router.getMatches(method, pathname);
       for (const [handler, captures] of matches) {
