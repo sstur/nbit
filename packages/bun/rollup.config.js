@@ -1,5 +1,4 @@
 import typescript from '@rollup/plugin-typescript';
-import prettier from 'rollup-plugin-prettier';
 
 export default {
   input: 'src/index.ts',
@@ -13,9 +12,6 @@ export default {
     typescript({
       module: 'esnext',
       include: ['../**/*.ts'],
-    }),
-    prettier({
-      parser: 'babel',
     }),
   ],
 };
