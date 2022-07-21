@@ -2,9 +2,10 @@
   "name": "@nbit/node",
   "version": "0.1.0",
   "files": [
-    "lib"
+    "build/node",
+    "build/express"
   ],
-  "main": "lib/index.js",
+  "main": "build/node/index.js",
   "types": "src/index.ts",
   "scripts": {
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\"",
@@ -13,8 +14,9 @@
     "format:check": "prettier --check src",
     "jest": "jest --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
-    "clean": "rm -rf .turbo lib coverage",
-    "build": "rm -rf lib && tsc -p tsconfig.build.json && rollup -c && rm -rf lib/dts && prettier --write lib",
+    "clean": "rm -rf .turbo build coverage",
+    "copy-files": "cp src/packages/node/package.json build/node/ && cp src/packages/express/package.json build/express/",
+    "build": "rm -rf build && tsc -p tsconfig.build.json && rollup -c && rm -rf build/dts && yarn copy-files && prettier --write build",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {},
