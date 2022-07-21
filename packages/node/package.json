@@ -14,7 +14,7 @@
     "jest": "jest --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
     "clean": "rm -rf .turbo lib coverage",
-    "build": "rm -rf lib && rollup -c && tsc -p tsconfig.build.json",
+    "build": "rm -rf lib && tsc -p tsconfig.build.json && rollup -c && rm -rf lib/dts && prettier --write lib",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {},
@@ -28,6 +28,7 @@
     "jest": "^28.1.2",
     "prettier": "^2.7.1",
     "rollup": "^2.76.0",
+    "rollup-plugin-dts": "^4.2.2",
     "ts-jest": "^28.0.5",
     "ts-node-dev": "^2.0.0",
     "typescript": "^4.7.4"
