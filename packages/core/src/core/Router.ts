@@ -1,44 +1,45 @@
 type Method = 'GET' | 'PUT' | 'POST' | 'HEAD' | 'DELETE' | 'OPTIONS' | '*';
 
-type Handler<Context> = (context: Context) => unknown;
-
 type Captures = Array<[string, string]>;
 
-type Route<Context> = {
+type Match<T> = [T, Captures];
+
+type Route<T> = {
   method: Method;
   matcher: (path: string) => Captures | null;
-  handler: Handler<Context>;
+  payload: T;
 };
 
-export class Router<Context> {
-  private routes: Array<Route<Context>> = [];
+export type Router<T> = {
+  insert: (method: Method, pattern: string, payload: T) => void;
+  getMatches: (method: string, path: string) => Array<Match<T>>;
+};
 
-  attachRoute(method: Method, pattern: string, handler: Handler<Context>) {
-    this.routes.push({
-      method,
-      matcher: getMatcher(pattern),
-      handler,
-    });
-  }
+export function createRouter<T>() {
+  const routes: Array<Route<T>> = [];
 
-  async route(
-    method: string,
-    path: string,
-    getContext: (captures: Captures) => Context,
-  ) {
-    for (const route of this.routes) {
-      if (route.method !== '*' && route.method !== method) {
-        continue;
-      }
-      const captures = route.matcher(path);
-      if (captures) {
-        const result = await route.handler(getContext(captures));
-        if (result != null) {
-          return result;
+  return {
+    insert(method: Method, pattern: string, payload: T) {
+      routes.push({
+        method,
+        matcher: getMatcher(pattern),
+        payload,
+      });
+    },
+    getMatches(method: string, path: string) {
+      const results: Array<Match<T>> = [];
+      for (const route of routes) {
+        if (route.method !== '*' && route.method !== method) {
+          continue;
+        }
+        const captures = route.matcher(path);
+        if (captures) {
+          results.push([route.payload, captures]);
         }
       }
-    }
-  }
+      return results;
+    },
+  };
 }
 
 function getMatcher(pattern: string) {
