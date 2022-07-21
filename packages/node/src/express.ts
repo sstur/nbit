@@ -19,9 +19,10 @@ export const createApplication = createCreateApplication((router, options) => {
     expressRequest: ExpressRequest,
   ): Promise<Response | Error | null> => {
     const method = (expressRequest.method ?? 'GET').toUpperCase();
-    const path = expressRequest.url ?? '/';
-    try {
-      const result = await router.route(method, path, (captures) => {
+    const pathname = expressRequest.url ?? '/';
+    const getResult = async () => {
+      const matches = router.getMatches(method, pathname);
+      for (const [handler, captures] of matches) {
         const request = new Request(
           expressRequest,
           Object.fromEntries(captures),
@@ -29,9 +30,14 @@ export const createApplication = createCreateApplication((router, options) => {
         const context = getContext?.(request);
         const requestWithContext =
           context === undefined ? request : Object.assign(request, context);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return requestWithContext as any;
-      });
+        const result = handler(requestWithContext);
+        if (result !== undefined) {
+          return result;
+        }
+      }
+    };
+    try {
+      const result = await getResult();
       if (result === undefined) {
         return null;
       }

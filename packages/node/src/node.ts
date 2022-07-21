@@ -14,16 +14,22 @@ export const createApplication = createCreateApplication((router, options) => {
     nodeRequest: IncomingMessage,
   ): Promise<Response> => {
     const method = (nodeRequest.method ?? 'GET').toUpperCase();
-    const path = nodeRequest.url ?? '/';
-    try {
-      const result = await router.route(method, path, (captures) => {
+    const pathname = nodeRequest.url ?? '/';
+    const getResult = async () => {
+      const matches = router.getMatches(method, pathname);
+      for (const [handler, captures] of matches) {
         const request = new Request(nodeRequest, Object.fromEntries(captures));
         const context = getContext?.(request);
         const requestWithContext =
           context === undefined ? request : Object.assign(request, context);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return requestWithContext as any;
-      });
+        const result = handler(requestWithContext);
+        if (result !== undefined) {
+          return result;
+        }
+      }
+    };
+    try {
+      const result = await getResult();
       if (result === undefined) {
         return new Response('Not found', {
           status: 404,
