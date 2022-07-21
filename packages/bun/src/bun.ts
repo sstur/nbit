@@ -9,15 +9,21 @@ export const createApplication = createCreateApplication((router, options) => {
   const routeRequest = async (baseRequest: BaseRequest): Promise<Response> => {
     const { method, url } = baseRequest;
     const { pathname } = new URL(url);
-    try {
-      const result = await router.route(method, pathname, (captures) => {
+    const getResult = async () => {
+      const matches = router.getMatches(method, pathname);
+      for (const [handler, captures] of matches) {
         const request = new Request(baseRequest, Object.fromEntries(captures));
         const context = getContext?.(request);
         const requestWithContext =
           context === undefined ? request : Object.assign(request, context);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return requestWithContext as any;
-      });
+        const result = handler(requestWithContext);
+        if (result !== undefined) {
+          return result;
+        }
+      }
+    };
+    try {
+      const result = await getResult();
       if (result === undefined) {
         return new Response('Not found', {
           status: 404,

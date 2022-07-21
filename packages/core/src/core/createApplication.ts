@@ -1,13 +1,8 @@
-import type {
-  FileServingOptions,
-  Handler,
-  MaybeIntersect,
-  Method,
-  Route,
-} from '../types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { FileServingOptions, Handler, Method, Route } from '../types';
 import type { Request } from '../applicationTypes';
 
-import { Router } from './Router';
+import { createRouter, type Router } from './Router';
 
 type Options<CtxGetter> = FileServingOptions & {
   /**
@@ -19,11 +14,8 @@ type Options<CtxGetter> = FileServingOptions & {
 
 type ContextGetter = (request: Request<Method, string>) => object | undefined;
 
-type RequestHandlerCreator<RequestHandler> = <
-  ReqWithCtx,
-  CtxGetter extends ContextGetter,
->(
-  router: Router<ReqWithCtx>,
+type RequestHandlerCreator<RequestHandler> = <CtxGetter extends ContextGetter>(
+  router: Router<any>,
   options: Options<CtxGetter>,
 ) => RequestHandler;
 
@@ -40,20 +32,16 @@ export function createCreateApplication<RequestHandler>(
     type RequestContext = ReturnType<CtxGetter>;
     const app = getApp<RequestContext>();
     type App = typeof app;
-    type RequestWithContext = MaybeIntersect<
-      Request<Method, string>,
-      RequestContext
-    >;
     const defineRoutes = (
       fn: (app: App) => Array<Route<RequestContext>>,
     ): Array<Route<RequestContext>> => fn(app);
     const attachRoutes = (
       ...routeLists: Array<Array<Route<RequestContext>>>
     ) => {
-      const router = new Router<RequestWithContext>();
+      const router = createRouter<any>();
       for (const routeList of routeLists) {
         for (const [method, pattern, handler] of routeList) {
-          router.attachRoute(method, pattern, handler);
+          router.insert(method, pattern, handler);
         }
       }
       return createRequestHandler(router, options);
