@@ -1,4 +1,4 @@
-import { Response } from '@nbit/node';
+import { Response } from '@nbit/express';
 
 import { defineRoutes } from '../application';
 

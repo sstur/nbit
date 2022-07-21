@@ -1,9 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "lib",
+    "outDir": "build",
     "declaration": true,
-    "declarationDir": "lib/dts",
+    "declarationDir": "build/dts",
     "emitDeclarationOnly": true
   },
   "include": ["src"],

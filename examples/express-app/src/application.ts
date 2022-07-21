@@ -1,6 +1,6 @@
 import { join } from 'path';
 
-import { createApplication } from '@nbit/node';
+import { createApplication } from '@nbit/express';
 
 const { defineRoutes, attachRoutes } = createApplication({
   root: join(__dirname, '..'),
