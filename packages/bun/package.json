@@ -2,10 +2,11 @@
   "name": "@nbit/bun",
   "version": "0.1.0",
   "files": [
-    "lib"
+    "index.js",
+    "index.d.ts"
   ],
-  "main": "lib/index.js",
-  "types": "src/index.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
@@ -13,10 +14,10 @@
     "format:check": "prettier --check src",
     "jest": "jest --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
-    "clean": "rm -rf .turbo lib coverage",
-    "build": "rm -rf lib && tsc -p tsconfig.build.json && rollup -c && rm -rf lib/dts && prettier --write lib",
-    "build:watch": "rollup -wc",
-    "prepublishOnly": "yarn build"
+    "clean": "rm -rf .turbo build coverage",
+    "copy-files": "cp README.md build/ && lean-package > build/package.json",
+    "build": "rm -rf build && tsc -p tsconfig.build.json && rollup -c && rm -rf build/dts && yarn copy-files && prettier --write build",
+    "build:watch": "rollup -wc"
   },
   "dependencies": {},
   "devDependencies": {
@@ -26,6 +27,7 @@
     "eslint": "^8.19.0",
     "eslint-config-xt": "^1.7.0",
     "jest": "^28.1.2",
+    "lean-package": "^1.4.0",
     "prettier": "^2.7.1",
     "rollup": "^2.76.0",
     "rollup-plugin-dts": "^4.2.2",
