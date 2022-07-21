@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "lib",
     "declaration": true,
+    "declarationDir": "lib/dts",
     "emitDeclarationOnly": true
   },
   "include": ["src"],
