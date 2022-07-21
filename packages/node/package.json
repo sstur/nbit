@@ -2,10 +2,11 @@
   "name": "@nbit/node",
   "version": "0.1.0",
   "files": [
-    "lib"
+    "index.js",
+    "index.d.ts"
   ],
-  "main": "lib/index.js",
-  "types": "src/index.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
@@ -13,9 +14,11 @@
     "format:check": "prettier --check src",
     "jest": "jest --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
-    "clean": "rm -rf .turbo lib coverage",
-    "build": "rm -rf lib && tsc -p tsconfig.build.json && rollup -c && rm -rf lib/dts && prettier --write lib",
-    "prepublishOnly": "yarn build"
+    "clean": "rm -rf .turbo build coverage",
+    "copy-files:express": "cp ../express/README.md build/express/ && lean-package -i ../express/package.json > build/express/package.json",
+    "copy-files:node": "cp README.md build/node/ && lean-package -n @nbit/node > build/node/package.json",
+    "copy-files": "yarn copy-files:node && yarn copy-files:express",
+    "build": "rm -rf build && tsc -p tsconfig.build.json && rollup -c && rm -rf build/dts && yarn copy-files && prettier --write build"
   },
   "dependencies": {},
   "devDependencies": {
@@ -26,6 +29,7 @@
     "eslint": "^8.19.0",
     "eslint-config-xt": "^1.7.0",
     "jest": "^28.1.2",
+    "lean-package": "^1.4.0",
     "prettier": "^2.7.1",
     "rollup": "^2.76.0",
     "rollup-plugin-dts": "^4.2.2",
