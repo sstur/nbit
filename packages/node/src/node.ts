@@ -1,5 +1,6 @@
 import { createReadStream } from 'fs';
 import type { IncomingMessage, ServerResponse } from 'http';
+import type { Readable, Writable } from 'stream';
 
 import { createCreateApplication, HttpError } from './core';
 import { isStaticFile, Response } from './Response';
@@ -57,7 +58,10 @@ export const createApplication = createCreateApplication((router, options) => {
     }
   };
 
-  return async (nodeRequest: IncomingMessage, nodeResponse: ServerResponse) => {
+  const handleNodeRequest = async (
+    nodeRequest: IncomingMessage,
+    nodeResponse: ServerResponse,
+  ) => {
     const response = await routeRequest(nodeRequest);
     const { status, headers, body } = response;
     if (isStaticFile(body)) {
@@ -70,15 +74,19 @@ export const createApplication = createCreateApplication((router, options) => {
         return;
       }
       const [fullFilePath] = resolved;
+      // TODO: Content-Type
+      // TODO: ENOENT
       // TODO: Deal with caching headers
-      // TODO: Ensure file exists
-      // TODO: Content-Type, .on('error')
-      nodeResponse.writeHead(status, headers);
-      createReadStream(fullFilePath).pipe(nodeResponse);
+      const readStream = createReadStream(fullFilePath);
+      await pipeStreamAsync(readStream, nodeResponse, {
+        beforeFirstWrite: () => nodeResponse.writeHead(status, headers),
+      });
       return;
     } else if (isReadable(body)) {
-      nodeResponse.writeHead(status, headers);
-      toReadStream(body).pipe(nodeResponse);
+      const readStream = toReadStream(body);
+      await pipeStreamAsync(readStream, nodeResponse, {
+        beforeFirstWrite: () => nodeResponse.writeHead(status, headers),
+      });
     } else {
       nodeResponse.writeHead(status, headers);
       if (body != null) {
@@ -87,4 +95,34 @@ export const createApplication = createCreateApplication((router, options) => {
       nodeResponse.end();
     }
   };
+
+  return (nodeRequest: IncomingMessage, nodeResponse: ServerResponse) => {
+    handleNodeRequest(nodeRequest, nodeResponse).catch((e) => {
+      const error = e instanceof Error ? e : new Error(String(e));
+      if (!nodeResponse.headersSent) {
+        nodeResponse.writeHead(500);
+        nodeResponse.end(String(error));
+      } else {
+        nodeResponse.end();
+      }
+    });
+  };
 });
+
+function pipeStreamAsync(
+  readStream: Readable,
+  writeStream: Writable,
+  options: { beforeFirstWrite: () => void },
+): Promise<void> {
+  const { beforeFirstWrite } = options;
+  return new Promise((resolve, reject) => {
+    readStream
+      .once('data', beforeFirstWrite)
+      .pipe(writeStream)
+      .on('close', () => resolve())
+      .on('error', (error) => {
+        readStream.off('data', beforeFirstWrite);
+        reject(error);
+      });
+  });
+}

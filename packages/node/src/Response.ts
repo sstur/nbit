@@ -1,6 +1,8 @@
 import type { Readable } from 'stream';
 import type { ReadableStream } from 'stream/web';
 
+type Headers = Record<string, string | Array<string>>;
+
 type Body =
   | Uint8Array // Includes Buffer which is a subclass of Uint8Array
   | Readable // Traditional Node Streams API
@@ -12,7 +14,7 @@ type RedirectStatus = 301 | 302 | 303 | 304 | 307 | 308;
 
 type ResponseInit = {
   status?: number;
-  headers?: Record<string, string | Array<string>>;
+  headers?: Headers;
 };
 
 export class StaticFile {
@@ -25,7 +27,7 @@ export class StaticFile {
 
 export class Response {
   readonly status: number;
-  readonly headers: Record<string, string | Array<string>>;
+  readonly headers: Headers;
   readonly body: Body;
 
   constructor(body: Body, init?: ResponseInit) {
