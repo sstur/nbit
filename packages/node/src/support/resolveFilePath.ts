@@ -2,6 +2,7 @@ import { join, resolve } from 'path';
 
 import type { FileServingOptions } from '../types';
 
+// TODO: Move this to core
 export function resolveFilePath(filePath: string, options: FileServingOptions) {
   const { root = process.cwd(), allowStaticFrom = [] } = options;
   const projectRoot = resolve(root);
