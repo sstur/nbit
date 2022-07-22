@@ -1,5 +1,6 @@
 import typescript from '@rollup/plugin-typescript';
 import dts from 'rollup-plugin-dts';
+import cleanup from 'rollup-plugin-cleanup';
 
 export default [
   {
@@ -15,6 +16,9 @@ export default [
       typescript({
         module: 'esnext',
         include: ['../**/*.ts'],
+      }),
+      cleanup({
+        extensions: ['js', 'ts'],
       }),
     ],
   },

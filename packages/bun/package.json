@@ -31,6 +31,7 @@
     "lean-package": "^1.4.0",
     "prettier": "^2.7.1",
     "rollup": "^2.76.0",
+    "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-dts": "^4.2.2",
     "ts-jest": "^28.0.5",
     "ts-node-dev": "^2.0.0",
