@@ -1,4 +1,3 @@
-import { createReadStream } from 'fs';
 import type { IncomingMessage, ServerResponse } from 'http';
 import type { Readable, Writable } from 'stream';
 
@@ -7,6 +6,7 @@ import { isStaticFile, Response } from './Response';
 import { Request } from './Request';
 import { resolveFilePath } from './support/resolveFilePath';
 import { isReadable, toReadStream } from './support/streams';
+import { serveFile } from './support/serveFile';
 
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
@@ -74,12 +74,16 @@ export const createApplication = createCreateApplication((router, options) => {
         return;
       }
       const [fullFilePath] = resolved;
-      // TODO: Content-Type
-      // TODO: ENOENT
-      // TODO: Deal with caching headers
-      const readStream = createReadStream(fullFilePath);
-      await pipeStreamAsync(readStream, nodeResponse, {
-        beforeFirstWrite: () => nodeResponse.writeHead(status, headers),
+      const fileResponse = await serveFile(nodeRequest.headers, fullFilePath);
+      if (!fileResponse) {
+        nodeResponse.writeHead(404);
+        return;
+      }
+      // The status might be something like 304 Not Modified
+      const newStatus = fileResponse.status ?? status;
+      const newHeaders = { ...fileResponse.headers, ...headers };
+      await pipeStreamAsync(fileResponse.readStream, nodeResponse, {
+        beforeFirstWrite: () => nodeResponse.writeHead(newStatus, newHeaders),
       });
       return;
     } else if (isReadable(body)) {
