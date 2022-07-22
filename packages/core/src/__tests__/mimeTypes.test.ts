@@ -1,4 +1,7 @@
-import { getMimeTypeFromExt, getExtForMimeType } from '../mimeTypes';
+import {
+  getMimeTypeFromExt,
+  getExtForMimeType,
+} from '../core/support/mimeTypes';
 
 describe('mimeTypes', () => {
   it('should look up mime type from file extension', () => {

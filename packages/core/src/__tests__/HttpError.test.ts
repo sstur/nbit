@@ -1,4 +1,4 @@
-import { HttpError } from '../HttpError';
+import { HttpError } from '../core/HttpError';
 
 describe('HttpError', () => {
   it('should be a fully-functional subclass of Error', () => {
