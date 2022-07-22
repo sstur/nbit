@@ -20,7 +20,7 @@ export const createApplication = createCreateApplication((router, options) => {
     const getResult = async () => {
       const matches = router.getMatches(method, pathname);
       for (const [handler, captures] of matches) {
-        const request = new Request(nodeRequest, Object.fromEntries(captures));
+        const request = new Request(nodeRequest, captures);
         const context = getContext?.(request);
         const requestWithContext =
           context === undefined ? request : Object.assign(request, context);

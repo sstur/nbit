@@ -1,6 +1,6 @@
 type Method = 'GET' | 'PUT' | 'POST' | 'HEAD' | 'DELETE' | 'OPTIONS' | '*';
 
-type Captures = Array<[string, string]>;
+type Captures = Record<string, string>;
 
 type Match<T> = [T, Captures];
 
@@ -50,13 +50,13 @@ function getMatcher(pattern: string) {
     if (patternSegments.length !== pathSegments.length) {
       return null;
     }
-    const captures: Captures = [];
+    const captures: Captures = {};
     for (let i = 0; i < pathSegments.length; i++) {
       const patternSegment = patternSegments[i] ?? '';
       const pathSegment = pathSegments[i] ?? '';
       if (patternSegment.startsWith(':')) {
         const key = patternSegment.slice(1);
-        captures.push([key, pathSegment]);
+        captures[key] = pathSegment;
       } else if (patternSegment !== pathSegment) {
         return null;
       }
