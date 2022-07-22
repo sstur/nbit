@@ -10,6 +10,8 @@ describe('Basic routing', () => {
     router = createRouter<Payload>();
     router.insert('GET', '/', { name: 'home' });
     router.insert('GET', '/about', { name: 'about' });
+    router.insert('GET', '/about', { name: 'about2' });
+    router.insert('GET', '/users/me', { name: 'user_me' });
     router.insert('GET', '/users/:id', { name: 'user_get' });
     router.insert('POST', '/users/:id', { name: 'user_post' });
     router.insert('POST', '/users/:userId/pets/:petId', { name: 'pet' });
@@ -32,12 +34,6 @@ describe('Basic routing', () => {
       // Each match is a tuple with payload and a captures object
       [{ name: 'home' }, {}],
     ]);
-    expect(router.getMatches('GET', '/about')).toEqual([
-      [{ name: 'about' }, {}],
-    ]);
-    expect(router.getMatches('GET', '/users/a')).toEqual([
-      [{ name: 'user_get' }, { id: 'a' }],
-    ]);
     expect(router.getMatches('POST', '/users/123')).toEqual([
       [{ name: 'user_post' }, { id: '123' }],
     ]);
@@ -46,6 +42,17 @@ describe('Basic routing', () => {
     ]);
     expect(router.getMatches('POST', '/login')).toEqual([
       [{ name: 'login' }, {}],
+    ]);
+  });
+
+  it('should return multiple matches if applicable', () => {
+    expect(router.getMatches('GET', '/about')).toEqual([
+      [{ name: 'about' }, {}],
+      [{ name: 'about2' }, {}],
+    ]);
+    expect(router.getMatches('GET', '/users/me')).toEqual([
+      [{ name: 'user_me' }, {}],
+      [{ name: 'user_get' }, { id: 'me' }],
     ]);
   });
 
