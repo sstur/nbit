@@ -32,9 +32,6 @@ export const createApplication = createCreateApplication((router, options) => {
           headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
         });
       }
-      // TODO: If result is an object containing a circular reference, this
-      // next line will throw, resulting in a 500 response with no
-      // indication of which handler caused it.
       return result instanceof Response ? result : Response.json(result);
     } catch (e) {
       if (e instanceof HttpError) {

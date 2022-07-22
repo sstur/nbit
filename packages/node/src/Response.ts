@@ -44,9 +44,9 @@ export class Response {
     });
   }
 
+  // Note: This will throw if payload has circular references
   static json(payload: unknown, init?: ResponseInit) {
     const { status, headers } = init ?? {};
-    // Note: This next line will throw if payload has circular references
     const body = JSON.stringify(payload) ?? 'null';
     return new Response(body, {
       status: status ?? 200,
