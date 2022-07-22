@@ -11,7 +11,7 @@
     "format:check": {
       "outputs": []
     },
-    "jest": {
+    "unit": {
       "outputs": []
     },
     "version": {
