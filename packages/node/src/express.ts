@@ -1,4 +1,4 @@
-import path from 'path';
+import { relative } from 'path';
 
 import type {
   Request as ExpressRequest,
@@ -83,7 +83,7 @@ export const createApplication = createCreateApplication((router, options) => {
       expressResponse.sendFile(
         // For Express, pass the file path relative to allowedRoot. Express will
         // not serve the file if it does not exist within the allowed root.
-        path.relative(allowedRoot, fullFilePath),
+        relative(allowedRoot, fullFilePath),
         {
           root: allowedRoot,
           headers,
