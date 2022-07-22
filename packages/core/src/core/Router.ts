@@ -54,7 +54,7 @@ function getMatcher(pattern: string) {
     for (let i = 0; i < pathSegments.length; i++) {
       const patternSegment = patternSegments[i] ?? '';
       const pathSegment = pathSegments[i] ?? '';
-      if (patternSegment.startsWith(':')) {
+      if (patternSegment.startsWith(':') && pathSegment) {
         const key = patternSegment.slice(1);
         captures[key] = pathSegment;
       } else if (patternSegment !== pathSegment) {
