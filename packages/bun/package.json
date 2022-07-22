@@ -17,7 +17,8 @@
     "clean": "rm -rf .turbo build coverage",
     "copy-files": "cp README.md build/ && lean-package > build/package.json",
     "build": "rm -rf build && tsc -p tsconfig.build.json && rollup -c && rm -rf build/dts && yarn copy-files && prettier --write build",
-    "build:watch": "rollup -wc"
+    "build:watch": "rollup -wc",
+    "version": "yarn version"
   },
   "dependencies": {},
   "devDependencies": {
