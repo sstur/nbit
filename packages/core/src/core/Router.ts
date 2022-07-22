@@ -44,16 +44,30 @@ export function createRouter<T>() {
 
 function getMatcher(pattern: string) {
   const patternSegments = pattern.slice(1).split('/');
+  const hasPlaceholder = pattern.includes('/:');
+  const hasWildcard = patternSegments.includes('*');
+  const isStatic = !hasPlaceholder && !hasWildcard;
   return (path: string) => {
+    const captures: Captures = {};
+    if (isStatic && path === pattern) {
+      return captures;
+    }
     const pathSegments = path.slice(1).split('/');
-    // TODO: Handle patterns like `/foo/:name/*`
-    if (patternSegments.length !== pathSegments.length) {
+    if (!hasWildcard && patternSegments.length !== pathSegments.length) {
       return null;
     }
-    const captures: Captures = {};
-    for (let i = 0; i < pathSegments.length; i++) {
-      const patternSegment = patternSegments[i] ?? '';
-      const pathSegment = pathSegments[i] ?? '';
+    const length = Math.max(patternSegments.length, pathSegments.length);
+    for (let i = 0; i < length; i++) {
+      const patternSegment = patternSegments[i];
+      if (patternSegment === '*') {
+        const remainder = pathSegments.slice(i);
+        captures[patternSegment] = remainder.join('/');
+        return remainder.length ? captures : null;
+      }
+      const pathSegment = pathSegments[i];
+      if (!pathSegment || !patternSegment) {
+        return null;
+      }
       if (patternSegment.startsWith(':') && pathSegment) {
         const key = patternSegment.slice(1);
         captures[key] = pathSegment;

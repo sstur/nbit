@@ -16,11 +16,13 @@ describe('Basic routing', () => {
     router.insert('POST', '/users/:id', { name: 'user_post' });
     router.insert('POST', '/users/:userId/pets/:petId', { name: 'pet' });
     router.insert('*', '/login', { name: 'login' });
+    router.insert('PUT', '/files/*', { name: 'files' });
   });
 
   it('should not match incorrect method', () => {
     expect(router.getMatches('POST', '/')).toEqual([]);
     expect(router.getMatches('PUT', '/users/foo')).toEqual([]);
+    expect(router.getMatches('POST', '/files/x')).toEqual([]);
   });
 
   it('should not match incorrect path', () => {
@@ -59,6 +61,19 @@ describe('Basic routing', () => {
   it('should capture multiple params', () => {
     expect(router.getMatches('POST', '/users/23/pets/4')).toEqual([
       [{ name: 'pet' }, { userId: '23', petId: '4' }],
+    ]);
+  });
+
+  it('should correctly handle wildcard paths', () => {
+    expect(router.getMatches('PUT', '/files')).toEqual([]);
+    expect(router.getMatches('PUT', '/files/')).toEqual([
+      [{ name: 'files' }, { '*': '' }],
+    ]);
+    expect(router.getMatches('PUT', '/files/foo')).toEqual([
+      [{ name: 'files' }, { '*': 'foo' }],
+    ]);
+    expect(router.getMatches('PUT', '/files/foo/bar.txt')).toEqual([
+      [{ name: 'files' }, { '*': 'foo/bar.txt' }],
     ]);
   });
 });
