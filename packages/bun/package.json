@@ -8,7 +8,7 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "lint": "eslint --max-warnings 0 \"src/**/*.ts\"",
+    "lint": "eslint --max-warnings 0 src",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
