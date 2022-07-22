@@ -7,6 +7,9 @@
   ],
   "main": "index.js",
   "types": "index.d.ts",
+  "scripts": {
+    "version": "yarn version"
+  },
   "dependencies": {},
   "devDependencies": {},
   "license": "ISC"
