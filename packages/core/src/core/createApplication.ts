@@ -1,16 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { FileServingOptions, Handler, Method, Route } from '../types';
+import type {
+  RequestOptions,
+  FileServingOptions,
+  Handler,
+  Method,
+  Route,
+  Expand,
+} from '../types';
 import type { Request } from '../applicationTypes';
 
 import { createRouter, type Router } from './Router';
 
-type Options<CtxGetter> = FileServingOptions & {
-  /**
-   * An optional way to define extra context (e.g. an auth method) that will be
-   * added to each Request instance.
-   */
-  getContext?: CtxGetter;
-};
+type Options<CtxGetter> = Expand<
+  RequestOptions &
+    FileServingOptions & {
+      /**
+       * An optional way to define extra context (e.g. an auth method) that will be
+       * added to each Request instance.
+       */
+      getContext?: CtxGetter;
+    }
+>;
 
 type ContextGetter = (request: Request<Method, string>) => object | undefined;
 

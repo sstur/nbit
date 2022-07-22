@@ -1,5 +1,13 @@
 import type { Request, Response } from '../applicationTypes';
 
+export type RequestOptions = {
+  /**
+   * The max number of bytes that will be buffered into memory when parsing a
+   * request body into a format such as JSON.
+   */
+  bodyParserMaxLength?: number;
+};
+
 export type FileServingOptions = {
   /**
    * The root from which file names will be resolved when serving files.
