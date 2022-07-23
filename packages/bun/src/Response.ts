@@ -1,5 +1,6 @@
 import { Response as NativeResponse } from './builtins';
 import { resolveFilePath } from './support/resolveFilePath';
+import { serveFile } from './support/serveFile';
 import type { FileServingOptions } from './types';
 
 export class StaticFile {
@@ -29,13 +30,26 @@ export class Response extends NativeResponse {
     if (body instanceof StaticFile) {
       const { filePath } = body;
       const fullFilePath = resolveFilePath(filePath, options);
-      if (fullFilePath == null) {
-        // TODO: Better error
-        return new NativeResponse('Unable to serve file', { status: 403 });
+      if (fullFilePath != null) {
+        const fileResponse = await serveFile(this.headers, fullFilePath);
+        if (fileResponse != null) {
+          // The status might be something like 304 Not Modified
+          const status = fileResponse.status ?? init?.status ?? 200;
+          const headers = new Headers(fileResponse.headers);
+          if (init?.headers) {
+            // Is there an easier way to merge the old headers in here?
+            for (const [name, value] of new Headers(init.headers).entries()) {
+              headers.set(name, value);
+            }
+          }
+          return new NativeResponse(fileResponse.readStream, {
+            ...init,
+            status,
+            headers,
+          });
+        }
       }
-      // TODO: Deal with caching headers
-      // TODO: Ensure file exists
-      return new NativeResponse(Bun.file(fullFilePath), init);
+      return new NativeResponse('', { status: 404 });
     } else {
       return new NativeResponse(body, init);
     }
