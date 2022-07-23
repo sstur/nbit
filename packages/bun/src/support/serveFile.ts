@@ -1,14 +1,13 @@
 /* eslint-disable dot-notation */
-import { type Stats } from 'fs';
 import { extname } from 'path';
 
 import { type FileBlob } from 'bun';
 
 import { getMimeTypeFromExt } from '../core/support/mimeTypes';
 import Bun from '../builtins/Bun';
-import fs from '../builtins/fs';
 
 import { generateEtag, shouldSend304 } from './caching';
+import { statAsync } from './statAsync';
 
 type FileResponse = {
   status?: number;
@@ -72,10 +71,4 @@ export async function serveFile(
     // TODO: When bun supports it, make this a real stream
     body: Bun.file(fullFilePath),
   };
-}
-
-function statAsync(path: string) {
-  return new Promise<Stats>((resolve, reject) => {
-    fs.stat(path, (error, result) => (error ? reject(error) : resolve(result)));
-  });
 }
