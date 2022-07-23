@@ -22,8 +22,9 @@ export default [
         preventAssignment: true,
         delimiters: ['', ''],
         values: {
+          'import Bun': '// import Bun',
           'mockable(': '(',
-          "process.env.BUN_ENV === 'test'": 'false',
+          'process.env.BUN_ENV': 'undefined',
         },
       }),
       cleanup({
