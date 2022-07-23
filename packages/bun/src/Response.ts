@@ -1,4 +1,4 @@
-import { Response as ResponseBase } from './builtins';
+import { Response as NativeResponse } from './builtins';
 import { resolveFilePath } from './support/resolveFilePath';
 import type { FileServingOptions } from './types';
 
@@ -6,7 +6,7 @@ export class StaticFile {
   constructor(readonly filePath: string) {}
 }
 
-export class Response extends ResponseBase {
+export class Response extends NativeResponse {
   private _body: StaticFile | BlobPart | Array<BlobPart>;
   private _init: ResponseInit | undefined;
 
@@ -31,13 +31,13 @@ export class Response extends ResponseBase {
       const fullFilePath = resolveFilePath(filePath, options);
       if (fullFilePath == null) {
         // TODO: Better error
-        return new Response('Unable to serve file', { status: 403 });
+        return new NativeResponse('Unable to serve file', { status: 403 });
       }
       // TODO: Deal with caching headers
       // TODO: Ensure file exists
-      return new Response(Bun.file(fullFilePath), init);
+      return new NativeResponse(Bun.file(fullFilePath), init);
     } else {
-      return new Response(body, init);
+      return new NativeResponse(body, init);
     }
   }
 
