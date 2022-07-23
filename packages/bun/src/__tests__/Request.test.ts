@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 
-import { Request } from '../Request';
-import { Request as NativeRequest } from '../builtins';
+import CustomRequest from '../Request';
 
 describe('Request', () => {
   it('should work', () => {
-    const nativeRequest = new NativeRequest('http://localhost/foo/1', {
+    const nativeRequest = new Request('http://localhost/foo/1', {
       method: 'GET',
     });
-    const request = new Request(nativeRequest, { id: '1' });
+    const request = new CustomRequest(nativeRequest, { id: '1' });
     expect(request.method).toBe('GET');
     expect(request.path).toBe('/foo/1');
     expect(request.query instanceof URLSearchParams).toBe(true);

@@ -1,20 +1,19 @@
 import { createCreateApplication, HttpError } from './core';
-import { Request } from './Request';
-import { Response as CustomResponse } from './Response';
-import type { Request as BaseRequest } from './builtins';
+import CustomRequest from './Request';
+import CustomResponse from './Response';
 
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
 
   // TODO: Rename this to processRequest or getResponse?
-  const routeRequest = async (baseRequest: BaseRequest): Promise<Response> => {
+  const routeRequest = async (baseRequest: Request): Promise<Response> => {
     const { method, url } = baseRequest;
     const { pathname } = new URL(url);
     // TODO: Factor this getResult up into core? Would need the old approach of Captures -> Request
     const getResult = async () => {
       const matches = router.getMatches(method, pathname);
       for (const [handler, captures] of matches) {
-        const request = new Request(baseRequest, captures);
+        const request = new CustomRequest(baseRequest, captures);
         const context = getContext?.(request);
         const requestWithContext =
           context === undefined ? request : Object.assign(request, context);
@@ -48,7 +47,7 @@ export const createApplication = createCreateApplication((router, options) => {
     }
   };
 
-  return async (request: BaseRequest) => {
+  return async (request: Request) => {
     const response = await routeRequest(request);
     if (response instanceof CustomResponse) {
       return await response.toNativeResponse(options);

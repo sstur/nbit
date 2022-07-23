@@ -1,9 +1,8 @@
 import type { JSONValue, Method, MethodWithBody } from './types';
-import type { Request as BaseRequest } from './builtins';
 
 // TODO: request.body getter to return ReadableStream
-export class Request<M extends Method, Params extends string> {
-  private request: BaseRequest;
+export default class CustomRequest<M extends Method, Params extends string> {
+  private request: Request;
   readonly method: M;
   readonly path: string;
   readonly search: string;
@@ -11,7 +10,7 @@ export class Request<M extends Method, Params extends string> {
   readonly headers: Headers;
   readonly params: { [K in Params]: string };
 
-  constructor(request: BaseRequest, params: Record<string, string>) {
+  constructor(request: Request, params: Record<string, string>) {
     this.request = request;
     const { method, url, headers } = request;
     this.method = method as M;

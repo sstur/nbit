@@ -4,7 +4,7 @@ import { extname } from 'path';
 import { type FileBlob } from 'bun';
 
 import { getMimeTypeFromExt } from '../core/support/mimeTypes';
-import { Bun } from '../builtins';
+import Bun from '../builtins/Bun';
 import fs from '../builtins/fs';
 
 type IncomingHeaders = Headers;

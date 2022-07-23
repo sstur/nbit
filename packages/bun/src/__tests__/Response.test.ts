@@ -1,26 +1,25 @@
 import { describe, expect, it } from 'bun:test';
 
-import { Response } from '../Response';
-import { Response as NativeResponse } from '../builtins';
+import CustomResponse from '../Response';
 
 describe('Response', () => {
   it('should be a subclass of the native Response', async () => {
-    const response = new Response('foo', { status: 418 });
-    expect(response instanceof NativeResponse).toBe(true);
+    const response = new CustomResponse('foo', { status: 418 });
+    expect(response instanceof Response).toBe(true);
     expect(response.status).toBe(418);
     expect(response.statusText).toBe('');
     expect(response.headers instanceof Headers).toBe(true);
     expect(response.bodyUsed).toBe(false);
     const nativeResponse = await response.toNativeResponse({});
     expect(nativeResponse !== response).toBe(true);
-    expect(nativeResponse instanceof NativeResponse).toBe(true);
-    expect(nativeResponse instanceof Response).toBe(false);
+    expect(nativeResponse instanceof Response).toBe(true);
+    expect(nativeResponse instanceof CustomResponse).toBe(false);
   });
 
   it('should have the static methods from native Response', () => {
-    const response = Response.json({ foo: 1 });
-    expect(response instanceof NativeResponse).toBe(true);
-    expect(response instanceof Response).toBe(false);
+    const response = CustomResponse.json({ foo: 1 });
+    expect(response instanceof Response).toBe(true);
+    expect(response instanceof CustomResponse).toBe(false);
     expect(response.status).toBe(200);
     const headers = Object.fromEntries(response.headers.entries());
     expect(JSON.stringify(headers)).toBe(

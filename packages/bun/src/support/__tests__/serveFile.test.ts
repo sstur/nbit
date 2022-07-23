@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import fs from '../../builtins/fs';
-import { Bun } from '../../builtins';
+import Bun from '../../builtins/Bun';
 import { serveFile } from '../serveFile';
 import { mockMethod, resetAllMocks } from '../testHelpers';
 

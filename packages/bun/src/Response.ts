@@ -1,4 +1,3 @@
-import { Response as NativeResponse } from './builtins';
 import { resolveFilePath } from './support/resolveFilePath';
 import { serveFile } from './support/serveFile';
 import type { FileServingOptions } from './types';
@@ -7,7 +6,7 @@ export class StaticFile {
   constructor(readonly filePath: string) {}
 }
 
-export class Response extends NativeResponse {
+export default class CustomResponse extends Response {
   private _body: StaticFile | BlobPart | Array<BlobPart>;
   private _init: ResponseInit | undefined;
 
@@ -42,20 +41,20 @@ export class Response extends NativeResponse {
               headers.set(name, value);
             }
           }
-          return new NativeResponse(fileResponse.readStream, {
+          return new Response(fileResponse.readStream, {
             ...init,
             status,
             headers,
           });
         }
       }
-      return new NativeResponse('', { status: 404 });
+      return new Response('', { status: 404 });
     } else {
-      return new NativeResponse(body, init);
+      return new Response(body, init);
     }
   }
 
   static sendFile(filePath: string, init?: ResponseInit) {
-    return new Response(new StaticFile(filePath), init);
+    return new CustomResponse(new StaticFile(filePath), init);
   }
 }
