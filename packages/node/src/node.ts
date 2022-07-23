@@ -77,6 +77,7 @@ export const createApplication = createCreateApplication((router, options) => {
       const fileResponse = await serveFile(nodeRequest.headers, fullFilePath);
       if (!fileResponse) {
         nodeResponse.writeHead(404);
+        nodeResponse.end();
         return;
       }
       // The status might be something like 304 Not Modified
