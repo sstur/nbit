@@ -10,4 +10,6 @@ export type { default as Request } from './Request';
 // returned from a route handler. If a custom Response is returned, that is
 // also fine because it is a subclass of this built-in Response.
 export type { default as Response } from './builtins/Response';
+export type { default as ResponseInit } from './builtins/ResponseInit';
 export type { default as Headers } from './builtins/Headers';
+export type { default as HeadersInit } from './builtins/HeadersInit';

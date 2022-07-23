@@ -4,5 +4,5 @@
  */
 
 export type { Request } from './Request';
-export type { Response } from './Response';
-export type { Headers } from './Headers';
+export type { Response, ResponseInit } from './Response';
+export type { Headers, HeadersInit } from './Headers';

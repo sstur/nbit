@@ -73,6 +73,7 @@ export const createApplication = createCreateApplication((router, options) => {
     if (response instanceof Error) {
       return next(response);
     }
+    response.body;
     const { status, headers, body } = response;
     if (isStaticFile(body)) {
       // Resolve the file path relative to the project root.
@@ -96,10 +97,10 @@ export const createApplication = createCreateApplication((router, options) => {
         next,
       );
     } else if (isReadable(body)) {
-      expressResponse.writeHead(status, headers);
+      expressResponse.writeHead(status, headers.toNodeHeaders());
       toReadStream(body).pipe(expressResponse);
     } else {
-      expressResponse.writeHead(status, headers);
+      expressResponse.writeHead(status, headers.toNodeHeaders());
       if (body != null) {
         expressResponse.write(body);
       }

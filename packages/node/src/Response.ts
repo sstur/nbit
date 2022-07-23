@@ -2,10 +2,7 @@ import type { Readable } from 'stream';
 import type { ReadableStream } from 'stream/web';
 
 import { StaticFile, type StaticFileOptions } from './core/StaticFile';
-
-type HeadersInit =
-  | Record<string, string | Array<string>>
-  | Array<[string, string]>;
+import { Headers, type HeadersInit } from './Headers';
 
 type Body =
   | Uint8Array // Includes Buffer which is a subclass of Uint8Array
@@ -16,21 +13,21 @@ type Body =
 
 type RedirectStatus = 301 | 302 | 303 | 304 | 307 | 308;
 
-type ResponseInit = {
+export type ResponseInit = {
+  headers?: HeadersInit;
   status?: number;
   statusText?: string;
-  headers?: HeadersInit;
 };
 
 export class Response {
   readonly status: number;
-  readonly headers: HeadersInit;
+  readonly headers: Headers;
   readonly body: Body;
 
   constructor(body: Body, init?: ResponseInit) {
     const { status, headers } = init ?? {};
     this.status = status ?? 200;
-    this.headers = headers ?? {};
+    this.headers = new Headers(headers);
     this.body = body;
   }
 
@@ -45,14 +42,12 @@ export class Response {
 
   // Note: This will throw if payload has circular references
   static json(payload: unknown, init?: ResponseInit) {
-    const { status, headers } = init ?? {};
     const body = JSON.stringify(payload) ?? 'null';
+    const headers = new Headers(init?.headers);
+    headers.set('Content-Type', 'application/json; charset=UTF-8');
     return new Response(body, {
-      status: status ?? 200,
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        ...headers,
-      },
+      ...init,
+      headers,
     });
   }
 

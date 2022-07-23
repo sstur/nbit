@@ -1,6 +1,6 @@
 export type HeadersInit =
-  | Record<string, string | Array<string>>
   | Array<[string, string]>
+  | Record<string, string>
   | Headers;
 
 export class Headers {

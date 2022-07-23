@@ -1,10 +1,17 @@
-type HeadersObject = { [name: string]: string | Array<string> };
-export type HeadersInit = HeadersObject | Array<[string, string]> | Headers;
+export type HeadersInit =
+  | Array<[string, string]>
+  | Record<string, string>
+  | Headers;
 
 export class Headers {
+  // TODO: Consider internally storing as a Node-style object, so we can easily
+  // return it without iterating so often. We might also want to store along
+  // side it a lower-case -> mixed-case mapping.
+  // Consider tracking copy-on-write or some other way to do less copying.
   private headers = new Map<string, [string, Array<string>]>();
 
   constructor(init?: HeadersInit) {
+    // TODO: Should be able to iterate this without using private `.headers`
     if (init instanceof Headers) {
       for (const [key, [name, values]] of init.headers) {
         this.headers.set(key, [name, values.slice()]);
@@ -16,8 +23,7 @@ export class Headers {
     } else if (init) {
       for (const [name, value] of Object.entries(init)) {
         const key = name.toLowerCase();
-        const values = Array.isArray(value) ? value.slice() : [value];
-        this.headers.set(key, [name, values]);
+        this.headers.set(key, [name, [value]]);
       }
     }
   }
@@ -79,6 +85,18 @@ export class Headers {
 
   [Symbol.iterator]() {
     return this.entries();
+  }
+
+  // Non-standard method to make it easy to convert headers to the  object
+  // expected by Node's response.writeHead().
+  // https://nodejs.org/docs/latest-v16.x/api/http.html#responsewriteheadstatuscode-statusmessage-headers
+  toNodeHeaders() {
+    const result: Record<string, string | Array<string>> = {};
+    for (const [name, values] of this.headers.values()) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      result[name] = values.length === 1 ? values[0]! : values;
+    }
+    return result;
   }
 
   // https://nodejs.org/docs/latest-v16.x/api/http.html#messagerawheaders
