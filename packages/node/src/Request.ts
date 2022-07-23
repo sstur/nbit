@@ -1,12 +1,10 @@
-import { PassThrough as PassThroughStream } from 'stream';
+import { PassThrough as PassThroughStream, type Readable } from 'stream';
 import type { IncomingMessage } from 'http';
 
 import { canHaveBody, HttpError, parseUrl } from './core';
-import { Headers } from './Headers';
-import type { JSONValue, Method, MethodWithBody } from './types';
 import { readEntireStream } from './support/readEntireStream';
-
-type ReadableStream = NodeJS.ReadableStream;
+import type { Headers } from './Headers';
+import type { JSONValue, Method, MethodWithBody } from './types';
 
 // 100kb, same as Express, see https://github.com/expressjs/body-parser/blob/9db582d/lib/types/json.js#L54
 const BODY_PARSER_DEFAULT_MAX_LENGTH = 100 * 1024;
@@ -49,23 +47,18 @@ export class Request<M extends Method, Params extends string> {
 
   constructor(
     request: IncomingMessage,
+    headers: Headers,
     params: Record<string, string>,
     options: RequestOptions,
   ) {
     this.request = request;
     this.cache = getOrInitMemoizationCache(request);
-    const { method = 'GET', url, rawHeaders } = request;
+    const { method = 'GET', url } = request;
     this.method = method as M;
     const { pathname, search, searchParams } = parseUrl(url ?? '');
     this.path = pathname;
     this.search = search;
     this.query = searchParams;
-    const headers = new Headers();
-    for (let i = 0; i < rawHeaders.length; i++) {
-      const name = rawHeaders[i] ?? '';
-      const value = rawHeaders[++i] ?? '';
-      headers.append(name, value);
-    }
     this.headers = headers;
     this.params = params as { [K in Params]: string };
     this.maxLength =
@@ -74,7 +67,7 @@ export class Request<M extends Method, Params extends string> {
 
   // TODO: This should throw if the stream has already been read, either from
   // this function or by .getBody()
-  getReadStream(): M extends MethodWithBody ? ReadableStream : null {
+  getReadStream(): M extends MethodWithBody ? Readable : null {
     if (!canHaveBody(this.method)) {
       return null as never;
     }

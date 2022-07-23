@@ -3,6 +3,7 @@ import fs from 'fs';
 import fsPromises from 'fs/promises';
 
 import { serveFile } from '../serveFile';
+import { Headers } from '../../Headers';
 
 function mockStat(size: number, isFile: boolean) {
   return { size, isFile: () => isFile };
@@ -22,7 +23,7 @@ describe('serveFile', () => {
       .spyOn(fsPromises, 'stat')
       .mockImplementation(async () => mockStat(42, true) as any);
     const filePath = '/foo/thing.png';
-    const result = await serveFile({}, filePath);
+    const result = await serveFile(new Headers(), filePath);
     expect(result).toEqual({
       headers: {
         'Content-Length': '42',
@@ -39,7 +40,7 @@ describe('serveFile', () => {
         Promise.reject(new Error('ENOENT: no such file or directory')),
       );
     const filePath = './foo.txt';
-    const result = await serveFile({}, filePath);
+    const result = await serveFile(new Headers(), filePath);
     expect(result).toEqual(null);
   });
 
@@ -48,7 +49,7 @@ describe('serveFile', () => {
       .spyOn(fsPromises, 'stat')
       .mockImplementation(async () => mockStat(5, false) as any);
     const filePath = './foo/dir';
-    const result = await serveFile({}, filePath);
+    const result = await serveFile(new Headers(), filePath);
     expect(result).toEqual(null);
   });
 
@@ -57,7 +58,7 @@ describe('serveFile', () => {
       .spyOn(fsPromises, 'stat')
       .mockImplementation(async () => mockStat(15, true) as any);
     const filePath = './foo/file.asdf';
-    const result = await serveFile({}, filePath);
+    const result = await serveFile(new Headers(), filePath);
     expect(result).toEqual({
       headers: {
         'Content-Length': '15',

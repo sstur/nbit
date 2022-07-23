@@ -7,6 +7,7 @@ import { Request } from './Request';
 import { resolveFilePath } from './support/resolveFilePath';
 import { isReadable, toReadStream } from './support/streams';
 import { serveFile } from './support/serveFile';
+import { Headers } from './Headers';
 
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
@@ -14,6 +15,7 @@ export const createApplication = createCreateApplication((router, options) => {
   // TODO: Rename this to processRequest or getResponse?
   const routeRequest = async (
     nodeRequest: IncomingMessage,
+    headers: Headers,
   ): Promise<Response> => {
     const method = (nodeRequest.method ?? 'GET').toUpperCase();
     const pathname = nodeRequest.url ?? '/';
@@ -21,7 +23,7 @@ export const createApplication = createCreateApplication((router, options) => {
     const getResult = async () => {
       const matches = router.getMatches(method, pathname);
       for (const [handler, captures] of matches) {
-        const request = new Request(nodeRequest, captures, options);
+        const request = new Request(nodeRequest, headers, captures, options);
         const context = getContext?.(request);
         const requestWithContext =
           context === undefined ? request : Object.assign(request, context);
@@ -62,7 +64,8 @@ export const createApplication = createCreateApplication((router, options) => {
     nodeRequest: IncomingMessage,
     nodeResponse: ServerResponse,
   ) => {
-    const response = await routeRequest(nodeRequest);
+    const requestHeaders = Headers.fromNodeRawHeaders(nodeRequest.rawHeaders);
+    const response = await routeRequest(nodeRequest, requestHeaders);
     const { status, headers, body } = response;
     if (isStaticFile(body)) {
       const { filePath } = body;
@@ -74,7 +77,7 @@ export const createApplication = createCreateApplication((router, options) => {
         return;
       }
       const [fullFilePath] = resolved;
-      const fileResponse = await serveFile(nodeRequest.headers, fullFilePath);
+      const fileResponse = await serveFile(requestHeaders, fullFilePath);
       if (!fileResponse) {
         nodeResponse.writeHead(404);
         nodeResponse.end();

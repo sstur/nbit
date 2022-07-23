@@ -11,6 +11,7 @@ import { isStaticFile, Response } from './Response';
 import { Request } from './Request';
 import { resolveFilePath } from './support/resolveFilePath';
 import { isReadable, toReadStream } from './support/streams';
+import { Headers } from './Headers';
 
 export const createApplication = createCreateApplication((router, options) => {
   const { getContext } = options;
@@ -18,6 +19,7 @@ export const createApplication = createCreateApplication((router, options) => {
   // TODO: Rename this to processRequest or getResponse?
   const routeRequest = async (
     expressRequest: ExpressRequest,
+    headers: Headers,
   ): Promise<Response | Error | null> => {
     const method = (expressRequest.method ?? 'GET').toUpperCase();
     const pathname = expressRequest.url ?? '/';
@@ -25,7 +27,7 @@ export const createApplication = createCreateApplication((router, options) => {
     const getResult = async () => {
       const matches = router.getMatches(method, pathname);
       for (const [handler, captures] of matches) {
-        const request = new Request(expressRequest, captures, options);
+        const request = new Request(expressRequest, headers, captures, options);
         const context = getContext?.(request);
         const requestWithContext =
           context === undefined ? request : Object.assign(request, context);
@@ -61,7 +63,10 @@ export const createApplication = createCreateApplication((router, options) => {
     expressResponse: ExpressResponse,
     next: NextFunction,
   ) => {
-    const response = await routeRequest(expressRequest);
+    const requestHeaders = Headers.fromNodeRawHeaders(
+      expressRequest.rawHeaders,
+    );
+    const response = await routeRequest(expressRequest, requestHeaders);
     if (!response) {
       return next();
     }

@@ -4,8 +4,7 @@ import { extname } from 'path';
 import { type Readable } from 'stream';
 
 import { getMimeTypeFromExt } from '../core/support/mimeTypes';
-
-type IncomingHeaders = Record<string, string | Array<string> | undefined>;
+import { type Headers } from '../Headers';
 
 type Response = {
   status?: number | undefined;
@@ -15,7 +14,7 @@ type Response = {
 
 // TODO: Deal with caching headers
 export async function serveFile(
-  requestHeaders: IncomingHeaders,
+  requestHeaders: Headers,
   fullFilePath: string,
 ): Promise<Response | null> {
   let fileStats;

@@ -80,6 +80,17 @@ export class Headers {
   [Symbol.iterator]() {
     return this.entries();
   }
+
+  // https://nodejs.org/docs/latest-v16.x/api/http.html#messagerawheaders
+  static fromNodeRawHeaders(rawHeaders: Array<string>) {
+    const headers = new Headers();
+    for (let i = 0; i < rawHeaders.length; i++) {
+      const name = rawHeaders[i] ?? '';
+      const value = rawHeaders[++i] ?? '';
+      headers.append(name, value);
+    }
+    return headers;
+  }
 }
 
 function transformIterator<T, U>(
