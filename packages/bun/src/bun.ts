@@ -51,7 +51,7 @@ export const createApplication = createCreateApplication((router, options) => {
   return async (request: BaseRequest) => {
     const response = await routeRequest(request);
     if (response instanceof CustomResponse) {
-      return response.toNativeResponse(options);
+      return await response.toNativeResponse(options);
     }
     return response;
   };

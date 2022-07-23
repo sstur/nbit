@@ -23,7 +23,7 @@ export class Response extends NativeResponse {
     this._init = init;
   }
 
-  toNativeResponse(options: FileServingOptions) {
+  async toNativeResponse(options: FileServingOptions) {
     const body = this._body;
     const init = this._init;
     if (body instanceof StaticFile) {
