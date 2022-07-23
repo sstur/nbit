@@ -1,9 +1,11 @@
-import { stat, type Stats } from 'fs';
+import { type Stats } from 'fs';
 import { extname } from 'path';
 
 import { type FileBlob } from 'bun';
 
 import { getMimeTypeFromExt } from '../core/support/mimeTypes';
+import { Bun } from '../builtins';
+import fs from '../builtins/fs';
 
 type IncomingHeaders = Headers;
 
@@ -40,6 +42,6 @@ export async function serveFile(
 
 function statAsync(path: string) {
   return new Promise<Stats>((resolve, reject) => {
-    stat(path, (error, result) => (error ? reject(error) : resolve(result)));
+    fs.stat(path, (error, result) => (error ? reject(error) : resolve(result)));
   });
 }
