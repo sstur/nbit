@@ -1,6 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import dts from 'rollup-plugin-dts';
 import cleanup from 'rollup-plugin-cleanup';
+import replace from '@rollup/plugin-replace';
 
 export default [
   {
@@ -11,11 +12,19 @@ export default [
       strict: false,
       esModule: false,
     },
-    external: ['path'],
+    external: ['fs', 'path'],
     plugins: [
       typescript({
         module: 'esnext',
         include: ['../**/*.ts'],
+      }),
+      replace({
+        preventAssignment: true,
+        delimiters: ['', ''],
+        values: {
+          'mockable(': '(',
+          "process.env.BUN_ENV === 'test'": 'false',
+        },
       }),
       cleanup({
         extensions: ['js', 'ts'],
@@ -28,6 +37,7 @@ export default [
       file: 'build/index.d.ts',
       format: 'es',
     },
+    external: ['bun'],
     plugins: [dts()],
   },
 ];

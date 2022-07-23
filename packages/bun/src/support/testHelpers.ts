@@ -5,9 +5,8 @@ type ResetMock = () => void;
 
 let weakMap = new WeakMap<object, Record<string | symbol, any>>();
 
-export function mockable<T extends object>(obj: T): T {
-  return isTest ? proxy(obj) : obj;
-}
+export const mockable = <T extends object>(obj: T): T =>
+  isTest ? proxy(obj) : obj;
 
 function proxy<T extends object>(target: T): T {
   return new Proxy(target, {
