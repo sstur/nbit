@@ -86,9 +86,13 @@ export const createApplication = createCreateApplication((router, options) => {
       // The status might be something like 304 Not Modified
       const newStatus = fileResponse.status ?? status;
       const newHeaders = { ...fileResponse.headers, ...headers };
-      await pipeStreamAsync(fileResponse.readStream, nodeResponse, {
-        beforeFirstWrite: () => nodeResponse.writeHead(newStatus, newHeaders),
-      });
+      if (fileResponse.readStream) {
+        await pipeStreamAsync(fileResponse.readStream, nodeResponse, {
+          beforeFirstWrite: () => nodeResponse.writeHead(newStatus, newHeaders),
+        });
+      } else {
+        nodeResponse.writeHead(newStatus, newHeaders);
+      }
       return;
     } else if (isReadable(body)) {
       const readStream = toReadStream(body);

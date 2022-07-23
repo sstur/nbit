@@ -35,7 +35,6 @@ export default class CustomResponse extends Response {
         if (fileResponse != null) {
           // The status might be something like 304 Not Modified
           const status = fileResponse.status ?? init?.status ?? 200;
-          const statusText = fileResponse.statusText ?? init?.statusText ?? '';
           const headers = new Headers(fileResponse.headers);
           if (init?.headers) {
             // Is there an easier way to merge the old headers in here?
@@ -45,7 +44,7 @@ export default class CustomResponse extends Response {
           }
           return new Response(fileResponse.body ?? [], {
             status,
-            statusText,
+            statusText: init?.statusText ?? '',
             headers,
           });
         }

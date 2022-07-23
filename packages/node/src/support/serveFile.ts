@@ -1,38 +1,38 @@
 import { createReadStream } from 'fs';
-import { stat } from 'fs/promises';
-import { extname } from 'path';
+import { stat as statAsync } from 'fs/promises';
 import { type Readable } from 'stream';
 
-import { getMimeTypeFromExt } from '../core/support/mimeTypes';
+import { tryAsync } from '../core/support/tryAsync';
+import { computeHeaders } from '../core/support/fileServing';
+import type { StaticFileOptions } from '../core/StaticFile';
 import { type Headers } from '../Headers';
 
-type Response = {
+type FileResponse = {
   status?: number | undefined;
-  headers: Record<string, string>;
-  readStream: Readable;
+  headers?: Record<string, string>;
+  readStream?: Readable;
 };
 
-// TODO: Deal with caching headers
 export async function serveFile(
   requestHeaders: Headers,
   fullFilePath: string,
-): Promise<Response | null> {
-  let fileStats;
-  try {
-    fileStats = await stat(fullFilePath);
-  } catch (e) {
+  options: StaticFileOptions = {},
+): Promise<FileResponse | null> {
+  const fileStats = await tryAsync(() => statAsync(fullFilePath));
+  if (!fileStats || !fileStats.isFile()) {
     return null;
   }
-  if (!fileStats.isFile()) {
-    return null;
+  const result = await computeHeaders(
+    requestHeaders,
+    fullFilePath,
+    fileStats,
+    options,
+  );
+  if (result == null || result.status === 304) {
+    return result;
   }
-  const ext = extname(fullFilePath).slice(1);
-  const readStream = createReadStream(fullFilePath);
   return {
-    headers: {
-      'Content-Length': String(fileStats.size),
-      'Content-Type': getMimeTypeFromExt(ext) ?? 'application/octet-stream',
-    },
-    readStream,
+    ...result,
+    readStream: createReadStream(fullFilePath),
   };
 }

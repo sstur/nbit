@@ -31,8 +31,10 @@ describe('serveFile', () => {
         headers: {
           'Content-Length': '42',
           'Content-Type': 'image/png',
+          ETag: 'W/"2a16806b5bc00"',
+          'Last-Modified': 'Tue, 01 Jan 2019 00:00:00 GMT',
         },
-        readStream: { _stream: filePath },
+        body: { _stream: '/foo/thing.png' },
       }),
     );
     afterEach();
@@ -79,8 +81,10 @@ describe('serveFile', () => {
         headers: {
           'Content-Length': '15',
           'Content-Type': 'application/octet-stream',
+          ETag: 'W/"f16806b5bc00"',
+          'Last-Modified': 'Tue, 01 Jan 2019 00:00:00 GMT',
         },
-        readStream: { _stream: filePath },
+        body: { _stream: './foo/file.asdf' },
       }),
     );
     afterEach();
@@ -88,5 +92,9 @@ describe('serveFile', () => {
 });
 
 function mockStat(size: number, isFile: boolean) {
-  return { size, isFile: () => isFile };
+  return {
+    size,
+    mtimeMs: new Date('2019-01-01T00:00:00.000Z').valueOf(),
+    isFile: () => isFile,
+  };
 }

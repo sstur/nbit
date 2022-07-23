@@ -3,7 +3,9 @@
  * https://github.com/http-party/http-server/blob/b0cb863/lib/core/index.js
  * which is licensed under the MIT license.
  */
-import { type Stats } from 'fs';
+import type { Headers } from '../../applicationTypes';
+
+import type { FileStats } from './fileServing';
 
 export function shouldSend304(
   headers: Headers,
@@ -47,8 +49,8 @@ export function shouldSend304(
   return true;
 }
 
-export function generateEtag(stat: Stats) {
-  // TODO: Create a hash from this data?
-  const parts = [stat.size.toString(16), stat.mtime.valueOf().toString(16)];
-  return `W/"${parts.join('-')}"`;
+export function generateEtag(stats: FileStats) {
+  const datePart = stats.mtimeMs.toString(16).padStart(11, '0');
+  const sizePart = stats.size.toString(16);
+  return `W/"${sizePart}${datePart}"`;
 }

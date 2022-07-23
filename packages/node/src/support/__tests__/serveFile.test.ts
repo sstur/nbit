@@ -5,10 +5,6 @@ import fsPromises from 'fs/promises';
 import { serveFile } from '../serveFile';
 import { Headers } from '../../Headers';
 
-function mockStat(size: number, isFile: boolean) {
-  return { size, isFile: () => isFile };
-}
-
 describe('serveFile', () => {
   beforeEach(() => {
     jest.spyOn(fs, 'createReadStream').mockImplementation((filePath) => {
@@ -28,6 +24,8 @@ describe('serveFile', () => {
       headers: {
         'Content-Length': '42',
         'Content-Type': 'image/png',
+        ETag: 'W/"2a16806b5bc00"',
+        'Last-Modified': 'Tue, 01 Jan 2019 00:00:00 GMT',
       },
       readStream: { _stream: filePath },
     });
@@ -63,8 +61,18 @@ describe('serveFile', () => {
       headers: {
         'Content-Length': '15',
         'Content-Type': 'application/octet-stream',
+        ETag: 'W/"f16806b5bc00"',
+        'Last-Modified': 'Tue, 01 Jan 2019 00:00:00 GMT',
       },
       readStream: { _stream: filePath },
     });
   });
 });
+
+function mockStat(size: number, isFile: boolean) {
+  return {
+    size,
+    mtimeMs: new Date('2019-01-01T00:00:00.000Z').valueOf(),
+    isFile: () => isFile,
+  };
+}
