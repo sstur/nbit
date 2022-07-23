@@ -59,7 +59,7 @@ export class Response {
     });
   }
 
-  static sendFile(filePath: string, init?: ResponseInit) {
+  static file(filePath: string, init?: ResponseInit) {
     const { status, headers } = init ?? {};
     return new Response(new StaticFile(filePath), {
       status: status ?? 200,

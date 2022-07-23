@@ -67,7 +67,7 @@ export default class CustomResponse extends Response {
     }
   }
 
-  static sendFile(filePath: string, init?: ResponseInit & StaticFileOptions) {
+  static file(filePath: string, init?: ResponseInit & StaticFileOptions) {
     const { status, statusText, headers, ...options } = init ?? {};
     return new CustomResponse(new StaticFile(filePath, options), {
       status: status ?? 200,
