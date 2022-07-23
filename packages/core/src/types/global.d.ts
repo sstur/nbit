@@ -25,6 +25,10 @@ declare global {
       ? Array<keyof T & string>
       : Array<string>;
   }
+
+  interface Date {
+    toGMTString(): string;
+  }
 }
 
 export {};
