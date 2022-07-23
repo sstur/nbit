@@ -1,18 +1,7 @@
+import { StaticFile, type StaticFileOptions } from './core/StaticFile';
 import { resolveFilePath } from './support/resolveFilePath';
 import { serveFile } from './support/serveFile';
 import type { FileServingOptions } from './types';
-
-type StaticFileOptions = {
-  maxAge?: number;
-  cachingHeaders?: boolean;
-};
-
-export class StaticFile {
-  constructor(
-    readonly filePath: string,
-    readonly options?: StaticFileOptions,
-  ) {}
-}
 
 export default class CustomResponse extends Response {
   private _body: StaticFile | BlobPart | Array<BlobPart>;

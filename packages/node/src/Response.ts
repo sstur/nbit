@@ -1,7 +1,11 @@
 import type { Readable } from 'stream';
 import type { ReadableStream } from 'stream/web';
 
-type Headers = Record<string, string | Array<string>>;
+import { StaticFile, type StaticFileOptions } from './core/StaticFile';
+
+type HeadersInit =
+  | Record<string, string | Array<string>>
+  | Array<[string, string]>;
 
 type Body =
   | Uint8Array // Includes Buffer which is a subclass of Uint8Array
@@ -14,20 +18,13 @@ type RedirectStatus = 301 | 302 | 303 | 304 | 307 | 308;
 
 type ResponseInit = {
   status?: number;
-  headers?: Headers;
+  statusText?: string;
+  headers?: HeadersInit;
 };
-
-export class StaticFile {
-  filePath: string;
-
-  constructor(filePath: string) {
-    this.filePath = filePath;
-  }
-}
 
 export class Response {
   readonly status: number;
-  readonly headers: Headers;
+  readonly headers: HeadersInit;
   readonly body: Body;
 
   constructor(body: Body, init?: ResponseInit) {
@@ -59,11 +56,12 @@ export class Response {
     });
   }
 
-  static file(filePath: string, init?: ResponseInit) {
-    const { status, headers } = init ?? {};
-    return new Response(new StaticFile(filePath), {
+  static file(filePath: string, init?: ResponseInit & StaticFileOptions) {
+    const { status, statusText, headers, ...options } = init ?? {};
+    return new Response(new StaticFile(filePath, options), {
       status: status ?? 200,
-      headers: headers ?? {},
+      statusText: statusText ?? '',
+      headers: headers ?? [],
     });
   }
 }
