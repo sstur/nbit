@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 import { type Stats } from 'fs';
 import { extname } from 'path';
 
@@ -7,19 +8,32 @@ import { getMimeTypeFromExt } from '../core/support/mimeTypes';
 import Bun from '../builtins/Bun';
 import fs from '../builtins/fs';
 
-type IncomingHeaders = Headers;
+import { generateEtag, shouldSend304 } from './caching';
 
-type Response = {
-  status?: number | undefined;
-  headers: Record<string, string>;
-  readStream: FileBlob;
+type FileResponse = {
+  status?: number;
+  statusText?: string;
+  headers?: Record<string, string>;
+  body?: FileBlob;
 };
 
-// TODO: Deal with caching headers
+type Options = {
+  maxAge?: number;
+  cachingHeaders?: boolean;
+};
+
+const defaultOptions: Options = {
+  cachingHeaders: true,
+};
+
+// TODO: Factor most of this logic out to core
 export async function serveFile(
-  requestHeaders: IncomingHeaders,
+  requestHeaders: Headers,
   fullFilePath: string,
-): Promise<Response | null> {
+  options: Options = defaultOptions,
+): Promise<FileResponse | null> {
+  const { cachingHeaders = true, maxAge } = options;
+
   let fileStats;
   try {
     fileStats = await statAsync(fullFilePath);
@@ -29,14 +43,34 @@ export async function serveFile(
   if (!fileStats.isFile()) {
     return null;
   }
+
+  const lastModified = new Date(fileStats.mtime);
+  const etag = generateEtag(fileStats);
+
+  if (cachingHeaders) {
+    const send304 = shouldSend304(requestHeaders, lastModified, etag);
+    if (send304) {
+      return { status: 304, statusText: 'Not Modified' };
+    }
+  }
+
   const ext = extname(fullFilePath).slice(1);
+  const headers: Record<string, string> = {
+    'Content-Length': String(fileStats.size),
+    'Content-Type': getMimeTypeFromExt(ext) ?? 'application/octet-stream',
+  };
+  if (cachingHeaders) {
+    headers['ETag'] = etag;
+    headers['Last-Modified'] = lastModified.toGMTString();
+  }
+  if (maxAge) {
+    headers['Cache-Control'] = `max-age=${maxAge}`;
+  }
+
   return {
-    headers: {
-      'Content-Length': String(fileStats.size),
-      'Content-Type': getMimeTypeFromExt(ext) ?? 'application/octet-stream',
-    },
+    headers,
     // TODO: When bun supports it, make this a real stream
-    readStream: Bun.file(fullFilePath),
+    body: Bun.file(fullFilePath),
   };
 }
 

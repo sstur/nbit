@@ -2,8 +2,16 @@ import { resolveFilePath } from './support/resolveFilePath';
 import { serveFile } from './support/serveFile';
 import type { FileServingOptions } from './types';
 
+type StaticFileOptions = {
+  maxAge?: number;
+  cachingHeaders?: boolean;
+};
+
 export class StaticFile {
-  constructor(readonly filePath: string) {}
+  constructor(
+    readonly filePath: string,
+    readonly options?: StaticFileOptions,
+  ) {}
 }
 
 export default class CustomResponse extends Response {
@@ -23,17 +31,22 @@ export default class CustomResponse extends Response {
     this._init = init;
   }
 
-  async toNativeResponse(options: FileServingOptions) {
+  async toNativeResponse(applicationOptions: FileServingOptions) {
     const body = this._body;
     const init = this._init;
     if (body instanceof StaticFile) {
-      const { filePath } = body;
-      const fullFilePath = resolveFilePath(filePath, options);
+      const { filePath, options } = body;
+      const fullFilePath = resolveFilePath(filePath, applicationOptions);
       if (fullFilePath != null) {
-        const fileResponse = await serveFile(this.headers, fullFilePath);
+        const fileResponse = await serveFile(
+          this.headers,
+          fullFilePath,
+          options,
+        );
         if (fileResponse != null) {
           // The status might be something like 304 Not Modified
           const status = fileResponse.status ?? init?.status ?? 200;
+          const statusText = fileResponse.statusText ?? init?.statusText ?? '';
           const headers = new Headers(fileResponse.headers);
           if (init?.headers) {
             // Is there an easier way to merge the old headers in here?
@@ -41,9 +54,9 @@ export default class CustomResponse extends Response {
               headers.set(name, value);
             }
           }
-          return new Response(fileResponse.readStream, {
-            ...init,
+          return new Response(fileResponse.body ?? [], {
             status,
+            statusText,
             headers,
           });
         }
@@ -54,7 +67,12 @@ export default class CustomResponse extends Response {
     }
   }
 
-  static sendFile(filePath: string, init?: ResponseInit) {
-    return new CustomResponse(new StaticFile(filePath), init);
+  static sendFile(filePath: string, init?: ResponseInit & StaticFileOptions) {
+    const { status, statusText, headers, ...options } = init ?? {};
+    return new CustomResponse(new StaticFile(filePath, options), {
+      status: status ?? 200,
+      statusText: statusText ?? '',
+      headers: headers ?? [],
+    });
   }
 }
