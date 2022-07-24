@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import CustomResponse from '../Response';
+import { StaticFile } from '../core/StaticFile';
 
 describe('Response', () => {
   it('should be a subclass of the native Response', async () => {
@@ -10,10 +11,6 @@ describe('Response', () => {
     expect(response.statusText).toBe('');
     expect(response.headers instanceof Headers).toBe(true);
     expect(response.bodyUsed).toBe(false);
-    const nativeResponse = await response.toNativeResponse({});
-    expect(nativeResponse !== response).toBe(true);
-    expect(nativeResponse instanceof Response).toBe(true);
-    expect(nativeResponse instanceof CustomResponse).toBe(false);
   });
 
   it('should have the static methods from native Response', () => {
@@ -24,6 +21,25 @@ describe('Response', () => {
     const headers = Object.fromEntries(response.headers.entries());
     expect(JSON.stringify(headers)).toBe(
       JSON.stringify({ 'content-type': 'application/json;charset=utf-8' }),
+    );
+  });
+
+  it('should have custom static method Response.file()', () => {
+    const response = CustomResponse.file('path/to/foo.txt', {
+      headers: { 'X-Custom-Thing': 'foo' },
+      maxAge: 700,
+    });
+    expect(response instanceof StaticFile).toBe(true);
+    expect(response.filePath).toBe('path/to/foo.txt');
+    expect(JSON.stringify(response.options)).toBe(
+      JSON.stringify({ maxAge: 700 }),
+    );
+    expect(JSON.stringify(response.responseInit)).toBe(
+      JSON.stringify({
+        status: 200,
+        statusText: '',
+        headers: { 'X-Custom-Thing': 'foo' },
+      }),
     );
   });
 });

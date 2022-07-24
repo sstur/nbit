@@ -32,7 +32,7 @@ export async function serveFile(
     return result;
   }
   return {
-    ...result,
+    headers: result.headers,
     // TODO: When bun supports it, make this a real stream
     body: Bun.file(fullFilePath),
   };

@@ -5,12 +5,12 @@ import { type Readable } from 'stream';
 import { tryAsync } from '../core/support/tryAsync';
 import { computeHeaders } from '../core/support/fileServing';
 import type { StaticFileOptions } from '../core/StaticFile';
-import { type Headers } from '../Headers';
+import type { Headers } from '../Headers';
 
 type FileResponse = {
-  status?: number | undefined;
+  status?: number;
   headers?: Record<string, string>;
-  readStream?: Readable;
+  body?: Readable;
 };
 
 export async function serveFile(
@@ -32,7 +32,7 @@ export async function serveFile(
     return result;
   }
   return {
-    ...result,
-    readStream: createReadStream(fullFilePath),
+    headers: result.headers,
+    body: createReadStream(fullFilePath),
   };
 }

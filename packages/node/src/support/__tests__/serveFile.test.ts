@@ -27,7 +27,7 @@ describe('serveFile', () => {
         ETag: 'W/"2a16806b5bc00"',
         'Last-Modified': 'Tue, 01 Jan 2019 00:00:00 GMT',
       },
-      readStream: { _stream: filePath },
+      body: { _stream: filePath },
     });
   });
 
@@ -64,7 +64,7 @@ describe('serveFile', () => {
         ETag: 'W/"f16806b5bc00"',
         'Last-Modified': 'Tue, 01 Jan 2019 00:00:00 GMT',
       },
-      readStream: { _stream: filePath },
+      body: { _stream: filePath },
     });
   });
 });

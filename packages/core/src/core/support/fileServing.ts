@@ -7,10 +7,14 @@ import type { Headers } from '../../applicationTypes';
 import { getMimeTypeFromExt } from './mimeTypes';
 import { generateEtag, shouldSend304 } from './caching';
 
-type Result = {
-  status?: 304;
-  headers?: Record<string, string>;
-};
+type Result =
+  | {
+      status: 304;
+    }
+  | {
+      status: undefined;
+      headers: Record<string, string>;
+    };
 
 export type FileStats = {
   isFile: () => boolean;
@@ -57,5 +61,10 @@ export async function computeHeaders(
     headers['Cache-Control'] = `max-age=${maxAge}`;
   }
 
-  return { headers };
+  return {
+    // In the case that we're not sending a 304, we don't want to specify the
+    // status, it should use the default from the call site.
+    status: undefined,
+    headers,
+  };
 }

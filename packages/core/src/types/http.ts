@@ -1,4 +1,5 @@
 import type { Request, Response } from '../applicationTypes';
+import type { StaticFile } from '../core/StaticFile';
 
 export type RequestOptions = {
   /**
@@ -41,7 +42,7 @@ export type MethodWithBody = 'POST' | 'PUT';
 
 export type Handler<M extends Method, P extends string, RequestContext> = (
   request: MaybeIntersect<Request<M, ExtractParams<P>>, RequestContext>,
-) => MaybePromise<Response | JsonPayload | null | undefined>;
+) => MaybePromise<Response | StaticFile | JsonPayload | null | undefined>;
 
 export type Route<RequestContext> = [
   Method,
