@@ -42,7 +42,9 @@ export type MethodWithBody = 'POST' | 'PUT';
 
 export type Handler<M extends Method, P extends string, RequestContext> = (
   request: MaybeIntersect<Request<M, ExtractParams<P>>, RequestContext>,
-) => MaybePromise<Response | StaticFile | JsonPayload | null | undefined>;
+) => MaybePromise<
+  Response | StaticFile | JsonPayload | null | undefined | void
+>;
 
 export type Route<RequestContext> = [
   Method,

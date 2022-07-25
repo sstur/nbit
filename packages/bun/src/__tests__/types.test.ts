@@ -98,12 +98,9 @@ describe('Types', () => {
   it('should enforce valid return value from route handler', () => {
     const { defineRoutes } = createApplication();
     const routes = defineRoutes((app) => [
-      // It should not allow us to omit return, or otherwise return void
-      // @ts-expect-error Type 'void' is not assignable to type 'Response | StaticFile | JsonPayload | null | undefined'
+      // It should allow us to omit return, or otherwise return void
       app.get('/', (_request) => {}),
-      // @ts-expect-error Type 'void' is not assignable to type 'Response | StaticFile | JsonPayload | null | undefined'
       app.get('/', async (_request) => {}),
-      // @ts-expect-error Type 'Promise<void>' is not assignable to type 'MaybePromise<Response | StaticFile | JsonPayload | null | undefined>'
       app.post('/', async (_request) => {
         return;
       }),
