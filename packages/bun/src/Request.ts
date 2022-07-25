@@ -1,3 +1,4 @@
+import { canHaveBody } from './core';
 import type { JSONValue, Method, MethodWithBody } from './types';
 
 // TODO: request.body getter to return ReadableStream
@@ -34,7 +35,10 @@ export default class CustomRequest<M extends Method, Params extends string> {
     return this.request.arrayBuffer() as any;
   }
 
-  json(): M extends MethodWithBody ? Promise<JSONValue> : null {
+  json(): M extends MethodWithBody ? Promise<JSONValue> : never {
+    if (!canHaveBody(this.method)) {
+      return null as never;
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.request.json() as any;
   }

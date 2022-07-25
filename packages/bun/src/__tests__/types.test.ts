@@ -25,9 +25,8 @@ describe('Types', () => {
         params.foo;
         // Params should be an empty object
         expectTypeOf<keyof typeof params>().toEqualTypeOf<never>();
-        // TODO: Should this be never?
-        const body = request.json();
-        expectTypeOf(body).toEqualTypeOf<null>();
+        const promise = request.json();
+        expectTypeOf(promise).toEqualTypeOf<never>();
         return {};
       }),
       app.post('/file/:foo', async (request) => {

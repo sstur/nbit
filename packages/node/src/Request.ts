@@ -67,7 +67,7 @@ export class Request<M extends Method, Params extends string> {
 
   // TODO: This should throw if the stream has already been read, either from
   // this function or by .getBody()
-  getReadStream(): M extends MethodWithBody ? Readable : null {
+  getReadStream(): M extends MethodWithBody ? Readable : never {
     if (!canHaveBody(this.method)) {
       return null as never;
     }
@@ -77,7 +77,7 @@ export class Request<M extends Method, Params extends string> {
     return passThroughStream as never;
   }
 
-  json(): M extends MethodWithBody ? Promise<JSONValue> : null {
+  json(): M extends MethodWithBody ? Promise<JSONValue> : never {
     if (!canHaveBody(this.method)) {
       return null as never;
     }
