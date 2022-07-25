@@ -74,10 +74,11 @@ export const createApplication = createCreateApplication(
             captures,
             applicationOptions,
           );
+          // TODO: Move this outside the loop and use await
           const context = getContext?.(request);
           const requestWithContext =
             context === undefined ? request : Object.assign(request, context);
-          const result = handler(requestWithContext);
+          const result = await handler(requestWithContext);
           if (result !== undefined) {
             // TODO: If result is an object containing a circular reference, this
             // next line will throw. It might be useful to include some indicator

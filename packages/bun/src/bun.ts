@@ -66,10 +66,11 @@ export const createApplication = createCreateApplication(
         const matches = router.getMatches(method, pathname);
         for (const [handler, captures] of matches) {
           const request = new CustomRequest(baseRequest, captures);
+          // TODO: Move this outside the loop and use await
           const context = getContext?.(request);
           const requestWithContext =
             context === undefined ? request : Object.assign(request, context);
-          const result = handler(requestWithContext);
+          const result = await handler(requestWithContext);
           if (result !== undefined) {
             return await toResponse(result);
           }
