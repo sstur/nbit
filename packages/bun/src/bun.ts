@@ -1,7 +1,7 @@
 import { createCreateApplication, HttpError } from './core';
 import { StaticFile } from './core/StaticFile';
 import CustomRequest from './Request';
-import { resolveFilePath } from './support/resolveFilePath';
+import { resolveFilePath } from './core/support/resolveFilePath';
 import { serveFile } from './support/serveFile';
 
 export const createApplication = createCreateApplication(
@@ -21,10 +21,11 @@ export const createApplication = createCreateApplication(
         file: StaticFile,
       ): Promise<Response | undefined> => {
         const { filePath, options, responseInit: init } = file;
-        const fullFilePath = resolveFilePath(filePath, applicationOptions);
-        if (fullFilePath == null) {
+        const resolved = resolveFilePath(filePath, applicationOptions);
+        if (!resolved) {
           return;
         }
+        const [fullFilePath] = resolved;
         const fileResponse = await serveFile(
           baseRequest.headers,
           fullFilePath,

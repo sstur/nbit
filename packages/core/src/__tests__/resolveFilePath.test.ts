@@ -1,6 +1,4 @@
-import { describe, expect, it } from 'bun:test';
-
-import { resolveFilePath } from '../resolveFilePath';
+import { resolveFilePath } from '../core/support/resolveFilePath';
 
 describe('resolveFilePath', () => {
   it('should resolve allowed paths relative to root', () => {
@@ -11,19 +9,19 @@ describe('resolveFilePath', () => {
     expect(
       // should resolve since public is allowed
       resolveFilePath('public/bar.html', options),
-    ).toBe('/foo/public/bar.html');
+    ).toEqual(['/foo/public/bar.html', 'public']);
     expect(
       // should not resolve
       resolveFilePath('foo/bar.html', options),
-    ).toBe(null);
+    ).toEqual(null);
     expect(resolveFilePath('index.html', options)).toBe(null);
     expect(
       // other is also allowed
       resolveFilePath('other/thing', options),
-    ).toBe('/foo/other/thing');
+    ).toEqual(['/foo/other/thing', 'other']);
     expect(
       // should not be allowed to traverse outside of root
       resolveFilePath('public/../bar.html', options),
-    ).toBe(null);
+    ).toEqual(null);
   });
 });

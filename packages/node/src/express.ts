@@ -10,7 +10,7 @@ import { createCreateApplication, HttpError } from './core';
 import { StaticFile } from './core/StaticFile';
 import { Response } from './Response';
 import { Request } from './Request';
-import { resolveFilePath } from './support/resolveFilePath';
+import { resolveFilePath } from './core/support/resolveFilePath';
 import { isReadable, toReadStream } from './support/streams';
 import { Headers } from './Headers';
 
