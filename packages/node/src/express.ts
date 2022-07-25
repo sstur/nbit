@@ -81,7 +81,7 @@ export const createApplication = createCreateApplication(
         return next(response);
       }
       response.body;
-      const { status, headers, body } = response;
+      const { status, statusText, headers, body } = response;
       if (body instanceof StaticFile) {
         // TODO: options.cachingHeaders/maxAge; init.status/headers
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -106,10 +106,10 @@ export const createApplication = createCreateApplication(
           next,
         );
       } else if (isReadable(body)) {
-        expressResponse.writeHead(status, headers.toNodeHeaders());
+        expressResponse.writeHead(status, statusText, headers.toNodeHeaders());
         toReadStream(body).pipe(expressResponse);
       } else {
-        expressResponse.writeHead(status, headers.toNodeHeaders());
+        expressResponse.writeHead(status, statusText, headers.toNodeHeaders());
         if (body != null) {
           expressResponse.write(body);
         }

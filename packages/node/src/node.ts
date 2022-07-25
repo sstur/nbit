@@ -118,15 +118,15 @@ export const createApplication = createCreateApplication(
     ) => {
       const requestHeaders = Headers.fromNodeRawHeaders(nodeRequest.rawHeaders);
       const response = await routeRequest(nodeRequest, requestHeaders);
-      const { status, headers, body } = response;
+      const { status, statusText, headers, body } = response;
       if (isReadable(body)) {
         const readStream = toReadStream(body);
         await pipeStreamAsync(readStream, nodeResponse, {
           beforeFirstWrite: () =>
-            nodeResponse.writeHead(status, headers.toNodeHeaders()),
+            nodeResponse.writeHead(status, statusText, headers.toNodeHeaders()),
         });
       } else {
-        nodeResponse.writeHead(status, headers.toNodeHeaders());
+        nodeResponse.writeHead(status, statusText, headers.toNodeHeaders());
         if (body != null) {
           nodeResponse.write(body);
         }

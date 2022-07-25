@@ -20,12 +20,14 @@ export type ResponseInit = {
 
 export class Response {
   readonly status: number;
+  readonly statusText: string;
   readonly headers: Headers;
   readonly body: ResponseBody;
 
   constructor(body: ResponseBody, init?: ResponseInit) {
-    const { status, headers } = init ?? {};
+    const { status, statusText, headers } = init ?? {};
     this.status = status ?? 200;
+    this.statusText = statusText ?? '';
     this.headers = new Headers(headers);
     this.body = body;
   }
