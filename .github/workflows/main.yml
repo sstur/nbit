@@ -24,6 +24,9 @@ jobs:
           node-version: 14
           cache: 'yarn'
 
+      - name: Install Bun
+        uses: antongolub/action-setup-bun@v1
+
       - name: Install dependencies
         run: yarn
 
