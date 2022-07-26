@@ -2,7 +2,7 @@ import { type FileBlob } from 'bun';
 
 import Bun from '../builtins/Bun';
 import { tryAsync } from '../core/support/tryAsync';
-import { computeHeaders } from '../core/support/fileServing';
+import { computeHeaders } from '../fs';
 import type { StaticFileOptions } from '../core/StaticFile';
 
 import { statAsync } from './statAsync';

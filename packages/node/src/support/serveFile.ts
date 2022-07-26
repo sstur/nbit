@@ -3,7 +3,7 @@ import { stat as statAsync } from 'fs/promises';
 import { type Readable } from 'stream';
 
 import { tryAsync } from '../core/support/tryAsync';
-import { computeHeaders } from '../core/support/fileServing';
+import { computeHeaders } from '../fs';
 import type { StaticFileOptions } from '../core/StaticFile';
 import type { Headers } from '../Headers';
 

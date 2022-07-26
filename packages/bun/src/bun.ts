@@ -1,7 +1,7 @@
 import { createCreateApplication, HttpError } from './core';
 import { StaticFile } from './core/StaticFile';
 import CustomRequest from './Request';
-import { resolveFilePath } from './core/support/resolveFilePath';
+import { resolveFilePath } from './fs';
 import { serveFile } from './support/serveFile';
 
 export const createApplication = createCreateApplication(

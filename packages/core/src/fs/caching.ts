@@ -3,7 +3,7 @@
  * https://github.com/http-party/http-server/blob/b0cb863/lib/core/index.js
  * which is licensed under the MIT license.
  */
-import type { Headers } from '../../applicationTypes';
+import type { Headers } from '../applicationTypes';
 
 import type { FileStats } from './fileServing';
 

@@ -1,6 +1,6 @@
 import { join, resolve } from 'path';
 
-import type { FileServingOptions } from '../../types';
+import type { FileServingOptions } from '../types';
 
 export function resolveFilePath(filePath: string, options: FileServingOptions) {
   const { root = process.cwd(), allowStaticFrom = [] } = options;

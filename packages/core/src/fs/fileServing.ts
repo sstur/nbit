@@ -1,10 +1,10 @@
 /* eslint-disable dot-notation */
 import { extname } from 'path';
 
-import type { StaticFileOptions } from '../StaticFile';
-import type { Headers } from '../../applicationTypes';
+import type { StaticFileOptions } from '../core/StaticFile';
+import type { Headers } from '../applicationTypes';
+import { getMimeTypeFromExt } from '../core/support/mimeTypes';
 
-import { getMimeTypeFromExt } from './mimeTypes';
 import { generateEtag, shouldSend304 } from './caching';
 
 type Result =

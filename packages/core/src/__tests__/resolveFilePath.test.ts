@@ -1,4 +1,4 @@
-import { resolveFilePath } from '../core/support/resolveFilePath';
+import { resolveFilePath } from '../fs';
 
 describe('resolveFilePath', () => {
   it('should resolve allowed paths relative to root', () => {

@@ -4,7 +4,7 @@ import type { Readable, Writable } from 'stream';
 import { createCreateApplication, HttpError } from './core';
 import { Response } from './Response';
 import { Request } from './Request';
-import { resolveFilePath } from './core/support/resolveFilePath';
+import { resolveFilePath } from './fs';
 import { isReadable, toReadStream } from './support/streams';
 import { serveFile } from './support/serveFile';
 import { Headers } from './Headers';
