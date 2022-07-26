@@ -1,6 +1,6 @@
 {
   "name": "@nbit/node",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "files": [
     "index.js",
     "index.d.ts"
