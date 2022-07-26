@@ -1,13 +1,13 @@
 type HttpErrorInit = {
   status: number;
-  message: string;
+  message?: string;
 };
 
 export class HttpError extends Error {
   readonly status: number;
 
   constructor({ status, message }: HttpErrorInit, options?: ErrorOptions) {
-    super(message, options);
+    super(message ?? String(status), options);
     this.status = status;
   }
 
