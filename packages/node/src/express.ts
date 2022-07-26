@@ -22,9 +22,17 @@ export const createApplication = createCreateApplication(
     const routeRequest = async (
       expressRequest: ExpressRequest,
       headers: Headers,
-    ): Promise<Response | Error | null> => {
+    ): Promise<Response | StaticFile | Error | undefined> => {
       const method = (expressRequest.method ?? 'GET').toUpperCase();
       const pathname = expressRequest.url ?? '/';
+
+      const toResponse = async (input: unknown) => {
+        if (input instanceof Response || input instanceof StaticFile) {
+          return input;
+        }
+        return Response.json(input);
+      };
+
       // TODO: Factor this getResult up into core? Would need the old approach of Captures -> Request
       const getResult = async () => {
         const matches = router.getMatches(method, pathname);
@@ -41,19 +49,16 @@ export const createApplication = createCreateApplication(
             context === undefined ? request : Object.assign(request, context);
           const result = await handler(requestWithContext);
           if (result !== undefined) {
-            return result;
+            // TODO: If result is an object containing a circular reference, this
+            // next line will throw. It might be useful to include some indicator
+            // of which handler caused the error.
+            return await toResponse(result);
           }
         }
       };
+
       try {
-        const result = await getResult();
-        if (result === undefined) {
-          return null;
-        }
-        // TODO: If result is an object containing a circular reference, this
-        // next line will throw, resulting in a 500 response with no
-        // indication of which handler caused it.
-        return result instanceof Response ? result : Response.json(result);
+        return await getResult();
       } catch (e) {
         if (e instanceof HttpError) {
           return new Response(e.message, {
@@ -81,12 +86,9 @@ export const createApplication = createCreateApplication(
       if (response instanceof Error) {
         return next(response);
       }
-      response.body;
-      const { status, statusText, headers, body } = response;
-      if (body instanceof StaticFile) {
-        // TODO: options.cachingHeaders/maxAge; init.status/headers
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { filePath, options, responseInit: init } = body;
+      if (response instanceof StaticFile) {
+        const { filePath, options, responseInit: init } = response;
+        const { cachingHeaders = true, maxAge } = options;
         // Resolve the file path relative to the project root.
         const resolved = resolveFilePath(filePath, applicationOptions);
         if (!resolved) {
@@ -96,17 +98,24 @@ export const createApplication = createCreateApplication(
           return;
         }
         const [fullFilePath, allowedRoot] = resolved;
+        expressResponse.status(init.status ?? 200);
         expressResponse.sendFile(
           // For Express, pass the file path relative to allowedRoot. Express will
           // not serve the file if it does not exist within the allowed root.
           relative(allowedRoot, fullFilePath),
           {
             root: allowedRoot,
-            headers,
+            headers: new Headers(init.headers).toNodeHeaders(),
+            // Note: Express always sends the ETag header
+            lastModified: cachingHeaders,
+            maxAge: typeof maxAge === 'number' ? maxAge * 1000 : undefined,
           },
           next,
         );
-      } else if (isReadable(body)) {
+        return;
+      }
+      const { status, statusText, headers, body } = response;
+      if (isReadable(body)) {
         expressResponse.writeHead(status, statusText, headers.toNodeHeaders());
         toReadStream(body).pipe(expressResponse);
       } else {

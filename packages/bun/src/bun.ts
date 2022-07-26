@@ -52,7 +52,7 @@ export const createApplication = createCreateApplication(
       };
 
       const toResponse = async (input: unknown) => {
-        if (input === undefined || input instanceof Response) {
+        if (input instanceof Response) {
           return input;
         }
         if (input instanceof StaticFile) {
