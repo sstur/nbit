@@ -15,8 +15,8 @@
     "unit": "jest --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn unit",
     "clean": "rm -rf .turbo build coverage",
-    "copy-files:express": "cp ../express/README.md build/express/ && lean-package -i ../express/package.json > build/express/package.json",
-    "copy-files:node": "cp README.md build/node/ && lean-package -n @nbit/node > build/node/package.json",
+    "copy-files:express": "cp ../../README.md build/express/ && lean-package -i ../express/package.json > build/express/package.json",
+    "copy-files:node": "cp ../../README.md build/node/ && lean-package -n @nbit/node > build/node/package.json",
     "copy-files": "yarn copy-files:node && yarn copy-files:express",
     "build": "rm -rf build && tsc -p tsconfig.build.json && rollup -c && rm -rf build/dts && yarn copy-files && prettier --write build",
     "version": "yarn version"

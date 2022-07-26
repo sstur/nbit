@@ -15,7 +15,7 @@
     "unit": "BUN_ENV=test bun wiptest",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn unit",
     "clean": "rm -rf .turbo build coverage",
-    "copy-files": "cp README.md build/ && lean-package > build/package.json",
+    "copy-files": "cp ../../README.md build/ && lean-package > build/package.json",
     "build": "rm -rf build && tsc -p tsconfig.build.json && rollup -c && rm -rf build/dts && yarn copy-files && prettier --write build",
     "build:watch": "rollup -wc",
     "dev": "nodemon --exec bun src/example.ts -e js,ts,json --watch src --watch --watch ../core/src",
