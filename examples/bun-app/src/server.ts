@@ -2,11 +2,11 @@
 import { attachRoutes } from './application';
 import * as handlers from './handlers';
 
-const PORT = 3000;
+const port = 3000;
 
-export default {
-  port: 3000,
+Bun.serve({
+  port,
   fetch: attachRoutes(...Object.values(handlers)),
-};
+});
 
-console.log(`Server running at http://localhost:${PORT}`);
+console.log(`Server running at http://localhost:${port}`);

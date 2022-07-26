@@ -1,12 +1,20 @@
 /* eslint-disable no-console */
-import { attachRoutes } from './application';
-import * as handlers from './handlers';
+import http from 'http';
 
-const PORT = 3000;
+import { createApplication } from '@nbit/node';
 
-export default {
-  port: 3000,
-  fetch: attachRoutes(...Object.values(handlers)),
-};
+const { defineRoutes, attachRoutes } = createApplication();
 
-console.log(`Server running at http://localhost:${PORT}`);
+const routes = defineRoutes((app) => [
+  app.get('/', (_request) => {
+    return { hello: 'world' };
+  }),
+]);
+
+const port = 3000;
+
+const server = http.createServer(attachRoutes(routes));
+
+server.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}/`);
+});

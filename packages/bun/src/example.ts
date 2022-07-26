@@ -22,12 +22,12 @@ const routes = defineRoutes((app) => [
   }),
 ]);
 
-const PORT = 3000;
+const port = 3000;
 
 Bun.serve({
-  port: 3000,
+  port,
   fetch: attachRoutes(routes),
 });
 
 // eslint-disable-next-line no-console
-console.log(`Server running at http://localhost:${PORT}`);
+console.log(`Server running at http://localhost:${port}`);
