@@ -25,18 +25,16 @@ type Options<CtxGetter> = Expand<
 
 type ContextGetter = (request: Request<Method, string>) => object | undefined;
 
-type RouteRequestParams<Req, ErrRes, Res> = {
+type RequestHandler = <Req, ErrRes, Res>(params: {
   method: string;
   pathname: string;
   instantiateRequest: (captures: Record<string, string>) => Req;
   onError: (error: Error) => ErrRes;
   toResponse: (result: unknown) => Promise<Res>;
-};
+}) => Promise<Res | ErrRes | undefined>;
 
 type NativeHandlerCreator<NativeHandler> = <CtxGetter extends ContextGetter>(
-  routeRequest: <Req, ErrRes, Res>(
-    params: RouteRequestParams<Req, ErrRes, Res>,
-  ) => Promise<Res | ErrRes | undefined>,
+  requestHandler: RequestHandler,
   options: Options<CtxGetter>,
 ) => NativeHandler;
 
@@ -50,6 +48,7 @@ export function createCreateApplication<NativeHandler>(
   >(
     applicationOptions: Options<CtxGetter> = {},
   ) => {
+    const { getContext } = applicationOptions;
     type RequestContext = ReturnType<CtxGetter>;
     const app = getApp<RequestContext>();
     type App = typeof app;
@@ -58,25 +57,22 @@ export function createCreateApplication<NativeHandler>(
       fn: (app: App) => Array<Route<RequestContext>>,
     ): Array<Route<RequestContext>> => fn(app);
 
-    const attachRoutes = (
+    const createRequestHandler = (
       ...routeLists: Array<Array<Route<RequestContext>>>
-    ) => {
-      const { getContext } = applicationOptions;
-
+    ): RequestHandler => {
       const router = createRouter<any>();
       for (const routeList of routeLists) {
         for (const [method, pattern, handler] of routeList) {
           router.insert(method, pattern, handler);
         }
       }
-
-      const routeRequest = async <Req, ErrRes, Res>({
+      return async ({
         method,
         pathname,
         instantiateRequest,
         onError,
         toResponse,
-      }: RouteRequestParams<Req, ErrRes, Res>) => {
+      }) => {
         const getResult = async () => {
           const matches = router.getMatches(method, pathname);
           for (const [handler, captures] of matches) {
@@ -108,10 +104,16 @@ export function createCreateApplication<NativeHandler>(
           }
         }
       };
-
-      return createNativeHandler(routeRequest, applicationOptions);
     };
-    return { defineRoutes, attachRoutes };
+
+    const attachRoutes = (
+      ...routeLists: Array<Array<Route<RequestContext>>>
+    ) => {
+      const requestHandler = createRequestHandler(...routeLists);
+      return createNativeHandler(requestHandler, applicationOptions);
+    };
+
+    return { defineRoutes, createRequestHandler, attachRoutes };
   };
 
   return createApplication;
