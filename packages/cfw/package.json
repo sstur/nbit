@@ -29,6 +29,7 @@
     "eslint-config-xt": "^1.7.0",
     "expect-type": "^0.13.0",
     "jest": "^28.1.2",
+    "jest-environment-miniflare": "^2.6.0",
     "lean-package": "^1.4.0",
     "nodemon": "^2.0.19",
     "prettier": "^2.7.1",
@@ -40,7 +41,7 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "testEnvironment": "node"
+    "testEnvironment": "miniflare"
   },
   "eslintConfig": {
     "extends": "xt",
