@@ -6,7 +6,7 @@ import type {
   NextFunction,
 } from 'express';
 
-import { createCreateApplication, HttpError } from './core';
+import { createCreateApplication } from './core';
 import { StaticFile } from './core/StaticFile';
 import { Response } from './Response';
 import { Request } from './Request';
@@ -15,71 +15,38 @@ import { isReadable, toReadStream } from './support/streams';
 import { Headers } from './Headers';
 
 export const createApplication = createCreateApplication(
-  (router, applicationOptions) => {
-    const { getContext } = applicationOptions;
-
-    // TODO: Rename this to processRequest or getResponse?
-    const routeRequest = async (
-      expressRequest: ExpressRequest,
-      headers: Headers,
-    ): Promise<Response | StaticFile | Error | undefined> => {
-      const method = (expressRequest.method ?? 'GET').toUpperCase();
-      const pathname = expressRequest.url ?? '/';
-
-      const toResponse = async (input: unknown) => {
-        if (input instanceof Response || input instanceof StaticFile) {
-          return input;
-        }
-        return Response.json(input);
-      };
-
-      // TODO: Factor this getResult up into core? Would need the old approach of Captures -> Request
-      const getResult = async () => {
-        const matches = router.getMatches(method, pathname);
-        for (const [handler, captures] of matches) {
-          const request = new Request(
-            expressRequest,
-            headers,
-            captures,
-            applicationOptions,
-          );
-          // TODO: Move this outside the loop and use await
-          const context = getContext?.(request);
-          const requestWithContext =
-            context === undefined ? request : Object.assign(request, context);
-          const result = await handler(requestWithContext);
-          if (result !== undefined) {
-            // TODO: If result is an object containing a circular reference, this
-            // next line will throw. It might be useful to include some indicator
-            // of which handler caused the error.
-            return await toResponse(result);
-          }
-        }
-      };
-
-      try {
-        return await getResult();
-      } catch (e) {
-        if (e instanceof HttpError) {
-          return new Response(e.message, {
-            status: e.status,
-            headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
-          });
-        } else {
-          return e instanceof Error ? e : new Error(String(e));
-        }
-      }
-    };
-
+  (routeRequest, applicationOptions) => {
     return async (
       expressRequest: ExpressRequest,
       expressResponse: ExpressResponse,
       next: NextFunction,
     ) => {
+      const method = (expressRequest.method ?? 'GET').toUpperCase();
+      const pathname = expressRequest.url ?? '/';
       const requestHeaders = Headers.fromNodeRawHeaders(
         expressRequest.rawHeaders,
       );
-      const response = await routeRequest(expressRequest, requestHeaders);
+      const response = await routeRequest({
+        method,
+        pathname,
+        instantiateRequest: (captures) => {
+          return new Request(
+            expressRequest,
+            requestHeaders,
+            captures,
+            applicationOptions,
+          );
+        },
+        onError: (e) => {
+          return e instanceof Error ? e : new Error(String(e));
+        },
+        toResponse: async (input) => {
+          if (input instanceof Response || input instanceof StaticFile) {
+            return input;
+          }
+          return Response.json(input);
+        },
+      });
       if (!response) {
         return next();
       }
