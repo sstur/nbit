@@ -1,4 +1,5 @@
 import { relative } from 'path';
+import type { IncomingMessage } from 'http';
 
 import type {
   Request as ExpressRequest,
@@ -16,30 +17,22 @@ import { Headers } from './Headers';
 
 export const createApplication = createCreateApplication(
   (routeRequest, applicationOptions) => {
-    return async (
-      expressRequest: ExpressRequest,
-      expressResponse: ExpressResponse,
-      next: NextFunction,
-    ) => {
-      const method = (expressRequest.method ?? 'GET').toUpperCase();
-      const pathname = expressRequest.url ?? '/';
-      const requestHeaders = Headers.fromNodeRawHeaders(
-        expressRequest.rawHeaders,
-      );
-      const response = await routeRequest({
+    const getResponse = async (nodeRequest: IncomingMessage) => {
+      const method = (nodeRequest.method ?? 'GET').toUpperCase();
+      const pathname = nodeRequest.url ?? '/';
+      const headers = Headers.fromNodeRawHeaders(nodeRequest.rawHeaders);
+      return await routeRequest({
         method,
         pathname,
         instantiateRequest: (captures) => {
           return new Request(
-            expressRequest,
-            requestHeaders,
+            nodeRequest,
+            headers,
             captures,
             applicationOptions,
           );
         },
-        onError: (e) => {
-          return e instanceof Error ? e : new Error(String(e));
-        },
+        onError: (error) => error,
         toResponse: async (input) => {
           if (input instanceof Response || input instanceof StaticFile) {
             return input;
@@ -47,6 +40,14 @@ export const createApplication = createCreateApplication(
           return Response.json(input);
         },
       });
+    };
+
+    return async (
+      expressRequest: ExpressRequest,
+      expressResponse: ExpressResponse,
+      next: NextFunction,
+    ) => {
+      const response = await getResponse(expressRequest);
       if (!response) {
         return next();
       }

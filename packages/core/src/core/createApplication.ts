@@ -7,7 +7,7 @@ import type {
   Route,
   Expand,
 } from '../types';
-import type { Request, Response } from '../applicationTypes';
+import { type Request, Response } from '../applicationTypes';
 
 import { createRouter } from './Router';
 import { HttpError } from './HttpError';
@@ -25,18 +25,18 @@ type Options<CtxGetter> = Expand<
 
 type ContextGetter = (request: Request<Method, string>) => object | undefined;
 
-type RouteRequestParams<Req> = {
+type RouteRequestParams<Req, ErrRes, Res> = {
   method: string;
   pathname: string;
   instantiateRequest: (captures: Record<string, string>) => Req;
-  onError: (error: Error) => Response | Error;
-  toResponse: (result: unknown) => Promise<Response | undefined>;
+  onError: (error: Error) => ErrRes;
+  toResponse: (result: unknown) => Promise<Res>;
 };
 
 type NativeHandlerCreator<NativeHandler> = <CtxGetter extends ContextGetter>(
-  routeRequest: <Req>(
-    params: RouteRequestParams<Req>,
-  ) => Promise<Response | Error | undefined>,
+  routeRequest: <Req, ErrRes, Res>(
+    params: RouteRequestParams<Req, ErrRes, Res>,
+  ) => Promise<Res | ErrRes | undefined>,
   options: Options<CtxGetter>,
 ) => NativeHandler;
 
@@ -53,9 +53,11 @@ export function createCreateApplication<NativeHandler>(
     type RequestContext = ReturnType<CtxGetter>;
     const app = getApp<RequestContext>();
     type App = typeof app;
+
     const defineRoutes = (
       fn: (app: App) => Array<Route<RequestContext>>,
     ): Array<Route<RequestContext>> => fn(app);
+
     const attachRoutes = (
       ...routeLists: Array<Array<Route<RequestContext>>>
     ) => {
@@ -68,19 +70,19 @@ export function createCreateApplication<NativeHandler>(
         }
       }
 
-      const routeRequest = async ({
+      const routeRequest = async <Req, ErrRes, Res>({
         method,
         pathname,
         instantiateRequest,
         onError,
         toResponse,
-      }: RouteRequestParams<any>) => {
+      }: RouteRequestParams<Req, ErrRes, Res>) => {
         const getResult = async () => {
           const matches = router.getMatches(method, pathname);
           for (const [handler, captures] of matches) {
             const request = instantiateRequest(captures);
-            // TODO: Move this outside the loop and use await
-            const context = getContext?.(request);
+            // TODO: Move this outside the loop; decide if we should use await
+            const context = getContext?.(request as any);
             const requestWithContext =
               context === undefined ? request : Object.assign(request, context);
             const result = await handler(requestWithContext);
@@ -102,13 +104,14 @@ export function createCreateApplication<NativeHandler>(
             return new Response(message, {
               status,
               headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
-            });
+            }) as any;
           } else {
             const error = e instanceof Error ? e : new Error(String(e));
             return onError(error);
           }
         }
       };
+
       return createNativeHandler(routeRequest, applicationOptions);
     };
     return { defineRoutes, attachRoutes };

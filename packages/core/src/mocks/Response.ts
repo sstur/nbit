@@ -6,6 +6,10 @@ export type ResponseInit = {
   statusText?: string;
 };
 
+type ResponseBody = Uint8Array | string;
+
 export class Response {
   readonly status: number = 200;
+
+  constructor(readonly body: ResponseBody, readonly init?: ResponseInit) {}
 }

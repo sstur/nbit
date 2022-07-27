@@ -1,3 +1,3 @@
-export type { Headers, HeadersInit } from './mocks/Headers';
-export type { Request } from './mocks/Request';
-export type { Response, ResponseInit } from './mocks/Response';
+export { Request } from './mocks/Request';
+export { Response, type ResponseInit } from './mocks/Response';
+export { Headers, type HeadersInit } from './mocks/Headers';
