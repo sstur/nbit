@@ -57,16 +57,16 @@ export function createCreateApplication<NativeHandler>(
       fn: (app: App) => Array<Route<RequestContext>>,
     ): Array<Route<RequestContext>> => fn(app);
 
-    const createRequestHandler = (
+    const attachRoutes = (
       ...routeLists: Array<Array<Route<RequestContext>>>
-    ): RequestHandler => {
+    ) => {
       const router = createRouter<any>();
       for (const routeList of routeLists) {
         for (const [method, pattern, handler] of routeList) {
           router.insert(method, pattern, handler);
         }
       }
-      return async ({
+      const requestHandler: RequestHandler = async ({
         method,
         pathname,
         instantiateRequest,
@@ -104,16 +104,10 @@ export function createCreateApplication<NativeHandler>(
           }
         }
       };
-    };
-
-    const attachRoutes = (
-      ...routeLists: Array<Array<Route<RequestContext>>>
-    ) => {
-      const requestHandler = createRequestHandler(...routeLists);
       return createNativeHandler(requestHandler, applicationOptions);
     };
 
-    return { defineRoutes, createRequestHandler, attachRoutes };
+    return { defineRoutes, attachRoutes };
   };
 
   return createApplication;
