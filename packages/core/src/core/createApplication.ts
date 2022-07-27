@@ -101,10 +101,7 @@ export function createCreateApplication<NativeHandler>(
         } catch (e) {
           if (e instanceof HttpError) {
             const { status, message } = e;
-            return new Response(message, {
-              status,
-              headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
-            }) as any;
+            return new Response(message, { status }) as any;
           } else {
             const error = e instanceof Error ? e : new Error(String(e));
             return onError(error);

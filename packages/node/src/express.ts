@@ -33,11 +33,11 @@ export const createApplication = createCreateApplication(
           );
         },
         onError: (error) => error,
-        toResponse: async (input) => {
-          if (input instanceof Response || input instanceof StaticFile) {
-            return input;
+        toResponse: async (result) => {
+          if (result instanceof Response || result instanceof StaticFile) {
+            return result;
           }
-          return Response.json(input);
+          return Response.json(result);
         },
       });
     };

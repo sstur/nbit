@@ -57,14 +57,14 @@ export const createApplication = createCreateApplication(
         onError: (error) => {
           return new Response(String(error), { status: 500 });
         },
-        toResponse: async (input: unknown) => {
-          if (input instanceof Response) {
-            return input;
+        toResponse: async (result) => {
+          if (result instanceof Response) {
+            return result;
           }
-          if (input instanceof StaticFile) {
-            return await fromStaticFile(request.headers, input);
+          if (result instanceof StaticFile) {
+            return await fromStaticFile(request.headers, result);
           }
-          return Response.json(input);
+          return Response.json(result);
         },
       });
       return response ?? new Response('Not found', { status: 404 });

@@ -14,16 +14,13 @@ export const createApplication = createCreateApplication(
           return new CustomRequest(request, captures);
         },
         onError: (error) => {
-          return new Response(String(error), {
-            status: 500,
-            headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
-          });
+          return new Response(String(error), { status: 500 });
         },
-        toResponse: async (input: unknown) => {
-          if (input instanceof Response) {
-            return input;
+        toResponse: async (result) => {
+          if (result instanceof Response) {
+            return result;
           }
-          return Response.json(input);
+          return Response.json(result);
         },
       });
       return response ?? new Response('Not found', { status: 404 });
