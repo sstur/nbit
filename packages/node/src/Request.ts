@@ -1,7 +1,7 @@
 import { PassThrough as PassThroughStream, type Readable } from 'stream';
 import type { IncomingMessage } from 'http';
 
-import { canHaveBody, HttpError, parseUrl } from './core';
+import { HttpError, parseUrl } from './core';
 import { readEntireStream } from './support/readEntireStream';
 import type { Headers } from './Headers';
 import type { JSONValue, Method, MethodWithBody } from './types';
@@ -67,25 +67,25 @@ export class Request<M extends Method, Params extends string> {
 
   // TODO: This should throw if the stream has already been read, either from
   // this function or by .getBody()
-  getReadStream(): M extends MethodWithBody ? Readable : never {
-    if (!canHaveBody(this.method)) {
-      return null as never;
-    }
+  getReadStream(
+    ..._: M extends MethodWithBody ? [] : [ERROR: 'NO_BODY_ALLOWED_FOR_METHOD']
+  ): Readable {
     // TODO: I'm not sure if this PassThroughSteam is necessary.
     const passThroughStream = new PassThroughStream();
     this.request.pipe(passThroughStream);
     return passThroughStream as never;
   }
 
-  json(): M extends MethodWithBody ? Promise<JSONValue> : never {
-    if (!canHaveBody(this.method)) {
-      return null as never;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.getJson() as any;
+  async text(
+    ..._: M extends MethodWithBody ? [] : [ERROR: 'NO_BODY_ALLOWED_FOR_METHOD']
+  ): Promise<string> {
+    const buffer = await this.getBody();
+    return buffer.toString('utf8');
   }
 
-  private async getJson(): Promise<JSONValue> {
+  async json(
+    ..._: M extends MethodWithBody ? [] : [ERROR: 'NO_BODY_ALLOWED_FOR_METHOD']
+  ): Promise<JSONValue> {
     const buffer = await this.getBody();
     try {
       const parsed = JSON.parse(buffer.toString('utf8'));
