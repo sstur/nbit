@@ -4,7 +4,6 @@ import { createCreateApplication } from './core';
 import { Response } from './Response';
 import { CustomRequest } from './Request';
 import { isReadable, toReadStream } from './support/streams';
-import { Headers } from './Headers';
 import { StaticFile } from './core/StaticFile';
 import { pipeStreamAsync } from './support/pipeStreamAsync';
 import { fromStaticFile } from './support/fromStaticFile';
@@ -16,18 +15,11 @@ export const createApplication = createCreateApplication(
     const getResponse = async (nodeRequest: IncomingMessage) => {
       const method = (nodeRequest.method ?? 'GET').toUpperCase() as Method;
       const pathname = nodeRequest.url ?? '/';
-      const headers = Headers.fromNodeRawHeaders(nodeRequest.rawHeaders);
+      const request = Request.fromNodeRequest(nodeRequest);
       const response = await routeRequest({
         method,
         pathname,
         instantiateRequest: (captures) => {
-          // TODO: Do we need a fully qualified URL for the constructor here?
-          // TODO: Somehow pass in applicationOptions for bodyParserMaxLength
-          const request = new Request(pathname, {
-            method,
-            headers,
-            body: nodeRequest,
-          });
           // TODO: Move this part out to core
           return new CustomRequest(request, captures);
         },
@@ -37,7 +29,11 @@ export const createApplication = createCreateApplication(
             return result;
           }
           if (result instanceof StaticFile) {
-            return await fromStaticFile(headers, result, applicationOptions);
+            return await fromStaticFile(
+              request.headers,
+              result,
+              applicationOptions,
+            );
           }
           return Response.json(result);
         },
