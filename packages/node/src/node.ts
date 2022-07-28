@@ -2,60 +2,34 @@ import type { IncomingMessage, ServerResponse } from 'http';
 
 import { createCreateApplication } from './core';
 import { Response } from './Response';
-import { Request } from './Request';
+import { CustomRequest } from './Request';
 import { isReadable, toReadStream } from './support/streams';
 import { Headers } from './Headers';
 import { StaticFile } from './core/StaticFile';
 import { pipeStreamAsync } from './support/pipeStreamAsync';
 import { fromStaticFile } from './support/fromStaticFile';
-import {
-  CustomRequest as MockCustomRequest,
-  type Request as MockRequest,
-} from './mocks/Request';
+import { Request } from './webio/Request';
 import type { Method } from './types';
-
-export const createMockApplication = createCreateApplication(
-  (routeRequest, _applicationOptions) => {
-    return async <M extends Method>(request: MockRequest<M>) => {
-      const { method } = request;
-      const { pathname } = new URL(request.url);
-      const response = await routeRequest({
-        method,
-        pathname,
-        instantiateRequest: (captures) => {
-          return new MockCustomRequest(request, captures);
-        },
-        onError: (error) => {
-          return new Response(String(error), { status: 500 });
-        },
-        toResponse: async (result) => {
-          if (result instanceof Response) {
-            return result;
-          }
-          return Response.json(result);
-        },
-      });
-      return response ?? new Response('Not found', { status: 404 });
-    };
-  },
-);
 
 export const createApplication = createCreateApplication(
   (routeRequest, applicationOptions) => {
     const getResponse = async (nodeRequest: IncomingMessage) => {
-      const method = (nodeRequest.method ?? 'GET').toUpperCase();
+      const method = (nodeRequest.method ?? 'GET').toUpperCase() as Method;
       const pathname = nodeRequest.url ?? '/';
       const headers = Headers.fromNodeRawHeaders(nodeRequest.rawHeaders);
       const response = await routeRequest({
         method,
         pathname,
         instantiateRequest: (captures) => {
-          return new Request(
-            nodeRequest,
+          // TODO: Do we need a fully qualified URL for the constructor here?
+          // TODO: Somehow pass in applicationOptions for bodyParserMaxLength
+          const request = new Request(pathname, {
+            method,
             headers,
-            captures,
-            applicationOptions,
-          );
+            body: nodeRequest,
+          });
+          // TODO: Move this part out to core
+          return new CustomRequest(request, captures);
         },
         onError: (error) => new Response(String(error), { status: 500 }),
         toResponse: async (result) => {
