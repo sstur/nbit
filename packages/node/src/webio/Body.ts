@@ -23,11 +23,15 @@ export type Options = {
 
 export class Body {
   private _body: BodyInit | null;
-  private _maxBufferSize: number;
+  private options: Options;
 
   constructor(body: BodyInit | null, options?: Options) {
     this._body = body;
-    this._maxBufferSize = options?.maxBufferSize || MAX_BUFFER_SIZE;
+    this.options = options ?? {};
+  }
+
+  get body() {
+    return this._body;
   }
 
   async readAll(): Promise<Buffer> {
@@ -41,7 +45,7 @@ export class Body {
     if (typeof body === 'string') {
       return Buffer.from(body);
     }
-    const maxBufferSize = this._maxBufferSize;
+    const maxBufferSize = this.options.maxBufferSize ?? MAX_BUFFER_SIZE;
     const buffer = await readEntireStream(toReadStream(body), {
       maxBufferSize,
     });

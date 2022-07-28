@@ -1,14 +1,6 @@
-import type { Readable } from 'stream';
-import type { ReadableStream } from 'stream/web';
-
 import { StaticFile, type StaticFileOptions } from './core/StaticFile';
 import { Headers, type HeadersInit } from './Headers';
-
-type Body =
-  | Uint8Array // Includes Buffer which is a subclass of Uint8Array
-  | Readable // Traditional Node Streams API
-  | ReadableStream // New Web Streams API (since Node 16.5)
-  | string;
+import { Body, type BodyInit } from './webio/Body';
 
 type RedirectStatus = 301 | 302 | 303 | 304 | 307 | 308;
 
@@ -18,18 +10,17 @@ export type ResponseInit = {
   statusText?: string;
 };
 
-export class Response {
+export class Response extends Body {
   readonly status: number;
   readonly statusText: string;
   readonly headers: Headers;
-  readonly body: Body;
 
-  constructor(body: Body, init?: ResponseInit) {
+  constructor(body: BodyInit, init?: ResponseInit) {
+    super(body);
     const { status, statusText, headers } = init ?? {};
     this.status = status ?? 200;
     this.statusText = statusText ?? '';
     this.headers = new Headers(headers);
-    this.body = body;
   }
 
   static redirect(url: string, init?: { status?: RedirectStatus }) {
