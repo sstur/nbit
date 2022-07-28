@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // TODO: This should be available on the global object in Node v11+ but TS seems to not think so.
 import { TextDecoder } from 'util';
 
-import { canHaveBody } from '../core';
 import { Headers, type HeadersInit } from '../Headers';
 import type { JSONValue, Method, MethodWithBody } from '../types';
 
@@ -18,31 +16,23 @@ export class Request<M extends Method = 'GET'> {
   readonly method: M;
   readonly url: string;
   readonly headers: Headers;
-  readonly body: Body;
+  readonly body: Body | null;
 
   constructor(url: string, init?: RequestInit<M>) {
     this.url = url;
     this.method = init?.method ?? ('GET' as M);
     this.headers = new Headers(init?.headers);
-    this.body = init?.body ?? (null as any);
+    this.body = init?.body ?? null;
   }
 
-  text(): M extends MethodWithBody ? Promise<string> : never {
-    const { method, body } = this;
-    if (!canHaveBody(method)) {
-      throw new Error(`Cannot read body on request with method ${method}`);
-    }
-    const result = body == null ? '' : toString(body);
-    return Promise.resolve(result) as any;
+  async text(): Promise<string> {
+    const { body } = this;
+    return body == null ? '' : toString(body);
   }
 
-  json(): M extends MethodWithBody ? Promise<JSONValue> : never {
-    const { method, body } = this;
-    if (!canHaveBody(method)) {
-      throw new Error(`Cannot read body on request with method ${method}`);
-    }
-    const result = body == null ? null : JSON.parse(toString(body));
-    return Promise.resolve(result) as any;
+  async json(): Promise<JSONValue> {
+    const { body } = this;
+    return body == null ? null : JSON.parse(toString(body));
   }
 }
 
@@ -67,15 +57,12 @@ export class CustomRequest<M extends Method, Params extends string> {
     this.params = params;
   }
 
-  text(): M extends MethodWithBody ? Promise<string> : null {
-    return this.request.text() as any;
+  text(): Promise<string> {
+    return this.request.text();
   }
 
-  json(): M extends MethodWithBody ? Promise<JSONValue> : never {
-    if (!canHaveBody(this.method)) {
-      return null as never;
-    }
-    return this.request.json() as any;
+  json(): Promise<JSONValue> {
+    return this.request.json();
   }
 }
 
