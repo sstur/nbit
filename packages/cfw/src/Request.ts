@@ -25,12 +25,12 @@ export default class CustomRequest<M extends Method, Params extends string> {
 
   // TODO: What happens if we call one of these body methods and then later call
   // the same one or a different one?
-  text(): M extends MethodWithBody ? Promise<string> : null {
+  text(): M extends MethodWithBody ? Promise<string> : never {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.request.text() as any;
   }
 
-  arrayBuffer(): M extends MethodWithBody ? Promise<ArrayBuffer> : null {
+  arrayBuffer(): M extends MethodWithBody ? Promise<ArrayBuffer> : never {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.request.arrayBuffer() as any;
   }
@@ -43,7 +43,7 @@ export default class CustomRequest<M extends Method, Params extends string> {
     return this.request.json() as any;
   }
 
-  blob(): M extends MethodWithBody ? Promise<Blob> : null {
+  blob(): M extends MethodWithBody ? Promise<Blob> : never {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.request.blob() as any;
   }
