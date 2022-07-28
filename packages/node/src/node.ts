@@ -8,6 +8,37 @@ import { Headers } from './Headers';
 import { StaticFile } from './core/StaticFile';
 import { pipeStreamAsync } from './support/pipeStreamAsync';
 import { fromStaticFile } from './support/fromStaticFile';
+import {
+  CustomRequest as MockCustomRequest,
+  type Request as MockRequest,
+} from './mocks/Request';
+import type { Method } from './types';
+
+export const createMockApplication = createCreateApplication(
+  (routeRequest, _applicationOptions) => {
+    return async <M extends Method>(request: MockRequest<M>) => {
+      const { method } = request;
+      const { pathname } = new URL(request.url);
+      const response = await routeRequest({
+        method,
+        pathname,
+        instantiateRequest: (captures) => {
+          return new MockCustomRequest(request, captures);
+        },
+        onError: (error) => {
+          return new Response(String(error), { status: 500 });
+        },
+        toResponse: async (result) => {
+          if (result instanceof Response) {
+            return result;
+          }
+          return Response.json(result);
+        },
+      });
+      return response ?? new Response('Not found', { status: 404 });
+    };
+  },
+);
 
 export const createApplication = createCreateApplication(
   (routeRequest, applicationOptions) => {

@@ -1,5 +1,6 @@
 import type { Readable } from 'stream';
 import type { ReadableStream } from 'stream/web';
+import { TextDecoder } from 'util';
 
 import { StaticFile, type StaticFileOptions } from './core/StaticFile';
 import { Headers, type HeadersInit } from './Headers';
@@ -32,6 +33,15 @@ export class Response {
     this.body = body;
   }
 
+  async json() {
+    const { body } = this;
+    if (body instanceof Uint8Array || typeof body === 'string') {
+      return JSON.parse(toString(body));
+    } else {
+      return null;
+    }
+  }
+
   static redirect(url: string, init?: { status?: RedirectStatus }) {
     const { status } = init ?? {};
     return new Response('', {
@@ -55,4 +65,8 @@ export class Response {
   static file(filePath: string, init?: ResponseInit & StaticFileOptions) {
     return new StaticFile(filePath, init);
   }
+}
+
+function toString(body: string | Uint8Array): string {
+  return body instanceof Uint8Array ? new TextDecoder().decode(body) : body;
 }
