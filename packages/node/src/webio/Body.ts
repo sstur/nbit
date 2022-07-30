@@ -39,19 +39,37 @@ export class Body {
   get bodyUsed() {
     const body = this._body;
     if (
+      this._bodyUsed ||
       body == null ||
       body instanceof Uint8Array ||
       typeof body === 'string'
     ) {
       return this._bodyUsed;
     }
-    // Note: with an IncomingMessage we could use `._consuming`, but this could be any readable steam.
     if (body instanceof Readable) {
-      return (
-        this._bodyUsed || Boolean(Object(body)._readableState?.dataEmitted)
-      );
+      // In Node v16.8+ we can rely on Readable.isDisturbed()
+      if (Readable.isDisturbed) {
+        return Readable.isDisturbed(body);
+      }
+      // In Node v14.18+ we can rely on stream.readableDidRead
+      // https://nodejs.org/docs/latest-v14.x/api/stream.html#stream_readable_readabledidread
+      const { readableDidRead } = body;
+      if (typeof readableDidRead === 'boolean') {
+        return readableDidRead;
+      }
+      // If it's an IncomingMessage, so we can rely on the _consuming field
+      const consuming = Object(body)._consuming;
+      if (typeof consuming === 'boolean') {
+        return consuming;
+      }
+      // If nothing else, we'll rely on our own internal flag
+      return this._bodyUsed;
     }
-    // TODO: Determine if the stream is disturbed; use isDisturbed()?
+    // For Web Streams (Node v16.5+) we'll rely on Readable.isDisturbed() if
+    // available (Node v16.8+) otherwise fall back to our own internal flag.
+    if (Readable.isDisturbed) {
+      return Readable.isDisturbed(body as any);
+    }
     return this._bodyUsed;
   }
 
