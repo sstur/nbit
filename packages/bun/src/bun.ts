@@ -1,6 +1,5 @@
 import { createCreateApplication } from './core';
 import { StaticFile } from './core/StaticFile';
-import CustomRequest from './Request';
 import { resolveFilePath } from './fs';
 import { serveFile } from './support/serveFile';
 
@@ -45,15 +44,7 @@ export const createApplication = createCreateApplication(
     };
 
     return async (request: Request) => {
-      const { method } = request;
-      const { pathname } = new URL(request.url);
-      const response = await routeRequest({
-        method,
-        pathname,
-        instantiateRequest: (captures) => {
-          // TODO: Should we pass in the parsed URL to avoid parsing it again
-          return new CustomRequest(request, captures);
-        },
+      const response = await routeRequest(request, {
         onError: (error) => {
           return new Response(String(error), { status: 500 });
         },

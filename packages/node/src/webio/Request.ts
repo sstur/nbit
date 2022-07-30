@@ -23,6 +23,7 @@ export class Request extends Body {
 
   constructor(url: string, init?: RequestInit) {
     super(init?.body ?? null);
+    // TODO: Normalize this?
     this.url = url;
     this.method = (init?.method ? init.method.toUpperCase() : 'GET') as Method;
     this.headers = new Headers(init?.headers);
@@ -30,6 +31,8 @@ export class Request extends Body {
 
   static fromNodeRequest(nodeRequest: IncomingMessage) {
     // Use a weakMap to always return the same instance for the same Node request.
+    // TODO: I'm not sure if this is still necessary since the instantiation
+    // logic has been refactored.
     const request = weakMap.get(nodeRequest) ?? fromNodeRequest(nodeRequest);
     weakMap.set(nodeRequest, request);
     return request;
@@ -40,7 +43,6 @@ function fromNodeRequest(nodeRequest: IncomingMessage) {
   const method = (nodeRequest.method ?? 'GET').toUpperCase() as Method;
   const pathname = nodeRequest.url ?? '/';
   const headers = Headers.fromNodeRawHeaders(nodeRequest.rawHeaders);
-  // TODO: Do we need a fully qualified URL for the constructor here?
   // TODO: Somehow pass in applicationOptions for bodyParserMaxLength
   return new Request(pathname, {
     method,

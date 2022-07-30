@@ -1,5 +1,6 @@
-import type { Request, Response } from '../applicationTypes';
+import type { Response } from '../applicationTypes';
 import type { StaticFile } from '../core/StaticFile';
+import type CustomRequest from '../core/CustomRequest';
 
 export type RequestOptions = {
   /**
@@ -41,7 +42,7 @@ export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 export type MethodWithBody = 'POST' | 'PUT';
 
 export type Handler<M extends Method, P extends string, RequestContext> = (
-  request: MaybeIntersect<Request<M, ExtractParams<P>>, RequestContext>,
+  request: MaybeIntersect<CustomRequest<M, ExtractParams<P>>, RequestContext>,
 ) => MaybePromise<
   Response | StaticFile | JsonPayload | null | undefined | void
 >;

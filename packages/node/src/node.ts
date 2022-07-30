@@ -2,27 +2,17 @@ import type { IncomingMessage, ServerResponse } from 'http';
 
 import { createCreateApplication } from './core';
 import { Response } from './Response';
-import { CustomRequest } from './Request';
 import { isReadable, toReadStream } from './support/streams';
 import { StaticFile } from './core/StaticFile';
 import { pipeStreamAsync } from './support/pipeStreamAsync';
 import { fromStaticFile } from './support/fromStaticFile';
 import { Request } from './webio/Request';
-import type { Method } from './types';
 
 export const createApplication = createCreateApplication(
   (routeRequest, applicationOptions) => {
     const getResponse = async (nodeRequest: IncomingMessage) => {
-      const method = (nodeRequest.method ?? 'GET').toUpperCase() as Method;
-      const pathname = nodeRequest.url ?? '/';
       const request = Request.fromNodeRequest(nodeRequest);
-      const response = await routeRequest({
-        method,
-        pathname,
-        instantiateRequest: (captures) => {
-          // TODO: Move this part out to core
-          return new CustomRequest(request, captures);
-        },
+      const response = await routeRequest(request, {
         onError: (error) => new Response(String(error), { status: 500 }),
         toResponse: async (result) => {
           if (result instanceof Response) {

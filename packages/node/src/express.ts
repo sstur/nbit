@@ -10,7 +10,6 @@ import type {
 import { createCreateApplication } from './core';
 import { StaticFile } from './core/StaticFile';
 import { Response } from './Response';
-import { CustomRequest } from './Request';
 import { resolveFilePath } from './fs';
 import { isReadable, toReadStream } from './support/streams';
 import { Headers } from './Headers';
@@ -19,16 +18,8 @@ import { Request } from './webio/Request';
 export const createApplication = createCreateApplication(
   (routeRequest, applicationOptions) => {
     const getResponse = async (nodeRequest: IncomingMessage) => {
-      const method = (nodeRequest.method ?? 'GET').toUpperCase();
-      const pathname = nodeRequest.url ?? '/';
       const request = Request.fromNodeRequest(nodeRequest);
-      return await routeRequest({
-        method,
-        pathname,
-        instantiateRequest: (captures) => {
-          // TODO: Move this part out to core
-          return new CustomRequest(request, captures);
-        },
+      return await routeRequest(request, {
         onError: (error) => error,
         toResponse: async (result) => {
           if (result instanceof Response || result instanceof StaticFile) {

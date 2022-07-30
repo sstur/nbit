@@ -2,9 +2,9 @@ import { describe, it } from 'bun:test';
 import { expectTypeOf } from 'expect-type';
 
 import { createApplication } from '../bun';
-import type Request from '../Request';
+import type CustomRequest from '../core/CustomRequest';
 import Response from '../Response';
-import type { JSONValue, Method, Route } from '../types';
+import type { JSONValue, Route } from '../types';
 
 describe('Types', () => {
   if (!false) {
@@ -25,9 +25,8 @@ describe('Types', () => {
         params.foo;
         // Params should be an empty object
         expectTypeOf<keyof typeof params>().toEqualTypeOf<never>();
-        const promise = request.json();
-        expectTypeOf(promise).toEqualTypeOf<never>();
-        return {};
+        // @ts-expect-error - Should not be able to call .json() on GET request
+        await request.json();
       }),
       app.post('/file/:foo', async (request) => {
         const { method, params } = request;
@@ -54,7 +53,7 @@ describe('Types', () => {
     const { defineRoutes } = createApplication({
       // TODO: Test that we must return an object here
       getContext: (request) => {
-        expectTypeOf(request).toEqualTypeOf<Request<Method, string>>();
+        expectTypeOf(request).toEqualTypeOf<Request>();
         expectTypeOf(request.headers).toEqualTypeOf<Headers>();
         const token = request.headers.get('authorization') ?? '';
         return {
@@ -76,7 +75,9 @@ describe('Types', () => {
 
     const routes = defineRoutes((app) => [
       app.get('/', async (request) => {
-        expectTypeOf(request).toEqualTypeOf<Request<'GET', never> & Context>();
+        expectTypeOf(request).toEqualTypeOf<
+          CustomRequest<'GET', never> & Context
+        >();
         expectTypeOf(request.method).toEqualTypeOf<'GET'>();
         expectTypeOf(request.token).toEqualTypeOf<string>();
         expectTypeOf(request.getToken()).toEqualTypeOf<string>();
@@ -87,7 +88,9 @@ describe('Types', () => {
         type Params = { id: string; type: string };
         expectTypeOf(request.params).toEqualTypeOf<Params>();
         type Param = keyof Params;
-        expectTypeOf(request).toEqualTypeOf<Request<'GET', Param> & Context>();
+        expectTypeOf(request).toEqualTypeOf<
+          CustomRequest<'GET', Param> & Context
+        >();
         expectTypeOf(request.token).toEqualTypeOf<string>();
         return {};
       }),

@@ -3,7 +3,6 @@ import type {
   RequestOptions,
   FileServingOptions,
   Handler,
-  Method,
   Route,
   Expand,
 } from '../types';
@@ -11,6 +10,7 @@ import { type Request, Response } from '../applicationTypes';
 
 import { createRouter } from './Router';
 import { HttpError } from './HttpError';
+import CustomRequest from './CustomRequest';
 
 type Options<CtxGetter> = Expand<
   RequestOptions &
@@ -23,15 +23,15 @@ type Options<CtxGetter> = Expand<
     }
 >;
 
-type ContextGetter = (request: Request<Method, string>) => object | undefined;
+type ContextGetter = (request: Request) => object | undefined;
 
-type RequestHandler = <Req, ErrRes, Res>(params: {
-  method: string;
-  pathname: string;
-  instantiateRequest: (captures: Record<string, string>) => Req;
-  onError: (error: Error) => ErrRes;
-  toResponse: (result: unknown) => Promise<Res>;
-}) => Promise<Res | ErrRes | undefined>;
+type RequestHandler = <Res, ErrRes>(
+  request: Request,
+  params: {
+    onError: (error: Error) => ErrRes;
+    toResponse: (result: unknown) => Promise<Res>;
+  },
+) => Promise<Res | ErrRes | undefined>;
 
 type NativeHandlerCreator<NativeHandler> = <CtxGetter extends ContextGetter>(
   requestHandler: RequestHandler,
@@ -42,9 +42,7 @@ export function createCreateApplication<NativeHandler>(
   createNativeHandler: NativeHandlerCreator<NativeHandler>,
 ) {
   const createApplication = <
-    CtxGetter extends ContextGetter = (
-      request: Request<Method, string>,
-    ) => undefined,
+    CtxGetter extends ContextGetter = (request: Request) => undefined,
   >(
     applicationOptions: Options<CtxGetter> = {},
   ) => {
@@ -66,26 +64,27 @@ export function createCreateApplication<NativeHandler>(
           router.insert(method, pattern, handler);
         }
       }
-      const requestHandler: RequestHandler = async ({
-        method,
-        pathname,
-        instantiateRequest,
-        onError,
-        toResponse,
-      }) => {
+
+      const requestHandler: RequestHandler = async (
+        request,
+        { onError, toResponse },
+      ) => {
         const getResult = async () => {
-          const matches = router.getMatches(method, pathname);
+          // TODO: Should we use await here?
+          const context = getContext?.(request);
+          const customRequest = new CustomRequest(request);
+          if (context) {
+            Object.assign(customRequest, context);
+          }
+          const { method, path } = customRequest;
+          const matches = router.getMatches(method, path);
           for (const [handler, captures] of matches) {
-            const request = instantiateRequest(captures);
-            // TODO: Move this outside the loop; decide if we should use await
-            const context = getContext?.(request as any);
-            const requestWithContext =
-              context === undefined ? request : Object.assign(request, context);
-            const result = await handler(requestWithContext);
+            Object.assign(customRequest, { params: captures });
+            const result = await handler(customRequest);
             if (result !== undefined) {
-              // TODO: If result is an object containing a circular reference, this
-              // next line will throw. It might be useful to include some indicator
-              // of which handler caused the error.
+              // TODO: If result is an object containing a circular reference,
+              // this next line will throw. It would be useful to include some
+              // indication of which handler caused the error.
               return await toResponse(result);
             }
           }
