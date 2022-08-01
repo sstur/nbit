@@ -6,7 +6,11 @@ import type {
   Route,
   Expand,
 } from '../types';
-import { type Request, Response } from '../applicationTypes';
+import {
+  Response,
+  type Request,
+  type NativeHandler,
+} from '../applicationTypes';
 
 import { createRouter } from './Router';
 import { HttpError } from './HttpError';
@@ -25,21 +29,26 @@ type Options<CtxGetter> = Expand<
 
 type ContextGetter = (request: Request) => object | undefined;
 
-type RequestHandler = <Res, ErrRes>(
-  request: Request,
-  params: {
-    onError: (error: Error) => ErrRes;
-    toResponse: (result: unknown) => Promise<Res>;
-  },
-) => Promise<Res | ErrRes | undefined>;
+type Adapter = {
+  // TODO: The only reason we allow toResponse to return undefined here is for
+  // the Express adapter. Should we instead get Express to throw instead of
+  // returning undefined?
+  toResponse: (
+    request: Request,
+    result: unknown,
+  ) => Promise<Response | undefined>;
+  createNativeHandler: (
+    requestHandler: (request: Request) => Promise<Response | undefined>,
+  ) => NativeHandler;
+};
 
-type NativeHandlerCreator<NativeHandler> = <CtxGetter extends ContextGetter>(
-  requestHandler: RequestHandler,
-  options: Options<CtxGetter>,
-) => NativeHandler;
+type AdapterCreator<A extends Adapter> = <CtxGetter extends ContextGetter>(
+  applicationOptions: Options<CtxGetter>,
+) => A;
 
-export function createCreateApplication<NativeHandler>(
-  createNativeHandler: NativeHandlerCreator<NativeHandler>,
+export function createCreateApplication<A extends Adapter>(
+  // TODO: Rename this
+  createAdapter: AdapterCreator<A>,
 ) {
   const createApplication = <
     CtxGetter extends ContextGetter = (request: Request) => undefined,
@@ -51,11 +60,13 @@ export function createCreateApplication<NativeHandler>(
     const app = getApp<RequestContext>();
     type App = typeof app;
 
+    const adapter = createAdapter(applicationOptions);
+
     const defineRoutes = (
       fn: (app: App) => Array<Route<RequestContext>>,
     ): Array<Route<RequestContext>> => fn(app);
 
-    const attachRoutes = (
+    const createRequestHandler = (
       ...routeLists: Array<Array<Route<RequestContext>>>
     ) => {
       const router = createRouter<any>();
@@ -64,49 +75,50 @@ export function createCreateApplication<NativeHandler>(
           router.insert(method, pattern, handler);
         }
       }
-
-      const requestHandler: RequestHandler = async (
-        request,
-        { onError, toResponse },
-      ) => {
-        const getResult = async () => {
-          // TODO: Should we use await here?
-          const context = getContext?.(request);
-          const customRequest = new CustomRequest(request);
-          if (context) {
-            Object.assign(customRequest, context);
+      const routeRequest = async (request: Request) => {
+        // TODO: Use await here?
+        const context = getContext?.(request);
+        const customRequest = new CustomRequest(request);
+        if (context) {
+          Object.assign(customRequest, context);
+        }
+        const { method, path } = customRequest;
+        const matches = router.getMatches(method, path);
+        for (const [handler, captures] of matches) {
+          Object.assign(customRequest, { params: captures });
+          const result = await handler(customRequest);
+          if (result !== undefined) {
+            // TODO: If result is an object containing a circular reference,
+            // this next line will throw. It would be useful to include some
+            // indication of which handler caused the error.
+            return await adapter.toResponse(request, result);
           }
-          const { method, path } = customRequest;
-          const matches = router.getMatches(method, path);
-          for (const [handler, captures] of matches) {
-            Object.assign(customRequest, { params: captures });
-            const result = await handler(customRequest);
-            if (result !== undefined) {
-              // TODO: If result is an object containing a circular reference,
-              // this next line will throw. It would be useful to include some
-              // indication of which handler caused the error.
-              return await toResponse(result);
-            }
-          }
-          return undefined;
-        };
-
+        }
+        return adapter.toResponse(request, undefined);
+      };
+      return async (request: Request): Promise<Response | undefined> => {
         try {
-          return await getResult();
+          return await routeRequest(request);
         } catch (e) {
           if (e instanceof HttpError) {
             const { status, message } = e;
             return new Response(message, { status }) as any;
           } else {
             const error = e instanceof Error ? e : new Error(String(e));
-            return onError(error);
+            return adapter.toResponse(request, error);
           }
         }
       };
-      return createNativeHandler(requestHandler, applicationOptions);
     };
 
-    return { defineRoutes, attachRoutes };
+    const attachRoutes = (
+      ...routeLists: Array<Array<Route<RequestContext>>>
+    ) => {
+      const handleRequest = createRequestHandler(...routeLists);
+      return adapter.createNativeHandler(handleRequest);
+    };
+
+    return { defineRoutes, createRequestHandler, attachRoutes };
   };
 
   return createApplication;
