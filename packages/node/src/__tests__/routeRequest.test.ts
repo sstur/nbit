@@ -1,8 +1,8 @@
-import { createMockApplication, Response } from '..';
-import { Request } from '../mocks/Request';
+import { createApplication, Response } from '..';
+import { Request } from '../webio/Request';
 
 describe('createApplication', () => {
-  const { defineRoutes, attachRoutes } = createMockApplication();
+  const { defineRoutes, createRequestHandler } = createApplication();
 
   const routes = defineRoutes((app) => [
     app.get('/', async (request) => {
@@ -36,14 +36,14 @@ describe('createApplication', () => {
       ['GET', '/foo', 'function'],
       ['POST', '/auth', 'function'],
     ]);
-    const requestHandler = attachRoutes(routes);
-    expect(typeof requestHandler).toBe('function');
+    const handleRequest = createRequestHandler(routes);
+    expect(typeof handleRequest).toBe('function');
   });
 
   it('should handle a GET request', async () => {
-    const requestHandler = attachRoutes(routes);
-    const mockRequest = new Request('http://localhost/');
-    const response = await requestHandler(mockRequest);
+    const handleRequest = createRequestHandler(routes);
+    const request = new Request('/');
+    const response = await handleRequest(request);
     expect(response.status).toBe(200);
     expect(response.statusText).toBe('');
     const headers = Object.fromEntries(response.headers.entries());
@@ -55,9 +55,9 @@ describe('createApplication', () => {
   });
 
   it('should handle custom response status and headers', async () => {
-    const requestHandler = attachRoutes(routes);
-    const mockRequest = new Request('http://localhost/foo');
-    const response = await requestHandler(mockRequest);
+    const handleRequest = createRequestHandler(routes);
+    const request = new Request('/foo');
+    const response = await handleRequest(request);
     expect(response.status).toBe(418);
     expect(response.statusText).toBe('I like tea');
     const headers = Object.fromEntries(response.headers.entries());
@@ -70,13 +70,13 @@ describe('createApplication', () => {
   });
 
   it('should handle a POST request with JSON body', async () => {
-    const requestHandler = attachRoutes(routes);
-    const mockRequest = new Request('http://localhost/auth', {
+    const handleRequest = createRequestHandler(routes);
+    const request = new Request('/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json; charset=UTF-8' },
       body: JSON.stringify({ foo: 1 }),
     });
-    const response = await requestHandler(mockRequest);
+    const response = await handleRequest(request);
     expect(response.status).toBe(200);
     expect(response.statusText).toBe('');
     const headers = Object.fromEntries(response.headers.entries());
