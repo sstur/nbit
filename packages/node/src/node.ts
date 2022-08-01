@@ -10,6 +10,9 @@ import { Request } from './webio/Request';
 
 export const createApplication = createCreateApplication(
   (applicationOptions) => ({
+    onError: (request, error) => {
+      return new Response(String(error), { status: 500 });
+    },
     toResponse: async (request, result) => {
       if (result instanceof StaticFile) {
         result = await fromStaticFile(
@@ -17,11 +20,6 @@ export const createApplication = createCreateApplication(
           result,
           applicationOptions,
         );
-      }
-      // TODO: Should the error -> response be a separate function?
-      if (result instanceof Error) {
-        const error = result;
-        return new Response(String(error), { status: 500 });
       }
       if (result instanceof Response) {
         return result;

@@ -21,6 +21,11 @@ export const createApplication = createCreateApplication(
     const toError = new WeakMap<Response, Error>();
 
     return {
+      onError: (request, error) => {
+        const response = new Response(String(error), { status: 500 });
+        toError.set(response, error);
+        return response;
+      },
       toResponse: async (request, result) => {
         if (result instanceof StaticFile) {
           const staticFile = result;
@@ -30,12 +35,6 @@ export const createApplication = createCreateApplication(
         }
         if (result instanceof Response) {
           return result;
-        }
-        if (result instanceof Error) {
-          const error = result;
-          const response = new Response(String(error), { status: 500 });
-          toError.set(response, error);
-          return response;
         }
         if (result === undefined) {
           return undefined;

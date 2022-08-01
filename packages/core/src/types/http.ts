@@ -23,7 +23,7 @@ export type FileServingOptions = {
   allowStaticFrom?: Array<string>;
 };
 
-type MaybePromise<T> = T | Promise<T>;
+export type MaybePromise<T> = T | Promise<T>;
 
 export type MaybeIntersect<T, U> = U extends undefined ? T : T & U;
 

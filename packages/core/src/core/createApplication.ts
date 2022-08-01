@@ -5,6 +5,7 @@ import type {
   Handler,
   Route,
   Expand,
+  MaybePromise,
 } from '../types';
 import {
   Response,
@@ -30,13 +31,17 @@ type Options<CtxGetter> = Expand<
 type ContextGetter = (request: Request) => object | undefined;
 
 type Adapter = {
+  onError: (
+    request: Request,
+    error: Error,
+  ) => MaybePromise<Response | undefined>;
   // TODO: The only reason we allow toResponse to return undefined here is for
   // the Express adapter. Should we instead get Express to throw instead of
   // returning undefined?
   toResponse: (
     request: Request,
     result: unknown,
-  ) => Promise<Response | undefined>;
+  ) => MaybePromise<Response | undefined>;
   createNativeHandler: (
     requestHandler: (request: Request) => Promise<Response | undefined>,
   ) => NativeHandler;
@@ -105,7 +110,7 @@ export function createCreateApplication<A extends Adapter>(
             return new Response(message, { status }) as any;
           } else {
             const error = e instanceof Error ? e : new Error(String(e));
-            return adapter.toResponse(request, error);
+            return adapter.onError(request, error);
           }
         }
       };
