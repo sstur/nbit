@@ -35,8 +35,9 @@ export class Headers {
   get(name: string) {
     const entry = this.headers.get(name.toLowerCase());
     if (entry) {
-      return entry[1][0];
+      return entry[1][0] ?? null;
     }
+    return null;
   }
 
   set(name: string, value: string) {
