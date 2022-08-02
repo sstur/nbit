@@ -144,7 +144,7 @@ async function startApolloServer() {
 
 - **Simplicity** - providing a clean, minimal _declarative_ API for routing and request handling based on web standards
 - **Strong type guarantees** - extensively leverages modern TypeScript features not just for type safety but for an all-around great developer experience
-- **Testability** - route handlers should be as easy to test as they are to write
+- **Testability** - route handlers should be as [easy to test](#testing-route-handlers) as they are to write
 - First-class support for [Bun](https://bun.sh/), [Node](https://nodejs.org/en/) and [Cloudflare workers](https://workers.cloudflare.com/)
 - [Nano-sized](https://unpkg.com/browse/@nbit/bun/) with no dependencies
 
@@ -166,6 +166,7 @@ async function startApolloServer() {
 
 - Schemas and validation for JSON request body
 - Additional body parsers such as multipart/form-data
+- Tooling to statically generate an [OpenAPI schema](https://oai.github.io/Documentation/start-here.html) from a set of route handlers
 - High performance trie-based (e.g. radix3) request router
 - Better documentation
 - Performance benchmarks and comparisons with other libraries
@@ -393,7 +394,7 @@ Importantly, the context methods, e.g. `.authenticate()` can throw a special Htt
 
 ## Testing route handlers
 
-Testing a route handler is as easy as constructing a mock request, receiving a response, and asserting the response is as expected.
+Testing a route handler is as easy as constructing a mock request, receiving a response, and asserting the response is as expected. See a [live example here](https://stackblitz.com/edit/node-uekcm7?file=src/__tests__/server.test.ts).
 
 ```ts
 import { createApplication, Request } from '@nbit/node';
