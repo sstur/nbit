@@ -1,13 +1,13 @@
 # nbit
 
-A nano-sized, zero-dependency, strongly-typed web framework for [Bun](https://bun.sh), [Node](https://nodejs.org) and [Cloudflare Workers](https://workers.cloudflare.com/) (experimental).
+A nano-sized, zero-dependency, strongly-typed web framework for [Bun](https://bun.sh), [Node](https://nodejs.org) and [Cloudflare Workers](https://workers.cloudflare.com/).
 
 ## Objectives
 
 - **Simplicity** - a clean, minimal _declarative_ API for routing and request handling, based on web standards
 - **Type Safety** - extensively leveraging modern TypeScript features for a great developer experience and strong type safety
 - **Testability** - making route handlers easy to write and easy to test
-- First-class support for [Bun](https://bun.sh/), [Cloudflare workers](https://workers.cloudflare.com/) and [Node](https://nodejs.org/en/)
+- First-class support for [Bun](https://bun.sh/), [Node](https://nodejs.org/en/) and [Cloudflare workers](https://workers.cloudflare.com/)
 - [Nano-sized](https://unpkg.com/browse/@nbit/bun/) with no dependencies
 
 <details>
@@ -20,6 +20,18 @@ A nano-sized, zero-dependency, strongly-typed web framework for [Bun](https://bu
 - JSON by default (just return a plain object)
 - Extensive use of TypeScript for a great developer experience (e.g. type inference for route params)
 - Based on web standards you're already familiar with
+
+</details>
+
+<details>
+  <summary><strong>Work-in-progress / Coming Soon</strong></summary>
+
+- Schemas and validation for JSON request body
+- Additional body parsers such as multipart/form-data
+- High performance trie-based (e.g. radix3) request router
+- Better documentation
+- Performance benchmarks and comparisons with other libraries
+- Deno support
 
 </details>
 
