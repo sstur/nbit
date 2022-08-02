@@ -2,6 +2,10 @@
 
 A nano-sized, zero-dependency, strongly-typed web framework for [Bun](https://bun.sh), [Node](https://nodejs.org) and [Cloudflare Workers](https://workers.cloudflare.com/).
 
+## Live Playground
+
+Check out the [live demo on Stackblitz](https://stackblitz.com/edit/node-uekcm7?file=src/server.ts).
+
 ## Objectives
 
 - **Simplicity** - a clean, minimal _declarative_ API for routing and request handling, based on web standards
@@ -41,10 +45,6 @@ For various projects I've wanted a clean, declarative, type-safe approach for bu
 
 Does the world need another web framework? How is this different from what's out there? [Read more](https://github.com/sstur/nbit/wiki/Motivation) about the motivation behind this package (aka what's wrong with Express).
 
-## Live Playground
-
-Check out the [live demo on Stackblitz](https://stackblitz.com/edit/node-uekcm7?file=src/server.ts).
-
 ## Installation
 
 ```sh
@@ -56,7 +56,7 @@ npm install @nbit/node
 
 # -- or --
 
-npm install @nbit/express # For Express middleware version
+npm install @nbit/cfw # for Cloudflare workers
 ```
 
 ## Hello World Example
