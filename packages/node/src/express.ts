@@ -14,6 +14,7 @@ import { resolveFilePath } from './fs';
 import { isReadable, toReadStream } from './support/streams';
 import { Headers } from './Headers';
 import { Request } from './Request';
+import { pipeStreamAsync } from './support/pipeStreamAsync';
 
 const Errors = defineErrors({
   // This is a placeholder for when no route matches so we can easily identify
@@ -48,7 +49,7 @@ export const createApplication = defineAdapter((applicationOptions) => {
       return Response.json(result);
     },
     createNativeHandler: (getResponse) => {
-      return async (
+      const handleRequest = async (
         expressRequest: ExpressRequest,
         expressResponse: ExpressResponse,
         next: NextFunction,
@@ -74,8 +75,8 @@ export const createApplication = defineAdapter((applicationOptions) => {
           const [fullFilePath, allowedRoot] = resolved;
           expressResponse.status(init.status ?? 200);
           expressResponse.sendFile(
-            // For Express, pass the file path relative to allowedRoot. Express will
-            // not serve the file if it does not exist within the allowed root.
+            // Pass the file path relative to allowedRoot. Express will not
+            // serve the file if it does not exist within the allowed root.
             relative(allowedRoot, fullFilePath),
             {
               root: allowedRoot,
@@ -90,13 +91,15 @@ export const createApplication = defineAdapter((applicationOptions) => {
         }
         const { status, statusText, headers, body } = response;
         if (isReadable(body)) {
-          expressResponse.writeHead(
-            status,
-            statusText,
-            headers.toNodeHeaders(),
-          );
-          // TODO: Use pipeStreamAsync() like the node adapter
-          toReadStream(body).pipe(expressResponse);
+          const readStream = toReadStream(body);
+          await pipeStreamAsync(readStream, expressResponse, {
+            beforeFirstWrite: () =>
+              expressResponse.writeHead(
+                status,
+                statusText,
+                headers.toNodeHeaders(),
+              ),
+          });
         } else {
           expressResponse.writeHead(
             status,
@@ -108,6 +111,23 @@ export const createApplication = defineAdapter((applicationOptions) => {
           }
           expressResponse.end();
         }
+      };
+      return (
+        expressRequest: ExpressRequest,
+        expressResponse: ExpressResponse,
+        next: NextFunction,
+      ) => {
+        handleRequest(expressRequest, expressResponse, next).catch((e) => {
+          const error = e instanceof Error ? e : new Error(String(e));
+          // Normally we'd pass the error on to next() but in this case it seems
+          // something went wrong with streaming so we'll end the request here.
+          if (!expressResponse.headersSent) {
+            expressResponse.writeHead(500);
+            expressResponse.end(String(error));
+          } else {
+            expressResponse.end();
+          }
+        });
       };
     },
   };
