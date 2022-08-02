@@ -2,6 +2,8 @@
 import type { Request, Headers } from '../applicationTypes';
 import type { JSONValue, Method, MethodWithBody } from '../types';
 
+import { parseUrl } from './support/parseUrl';
+
 // TODO: Remove the conditional type when Bun types are updated
 type BodyStream = Request extends { body: any } ? Request['body'] : never;
 type BodyAccessorArgs<M> = M extends MethodWithBody
@@ -26,7 +28,7 @@ export default class CustomRequest<M extends Method, Params extends string> {
     this.url = url;
     this.headers = headers;
     // Attach some custom fields
-    const { pathname, search, searchParams } = new URL(url);
+    const { pathname, search, searchParams } = parseUrl(url);
     this.path = pathname;
     this.search = search;
     this.query = searchParams;
