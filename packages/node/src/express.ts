@@ -8,11 +8,18 @@ import type {
 
 import { createCreateApplication } from './core';
 import { StaticFile } from './core/StaticFile';
+import { defineErrors } from './core/support/defineErrors';
 import { Response } from './Response';
 import { resolveFilePath } from './fs';
 import { isReadable, toReadStream } from './support/streams';
 import { Headers } from './Headers';
 import { Request } from './webio/Request';
+
+const Errors = defineErrors({
+  // This is a placeholder for when no route matches so we can easily identify
+  // it as a special case of error and hand control over to Express.
+  NoRouteError: 'No Route',
+});
 
 export const createApplication = createCreateApplication(
   (applicationOptions) => {
@@ -37,7 +44,7 @@ export const createApplication = createCreateApplication(
           return result;
         }
         if (result === undefined) {
-          return undefined;
+          throw new Errors.NoRouteError();
         }
         return Response.json(result);
       },
@@ -49,12 +56,9 @@ export const createApplication = createCreateApplication(
         ) => {
           const request = Request.fromNodeRequest(expressRequest);
           const response = await getResponse(request);
-          if (!response) {
-            return next();
-          }
           const error = toError.get(response);
           if (error) {
-            return next(error);
+            return error instanceof Errors.NoRouteError ? next() : next(error);
           }
           const staticFile = toStaticFile.get(response);
           if (staticFile) {
@@ -92,6 +96,7 @@ export const createApplication = createCreateApplication(
               statusText,
               headers.toNodeHeaders(),
             );
+            // TODO: Use pipeStreamAsync() like the node adapter
             toReadStream(body).pipe(expressResponse);
           } else {
             expressResponse.writeHead(

@@ -31,19 +31,10 @@ type Options<CtxGetter> = Expand<
 type ContextGetter = (request: Request) => object | undefined;
 
 type Adapter = {
-  onError: (
-    request: Request,
-    error: Error,
-  ) => MaybePromise<Response | undefined>;
-  // TODO: The only reason we allow toResponse to return undefined here is for
-  // the Express adapter. Should we instead get Express to throw instead of
-  // returning undefined?
-  toResponse: (
-    request: Request,
-    result: unknown,
-  ) => MaybePromise<Response | undefined>;
+  onError: (request: Request, error: Error) => MaybePromise<Response>;
+  toResponse: (request: Request, result: unknown) => MaybePromise<Response>;
   createNativeHandler: (
-    requestHandler: (request: Request) => Promise<Response | undefined>,
+    requestHandler: (request: Request) => Promise<Response>,
   ) => NativeHandler;
 };
 
@@ -101,7 +92,7 @@ export function createCreateApplication<A extends Adapter>(
         }
         return adapter.toResponse(request, undefined);
       };
-      return async (request: Request): Promise<Response | undefined> => {
+      return async (request: Request): Promise<Response> => {
         try {
           return await routeRequest(request);
         } catch (e) {

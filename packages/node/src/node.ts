@@ -36,12 +36,6 @@ export const createApplication = createCreateApplication(
       ) => {
         const request = Request.fromNodeRequest(nodeRequest);
         const response = await getResponse(request);
-        // The type system believes this could be undefined (because of a design
-        // choice described in core/createApplication) but in this case it will
-        // always be a Response because of how toResponse is implemented above.
-        if (!response) {
-          return;
-        }
         const { status, statusText, headers, body } = response;
         if (isReadable(body)) {
           const readStream = toReadStream(body);
