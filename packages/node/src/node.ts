@@ -6,7 +6,7 @@ import { isReadable, toReadStream } from './support/streams';
 import { StaticFile } from './core/StaticFile';
 import { pipeStreamAsync } from './support/pipeStreamAsync';
 import { fromStaticFile } from './support/fromStaticFile';
-import { Request } from './webio/Request';
+import { Request } from './Request';
 
 export const createApplication = defineAdapter((applicationOptions) => ({
   onError: (request, error) => {

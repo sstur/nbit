@@ -1,9 +1,8 @@
 import type { IncomingMessage } from 'http';
 
-import { Headers, type HeadersInit } from '../Headers';
-import type { Method } from '../types';
-
+import { Headers, type HeadersInit } from './Headers';
 import { Body, type BodyInit } from './Body';
+import type { Method } from './types';
 
 type RequestInit = {
   method?: Method | Lowercase<Method>;

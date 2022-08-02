@@ -4,9 +4,9 @@ import { TextDecoder } from 'util';
 import { Readable } from 'stream';
 import type { ReadableStream } from 'stream/web';
 
-import type { JSONValue } from '../types';
-import { readEntireStream } from '../support/readEntireStream';
-import { toReadStream } from '../support/streams';
+import { readEntireStream } from './support/readEntireStream';
+import { toReadStream } from './support/streams';
+import type { JSONValue } from './types';
 
 export type BodyInit =
   | Uint8Array // Includes Buffer which is a subclass of Uint8Array

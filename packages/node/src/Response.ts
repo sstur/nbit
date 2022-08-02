@@ -1,6 +1,6 @@
 import { StaticFile, type StaticFileOptions } from './core/StaticFile';
 import { Headers, type HeadersInit } from './Headers';
-import { Body, type BodyInit } from './webio/Body';
+import { Body, type BodyInit } from './Body';
 
 type RedirectStatus = 301 | 302 | 303 | 304 | 307 | 308;
 

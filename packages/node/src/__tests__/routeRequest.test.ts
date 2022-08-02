@@ -1,5 +1,5 @@
 import { createApplication, Response } from '..';
-import { Request } from '../webio/Request';
+import { Request } from '../Request';
 
 describe('createApplication', () => {
   const { defineRoutes, createRequestHandler } = createApplication();

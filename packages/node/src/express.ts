@@ -13,7 +13,7 @@ import { Response } from './Response';
 import { resolveFilePath } from './fs';
 import { isReadable, toReadStream } from './support/streams';
 import { Headers } from './Headers';
-import { Request } from './webio/Request';
+import { Request } from './Request';
 
 const Errors = defineErrors({
   // This is a placeholder for when no route matches so we can easily identify
