@@ -1,65 +1,10 @@
 # nbit
 
-A nano-sized, zero-dependency, strongly-typed web framework for [Bun](https://bun.sh), [Node](https://nodejs.org) and [Cloudflare Workers](https://workers.cloudflare.com/).
+A simple, declarative, type-safe way to build web services and REST APIs for [Bun](https://bun.sh), [Node](https://nodejs.org) and [Cloudflare Workers](https://workers.cloudflare.com/).
 
-## Live Playground
+## Examples
 
-Check out the [live demo on Stackblitz](https://stackblitz.com/edit/node-uekcm7?file=src/server.ts).
-
-## Objectives
-
-- **Simplicity** - a clean, minimal _declarative_ API for routing and request handling, based on web standards
-- **Type Safety** - extensively leveraging modern TypeScript features for a great developer experience and strong type safety
-- **Testability** - making route handlers easy to write and easy to test
-- First-class support for [Bun](https://bun.sh/), [Node](https://nodejs.org/en/) and [Cloudflare workers](https://workers.cloudflare.com/)
-- [Nano-sized](https://unpkg.com/browse/@nbit/bun/) with no dependencies
-
-<details>
-  <summary><strong>Core Features</strong></summary>
-
-- Request routing
-- Body parsing
-- A type-safe approach to middleware (inspired by [Apollo Server's context](https://www.apollographql.com/docs/apollo-server/data/resolvers/#the-context-argument))
-- File Serving (with content-type selection and caching headers like ETag)
-- JSON by default (just return a plain object)
-- Extensive use of TypeScript for a great developer experience (e.g. type inference for route params)
-- Based on web standards you're already familiar with
-
-</details>
-
-<details>
-  <summary><strong>Work-in-progress / Coming Soon</strong></summary>
-
-- Schemas and validation for JSON request body
-- Additional body parsers such as multipart/form-data
-- High performance trie-based (e.g. radix3) request router
-- Better documentation
-- Performance benchmarks and comparisons with other libraries
-- Deno support
-
-</details>
-
-## Motivation
-
-For various projects I've wanted a clean, declarative, type-safe approach for building web APIs that's light-weight enough to be used with [Cloudflare workers](https://workers.cloudflare.com/) and powerful enough to be a replacement for [Express](https://expressjs.com/) on Node (and now we have [Bun](https://bun.sh/)). Nothing in the ecosystem really checks all those boxes.
-
-Does the world need another web framework? How is this different from what's out there? [Read more](https://github.com/sstur/nbit/wiki/Motivation) about the motivation behind this package (aka what's wrong with Express).
-
-## Installation
-
-```sh
-bun add @nbit/bun
-
-# -- or --
-
-npm install @nbit/node
-
-# -- or --
-
-npm install @nbit/cfw # for Cloudflare workers
-```
-
-## Hello World Example
+See some quick examples below and bee sure to [check out the live demo](https://stackblitz.com/edit/node-uekcm7?file=src/server.ts).
 
 <details open>
     <summary>Bun</summary>
@@ -108,7 +53,28 @@ server.listen(3000, () => {
 </details>
 
 <details>
-    <summary>Express</summary>
+    <summary>Cloudflare Workers</summary>
+
+```ts
+import { createApplication } from '@nbit/cfw';
+
+const { defineRoutes, attachRoutes } = createApplication();
+
+const routes = defineRoutes((app) => [
+  app.get('/', (request) => {
+    return { hello: 'world' };
+  }),
+]);
+
+export default {
+  fetch: attachRoutes(routes),
+};
+```
+
+</details>
+
+<details>
+    <summary>Node with Express</summary>
 
 ```ts
 import express from 'express';
@@ -134,7 +100,7 @@ app.listen(3000, () => {
 </details>
 
 <details>
-    <summary>Apollo GraphQL</summary>
+    <summary>Node with Apollo GraphQL</summary>
 
 ```ts
 // Adapted from: https://www.apollographql.com/docs/apollo-server/api/apollo-server/#framework-specific-middleware-function
@@ -174,30 +140,147 @@ async function startApolloServer() {
 
 </details>
 
+## Objectives
+
+- **Simplicity** - providing a clean, minimal _declarative_ API for routing and request handling based on web standards
+- **Strong type guarantees** - extensively leverages modern TypeScript features not just for type safety but for an all-around great developer experience
+- **Testability** - route handlers should be as easy to test as they were to write
+- First-class support for [Bun](https://bun.sh/), [Node](https://nodejs.org/en/) and [Cloudflare workers](https://workers.cloudflare.com/)
+- [Nano-sized](https://unpkg.com/browse/@nbit/bun/) with no dependencies
+
 <details>
-    <summary>Cloudflare Workers</summary>
+  <summary><strong>Core Features</strong></summary>
+
+- Declarative request routing
+- Effortless body parsing
+- A type-safe approach to middleware (inspired by [Apollo Server's context](https://www.apollographql.com/docs/apollo-server/data/resolvers/#the-context-argument))
+- File Serving (with content-type selection, caching headers, ETag, etc)
+- Sensible, convenient defaults and conventions
+- Extensive use of TypeScript (e.g. type inference for route params)
+- Based on web standards you're already familiar with
+
+</details>
+
+<details>
+  <summary><strong>Work-in-progress / Coming Soon</strong></summary>
+
+- Schemas and validation for JSON request body
+- Additional body parsers such as multipart/form-data
+- High performance trie-based (e.g. radix3) request router
+- Better documentation
+- Performance benchmarks and comparisons with other libraries
+- Deno support
+
+</details>
+
+## Motivation
+
+I've often wanted cleaner, more declarative, type-safe tooling for building web APIs. Something that's light-weight enough to be used with [Cloudflare workers](https://workers.cloudflare.com/) and powerful enough to replace [Express](https://expressjs.com/). Now with new performance-focused runtimes like [Bun](https://bun.sh/) this is ever more relevant.
+
+Aren't there already enough choices for writing web APIs? How is this different from what's out there? [Read more](https://github.com/sstur/nbit/wiki/Motivation) about the motivation behind this package (aka what's wrong with Express).
+
+## Installation
+
+```sh
+bun add @nbit/bun
+
+# -- or --
+
+npm install @nbit/node
+
+# -- or --
+
+npm install @nbit/cfw # for Cloudflare workers
+```
+
+## More Examples
+
+<details open>
+    <summary>Route params</summary>
 
 ```ts
-import { createApplication } from '@nbit/cfw';
-
-const { defineRoutes, attachRoutes } = createApplication();
-
 const routes = defineRoutes((app) => [
-  app.get('/', (request) => {
-    return { hello: 'world' };
+  app.post('/users/:id', (request) => {
+    const userId = request.params.id; // <-- fully typed
+    return { yourUserId: userId };
   }),
 ]);
-
-export default {
-  fetch: attachRoutes(routes),
-};
 ```
 
 </details>
 
-Honestly, this might seem a bit boilerplatey for a hello world, but there's some important ergonomic design decisions with the `defineRoutes()` and `attachRoutes()` paradigm, so stick with me here.
+<details>
+    <summary>Sending a file</summary>
 
-## Extensively Typed
+```ts
+const routes = defineRoutes((app) => [
+  app.post('/', (request) => {
+    return Response.file('assets/index.html');
+  }),
+]);
+```
+
+</details>
+
+<details>
+    <summary>Request Headers</summary>
+
+```ts
+const routes = defineRoutes((app) => [
+  app.post('/foo', async (request) => {
+    const authToken = request.headers.get('Authorization') ?? '';
+    // ... check auth ...
+    return { success: true };
+  }),
+]);
+```
+
+</details>
+
+<details>
+    <summary>Request body</summary>
+
+```ts
+const routes = defineRoutes((app) => [
+  app.post('/auth', async (request) => {
+    const { username, password } = await request.json();
+    const isValid = await checkLogin(username, password);
+    if (!isValid) {
+      // Send a JSON response _with_ a custom status code
+      return Response.json({ success: false }, { status: 403 });
+    }
+    // ...
+  }),
+]);
+```
+
+</details>
+
+<details>
+    <summary>Throwing</summary>
+
+```ts
+const routes = defineRoutes((app) => [
+  app.post('/auth', async (request) => {
+    const { username, password } = await request.json();
+    // The following check with _throw_ if not valid; see below
+    await checkLogin(username, password);
+    return { success: true };
+  }),
+]);
+
+async function checkLogin(username, password) {
+  if (username !== 'foo' || password !== '123') {
+    throw new HttpError({ status: 403, message: 'Unauthorized' });
+  }
+}
+```
+
+</details>
+
+Some of those examples might seem a bit boilerplatey for a hello world, but there's some important ergonomic design decisions with the `defineRoutes()` and `attachRoutes()` paradigm, as well as the fact that each route handler takes exactly one input (request) and returns exactly one result.
+
+// TODO: Add more examples
 
 Everything from middleware (which we call context) to body parsers to request params is fully typed, out of the box, using TypeScript's powerful type inference so you don't need to write type annotations everywhere.
 
