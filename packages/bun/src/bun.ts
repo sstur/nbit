@@ -4,7 +4,7 @@ import { resolveFilePath } from './fs';
 import { serveFile } from './support/serveFile';
 
 export const createApplication = createCreateApplication(
-  (routeRequest, applicationOptions) => {
+  (applicationOptions) => {
     // Note: This `fromStaticFile` implementation is identical to that of node
     // except it uses a custom serveFile (which uses a custom statAsync and
     // returns a FileBlob instead of read stream).
@@ -43,22 +43,23 @@ export const createApplication = createCreateApplication(
       });
     };
 
-    return async (request: Request) => {
-      const response = await routeRequest(request, {
-        onError: (error) => {
-          return new Response(String(error), { status: 500 });
-        },
-        toResponse: async (result) => {
-          if (result instanceof Response) {
-            return result;
-          }
-          if (result instanceof StaticFile) {
-            return await fromStaticFile(request.headers, result);
-          }
-          return Response.json(result);
-        },
-      });
-      return response ?? new Response('Not found', { status: 404 });
+    return {
+      onError: (request, error) => {
+        return new Response(String(error), { status: 500 });
+      },
+      toResponse: async (request, result) => {
+        if (result instanceof StaticFile) {
+          result = await fromStaticFile(request.headers, result);
+        }
+        if (result instanceof Response) {
+          return result;
+        }
+        if (result === undefined) {
+          return new Response('Not found', { status: 404 });
+        }
+        return Response.json(result);
+      },
+      createNativeHandler: (handleRequest) => handleRequest,
     };
   },
 );
