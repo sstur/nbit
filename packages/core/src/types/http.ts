@@ -1,6 +1,6 @@
 import type { Response } from '../applicationTypes';
 import type { StaticFile } from '../core/StaticFile';
-import type CustomRequest from '../core/CustomRequest';
+import type { CustomRequest } from '../core/CustomRequest';
 
 export type RequestOptions = {
   /**

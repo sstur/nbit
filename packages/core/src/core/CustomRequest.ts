@@ -10,7 +10,7 @@ type BodyAccessorArgs<M> = M extends MethodWithBody
   ? []
   : [ERROR: 'NO_BODY_ALLOWED_FOR_METHOD'];
 
-export default class CustomRequest<M extends Method, Params extends string> {
+export class CustomRequest<M extends Method, Params extends string> {
   private request: Request;
   readonly method: M;
   readonly url: string;

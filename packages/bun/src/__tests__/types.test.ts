@@ -2,8 +2,8 @@ import { describe, it } from 'bun:test';
 import { expectTypeOf } from 'expect-type';
 
 import { createApplication } from '../bun';
-import type CustomRequest from '../core/CustomRequest';
 import Response from '../Response';
+import type { CustomRequest } from '../core/CustomRequest';
 import type { JSONValue, Route } from '../types';
 
 describe('Types', () => {

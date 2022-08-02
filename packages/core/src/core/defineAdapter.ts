@@ -11,7 +11,7 @@ import { type Request, Response } from '../applicationTypes';
 
 import { createRouter } from './Router';
 import { HttpError } from './HttpError';
-import CustomRequest from './CustomRequest';
+import { CustomRequest } from './CustomRequest';
 
 type Options<CtxGetter> = Expand<
   RequestOptions &
