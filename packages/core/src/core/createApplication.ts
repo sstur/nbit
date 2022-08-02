@@ -7,11 +7,7 @@ import type {
   Expand,
   MaybePromise,
 } from '../types';
-import {
-  Response,
-  type Request,
-  type NativeHandler,
-} from '../applicationTypes';
+import { type Request, Response } from '../applicationTypes';
 
 import { createRouter } from './Router';
 import { HttpError } from './HttpError';
@@ -30,7 +26,7 @@ type Options<CtxGetter> = Expand<
 
 type ContextGetter = (request: Request) => object | undefined;
 
-type Adapter = {
+type Adapter<NativeHandler> = {
   onError: (request: Request, error: Error) => MaybePromise<Response>;
   toResponse: (request: Request, result: unknown) => MaybePromise<Response>;
   createNativeHandler: (
@@ -38,13 +34,17 @@ type Adapter = {
   ) => NativeHandler;
 };
 
-type AdapterCreator<A extends Adapter> = <CtxGetter extends ContextGetter>(
-  applicationOptions: Options<CtxGetter>,
-) => A;
+type AnyFunction = (...args: Array<any>) => any;
 
-export function createCreateApplication<A extends Adapter>(
+type AdapterCreator<NativeHandler extends AnyFunction> = <
+  CtxGetter extends ContextGetter,
+>(
+  applicationOptions: Options<CtxGetter>,
+) => Adapter<NativeHandler>;
+
+export function createCreateApplication<NativeHandler extends AnyFunction>(
   // TODO: Rename this
-  createAdapter: AdapterCreator<A>,
+  createAdapter: AdapterCreator<NativeHandler>,
 ) {
   const createApplication = <
     CtxGetter extends ContextGetter = (request: Request) => undefined,
