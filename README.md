@@ -4,7 +4,7 @@ A simple, declarative, type-safe way to build web services and REST APIs for [Bu
 
 ## Examples
 
-See some quick examples below and bee sure to [check out the live demo](https://stackblitz.com/edit/node-uekcm7?file=src/server.ts).
+See some quick examples below and be sure to [check out the live demo](https://stackblitz.com/edit/node-uekcm7?file=src/server.ts).
 
 <details open>
     <summary>Bun</summary>
@@ -144,7 +144,7 @@ async function startApolloServer() {
 
 - **Simplicity** - providing a clean, minimal _declarative_ API for routing and request handling based on web standards
 - **Strong type guarantees** - extensively leverages modern TypeScript features not just for type safety but for an all-around great developer experience
-- **Testability** - route handlers should be as easy to test as they were to write
+- **Testability** - route handlers should be as easy to test as they are to write
 - First-class support for [Bun](https://bun.sh/), [Node](https://nodejs.org/en/) and [Cloudflare workers](https://workers.cloudflare.com/)
 - [Nano-sized](https://unpkg.com/browse/@nbit/bun/) with no dependencies
 
@@ -308,11 +308,11 @@ Note that in the above code we're defining an _array_ of route handlers.
 const routes = defineRoutes((app) => [ ... ]);
 ```
 
-This reflects an important principle of this framework; we don't mutate a shared `app` that gets passed around. We instead `declare` or `define` a set of route handlers. The result is simply an array (which can be passed into `attachRoutes()` or used for tests).
+This reflects an important principle of this framework; we don't mutate a shared `app` object. We declaratively define a set of route handlers using `defineRoutes()`. The result is simply an array (which can be passed into `attachRoutes()` or used for tests).
 
-From a route handler you can `return new Response(string)` or `return new Response(stream)` or you can use a helper like `return Response.json({...})` or return just a plain object and it will be converted to JSON.
+From within a route handler you can `return new Response(string)` or `return new Response(stream)` or you can use a helper like `return Response.json({...})` or return just a plain object and it will be sent as JSON.
 
-`Response` follows [the web standard](https://developer.mozilla.org/en-US/docs/Web/API/Response) for the most part, but there's an extra `Response.file(path)` to serve a static file, and there might be additional non-standard helpers in future.
+`Response` follows [the web standard](https://developer.mozilla.org/en-US/docs/Web/API/Response) for the most part, but there's an extra `Response.file(path)` to serve a static file. We might add additional non-standard helpers in future as well.
 
 You can `import { Response } from '@nbit/node'` or from `@nbit/bun`, etc.
 
@@ -408,7 +408,7 @@ const routes = defineRoutes((app) => [
 
 const requestHandler = createRequestHandler(routes);
 
-it('should handle request', async () => {
+it('should handle a request', async () => {
   const request = new Request('/');
   const response = await requestHandler(request);
   expect(response.status).toBe(200);
