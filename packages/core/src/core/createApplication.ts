@@ -90,7 +90,7 @@ export function createCreateApplication<NativeHandler extends AnyFunction>(
             return await adapter.toResponse(request, result);
           }
         }
-        return adapter.toResponse(request, undefined);
+        return await adapter.toResponse(request, undefined);
       };
       return async (request: Request): Promise<Response> => {
         try {
@@ -98,10 +98,10 @@ export function createCreateApplication<NativeHandler extends AnyFunction>(
         } catch (e) {
           if (e instanceof HttpError) {
             const { status, message } = e;
-            return new Response(message, { status }) as any;
+            return new Response(message, { status });
           } else {
             const error = e instanceof Error ? e : new Error(String(e));
-            return adapter.onError(request, error);
+            return await adapter.onError(request, error);
           }
         }
       };
