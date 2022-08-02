@@ -1,4 +1,4 @@
 export * from './support';
-export { createCreateApplication } from './createApplication';
+export { defineAdapter } from './defineAdapter';
 export { HttpError } from './HttpError';
 export type { Router } from './Router';

@@ -42,8 +42,7 @@ type AdapterCreator<NativeHandler extends AnyFunction> = <
   applicationOptions: Options<CtxGetter>,
 ) => Adapter<NativeHandler>;
 
-export function createCreateApplication<NativeHandler extends AnyFunction>(
-  // TODO: Rename this
+export function defineAdapter<NativeHandler extends AnyFunction>(
   createAdapter: AdapterCreator<NativeHandler>,
 ) {
   const createApplication = <
