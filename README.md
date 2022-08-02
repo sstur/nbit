@@ -391,11 +391,33 @@ Note in the above that whatever we return as part of `context` gets merged onto 
 
 Importantly, the context methods, e.g. `.authenticate()` can throw a special HttpError (or any error really, but HttpError will ensure the right response status, vs a generic error will result in a 500). This ensures we can do something like `const { userId } = await request.authenticate()` from within a route handler since it will _always_ result in a valid user.
 
-## Benchmarks
-
-// TODO
-
 ## Testing route handlers
+
+Testing a route handler is as easy as constructing a mock request, receiving a response, and asserting the response is as expected.
+
+```ts
+import { createApplication, Request } from '@nbit/node';
+
+const { defineRoutes, createRequestHandler } = createApplication();
+
+const routes = defineRoutes((app) => [
+  app.get('/', (request) => {
+    return { hello: 'world' };
+  }),
+]);
+
+const requestHandler = createRequestHandler(routes);
+
+it('should handle request', async () => {
+  const request = new Request('/');
+  const response = await requestHandler(request);
+  expect(response.status).toBe(200);
+  const data = await response.json();
+  expect(data).toEqual({ hello: 'world' });
+});
+```
+
+## Benchmarks
 
 // TODO
 
