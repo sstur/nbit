@@ -25,12 +25,13 @@
     "@cloudflare/workers-types": "^3.14.1",
     "@rollup/plugin-typescript": "^8.3.3",
     "@types/jest": "^28.1.4",
+    "@types/node-fetch": "^2.6.2",
     "eslint": "^8.19.0",
     "eslint-config-xt": "^1.7.0",
     "expect-type": "^0.13.0",
     "jest": "^28.1.2",
-    "jest-environment-miniflare": "^2.6.0",
     "lean-package": "^1.4.0",
+    "node-fetch": "^2.6.7",
     "nodemon": "^2.0.19",
     "prettier": "^2.7.1",
     "rollup": "^2.76.0",
@@ -41,7 +42,14 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "testEnvironment": "miniflare"
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": true
+      }
+    },
+    "setupFiles": [
+      "<rootDir>/src/test/setup.ts"
+    ]
   },
   "eslintConfig": {
     "extends": "xt",

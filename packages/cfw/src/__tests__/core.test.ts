@@ -44,7 +44,6 @@ describe('createApplication', () => {
     const mockRequest = new Request('http://localhost/');
     const response = await requestHandler(mockRequest);
     expect(response.status).toBe(200);
-    expect(response.statusText).toBe('');
     const headers = Object.fromEntries(response.headers.entries());
     expect(headers).toEqual({
       'content-type': 'application/json',
@@ -77,7 +76,6 @@ describe('createApplication', () => {
     });
     const response = await requestHandler(mockRequest);
     expect(response.status).toBe(200);
-    expect(response.statusText).toBe('');
     const headers = Object.fromEntries(response.headers.entries());
     expect(headers).toEqual({
       'content-type': 'application/json',
