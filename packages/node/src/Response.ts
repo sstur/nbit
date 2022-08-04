@@ -31,6 +31,9 @@ export class Response extends Body {
     return new Response('', {
       status: status ?? 302,
       // Note: express would percent-encode this URL using npm.im/encodeurl
+      // In the spec, there is a well-defined set of valid characters, see https://github.com/nodejs/undici/blob/0ef0e265e1c8edf2614f058ea1a4224349680e99/lib/fetch/util.js#L116
+      // Invalid characters include, anything above 0x7e, anything below 0x21 or
+      // any of the following 17 characters: ()<>@,;:\"/[]?={}
       headers: { Location: url },
     });
   }
