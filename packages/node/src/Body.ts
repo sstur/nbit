@@ -38,9 +38,11 @@ export class Body {
 
   get bodyUsed() {
     const body = this._body;
+    if (body == null) {
+      return false;
+    }
     if (
       this._bodyUsed ||
-      body == null ||
       body instanceof Uint8Array ||
       typeof body === 'string'
     ) {
@@ -73,13 +75,18 @@ export class Body {
     return this._bodyUsed;
   }
 
-  private async buffer(): Promise<Buffer> {
-    // TODO: Throw if the body is already used?
-    this._bodyUsed = true;
+  private async buffer(methodName: string): Promise<Buffer> {
+    if (this.bodyUsed) {
+      const className = this.constructor.name;
+      throw new TypeError(
+        `TypeError: Failed to execute '${methodName}' on '${className}': body stream already read`,
+      );
+    }
     const body = this._body;
     if (body == null) {
       return Buffer.from('');
     }
+    this._bodyUsed = true;
     if (body instanceof Uint8Array) {
       return Buffer.isBuffer(body) ? body : Buffer.from(body.buffer);
     }
@@ -95,18 +102,18 @@ export class Body {
   }
 
   async arrayBuffer(): Promise<ArrayBuffer> {
-    const { buffer } = await this.buffer();
+    const { buffer } = await this.buffer('arrayBuffer');
     return buffer;
   }
 
   async text(): Promise<string> {
-    const body = await this.buffer();
+    const body = await this.buffer('text');
     return toString(body);
   }
 
   async json<T = JSONValue>(): Promise<T> {
-    const text = await this.text();
-    return JSON.parse(text) as any;
+    const body = await this.buffer('json');
+    return JSON.parse(toString(body)) as any;
   }
 }
 
