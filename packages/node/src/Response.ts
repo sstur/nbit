@@ -23,6 +23,10 @@ export class Response extends Body {
     this.headers = new Headers(headers);
   }
 
+  get ok() {
+    return this.status >= 200 && this.status <= 299;
+  }
+
   static redirect(url: string, status?: RedirectStatus) {
     return new Response('', {
       status: status ?? 302,
