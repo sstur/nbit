@@ -3,6 +3,14 @@ import type { IncomingMessage } from 'http';
 import { Headers, type HeadersInit } from './Headers';
 import { Body, type BodyInit } from './Body';
 import type { Method, RequestOptions } from './types';
+import { HttpError } from './core';
+
+// Same as Express
+const TOO_LARGE = { status: 413, message: 'Request Entity Too Large' };
+const SIZE_MISMATCH = {
+  status: 400,
+  message: 'Request body size did not match content-length header',
+};
 
 type RequestInit = {
   method?: Method | Lowercase<Method>;
@@ -20,7 +28,19 @@ export class Request extends Body {
     const { bodyParserMaxBufferSize: maxBufferSize } = init?.options ?? {};
     const headers = new Headers(init?.headers);
     const expectedSize = getContentLength(headers);
-    super(init?.body ?? null, { maxBufferSize, expectedSize });
+    super(init?.body ?? null, {
+      maxBufferSize,
+      expectedSize,
+      onReadError: (error) => {
+        if (error.name === 'MaxSizeExceededError') {
+          return new HttpError(TOO_LARGE);
+        }
+        if (error.name === 'ExpectedSizeMismatchError') {
+          return new HttpError(SIZE_MISMATCH);
+        }
+        return error;
+      },
+    });
     this.url = url;
     this.method = (init?.method ? init.method.toUpperCase() : 'GET') as Method;
     this.headers = headers;

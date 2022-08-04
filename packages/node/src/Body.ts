@@ -22,6 +22,11 @@ const MAX_BUFFER_SIZE = 100 * 1024;
 export type Options = {
   expectedSize?: number | undefined;
   maxBufferSize?: number | undefined;
+  /**
+   * This allows us to catch an error that occurs while reading the body and
+   * convert it to a more use-case appropriate error like an HttpError
+   */
+  onReadError?: (error: Error) => Error;
 };
 
 export class Body {
@@ -97,12 +102,18 @@ export class Body {
     }
     const expectedSize = this._options.expectedSize;
     const maxBufferSize = this._options.maxBufferSize ?? MAX_BUFFER_SIZE;
-    const buffer = await readEntireStream(toReadStream(body), {
-      expectedSize,
-      maxBufferSize,
-    });
-    this._body = buffer;
-    return buffer;
+    try {
+      return await readEntireStream(toReadStream(body), {
+        expectedSize,
+        maxBufferSize,
+      });
+    } catch (e) {
+      const { onReadError } = this._options;
+      if (e instanceof Error && onReadError) {
+        throw onReadError(e);
+      }
+      throw e;
+    }
   }
 
   async arrayBuffer(): Promise<ArrayBuffer> {
