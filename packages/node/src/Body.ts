@@ -105,9 +105,6 @@ export class Body {
   }
 
   async json<T = JSONValue>(): Promise<T> {
-    if (this._body == null) {
-      return null as any;
-    }
     const text = await this.text();
     return JSON.parse(text) as any;
   }
