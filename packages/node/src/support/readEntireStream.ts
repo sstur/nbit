@@ -19,7 +19,8 @@ export function readEntireStream(stream: Readable, options: Options) {
       chunks.push(data);
       totalBytesRead += data.length;
       if (totalBytesRead > maxBufferSize) {
-        throw new Errors.MaxSizeExceededError({ maxBufferSize });
+        const error = new Errors.MaxSizeExceededError({ maxBufferSize });
+        reject(error);
       }
     });
     stream.on('error', (error) => {
