@@ -92,7 +92,7 @@ export const createApplication = defineAdapter((applicationOptions) => {
           );
           return;
         }
-        const { status, statusText, headers, body } = response;
+        const { status, statusText, headers, bodyRaw: body } = response;
         if (isReadable(body)) {
           await pipeStreamAsync(body, expressResponse, {
             beforeFirstWrite: () =>

@@ -29,39 +29,78 @@ export type Options = {
 };
 
 export class Body {
-  readonly body: Readable | null;
+  private _bodyInit: BodyInit | null;
+  private _bodyStream: Readable | undefined;
   private _bodyUsed = false;
   private options: Options;
 
   constructor(body: BodyInit | null, options?: Options) {
-    this.body = body == null ? null : toStream(body);
+    this._bodyInit = body;
     this.options = options ?? {};
   }
 
+  get body() {
+    if (this._bodyStream) {
+      return this._bodyStream;
+    }
+    const body = this._bodyInit;
+    if (body == null) {
+      return null;
+    }
+    return (this._bodyStream = toStream(body));
+  }
+
+  /**
+   * Non-standard getter for fast-path handling of non-stream response body
+   */
+  get bodyRaw() {
+    const body = this._bodyInit;
+    if (
+      body == null ||
+      body instanceof Uint8Array ||
+      typeof body === 'string'
+    ) {
+      return body;
+    }
+    return this.body;
+  }
+
   get bodyUsed() {
-    const { body } = this;
+    const body = this._bodyInit;
     if (body == null) {
       return false;
     }
-    if (this._bodyUsed) {
+    if (
+      this._bodyUsed ||
+      body instanceof Uint8Array ||
+      typeof body === 'string'
+    ) {
       return this._bodyUsed;
     }
-    // In Node v16.8+ we can rely on Readable.isDisturbed()
+    if (body instanceof Readable) {
+      // In Node v16.8+ we can rely on Readable.isDisturbed()
+      if (Readable.isDisturbed) {
+        return Readable.isDisturbed(body);
+      }
+      // In Node v14.18+ we can rely on stream.readableDidRead
+      // https://nodejs.org/docs/latest-v14.x/api/stream.html#stream_readable_readabledidread
+      const { readableDidRead } = body;
+      if (typeof readableDidRead === 'boolean') {
+        return readableDidRead;
+      }
+      // If it's an IncomingMessage, we can rely on the _consuming field
+      const consuming = Object(body)._consuming;
+      if (typeof consuming === 'boolean') {
+        return consuming;
+      }
+      // If nothing else, we'll rely on our own internal flag
+      return this._bodyUsed;
+    }
+    // For Web Streams (Node v16.5+) we'll rely on Readable.isDisturbed() if
+    // available (Node v16.8+) otherwise fall back to our own internal flag.
     if (Readable.isDisturbed) {
-      return Readable.isDisturbed(body);
+      return Readable.isDisturbed(body as any);
     }
-    // In Node v14.18+ we can rely on stream.readableDidRead
-    // https://nodejs.org/docs/latest-v14.x/api/stream.html#stream_readable_readabledidread
-    const { readableDidRead } = body;
-    if (typeof readableDidRead === 'boolean') {
-      return readableDidRead;
-    }
-    // If it's an IncomingMessage, we can rely on the _consuming field
-    const consuming = Object(body)._consuming;
-    if (typeof consuming === 'boolean') {
-      return consuming;
-    }
-    // If nothing else, we'll rely on our own internal flag
     return this._bodyUsed;
   }
 
@@ -72,7 +111,7 @@ export class Body {
         `TypeError: Failed to execute '${methodName}' on '${className}': body stream already read`,
       );
     }
-    const { body } = this;
+    const body = this.body;
     if (body == null) {
       return Buffer.from('');
     }

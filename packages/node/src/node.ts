@@ -35,7 +35,7 @@ export const createApplication = defineAdapter((applicationOptions) => ({
     ) => {
       const request = Request.fromNodeRequest(nodeRequest, applicationOptions);
       const response = await getResponse(request);
-      const { status, statusText, headers, body } = response;
+      const { status, statusText, headers, bodyRaw: body } = response;
       if (isReadable(body)) {
         await pipeStreamAsync(body, nodeResponse, {
           beforeFirstWrite: () =>
