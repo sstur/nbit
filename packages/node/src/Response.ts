@@ -2,7 +2,7 @@ import { StaticFile, type StaticFileOptions } from './core/StaticFile';
 import { Headers, type HeadersInit } from './Headers';
 import { Body, type BodyInit } from './Body';
 
-type RedirectStatus = 301 | 302 | 303 | 304 | 307 | 308;
+type RedirectStatus = 301 | 302 | 303 | 307 | 308;
 
 export type ResponseInit = {
   headers?: HeadersInit;
@@ -23,8 +23,7 @@ export class Response extends Body {
     this.headers = new Headers(headers);
   }
 
-  static redirect(url: string, init?: { status?: RedirectStatus }) {
-    const { status } = init ?? {};
+  static redirect(url: string, status?: RedirectStatus) {
     return new Response('', {
       status: status ?? 302,
       // Note: express would percent-encode this URL using npm.im/encodeurl

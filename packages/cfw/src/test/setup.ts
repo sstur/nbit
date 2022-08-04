@@ -1,10 +1,18 @@
 import { Request, Response, Headers, type ResponseInit } from 'node-fetch';
 
-// Polyfill for Response.json() which is in the standard but not supported by node-fetch 2.x
-Object(Response).json = (body: unknown, init?: ResponseInit) => {
-  const headers = new Headers(init?.headers);
-  headers.set('Content-Type', 'application/json');
-  return new Response(JSON.stringify(body), { ...init, headers });
-};
+// Polyfill for static methods which are in the standard but not supported by node-fetch
+Object.assign(Response, {
+  json: (body: unknown, init?: ResponseInit) => {
+    const headers = new Headers(init?.headers);
+    headers.set('Content-Type', 'application/json');
+    return new Response(JSON.stringify(body), { ...init, headers });
+  },
+  redirect: (url: string, status = 302) => {
+    return new Response('', {
+      status,
+      headers: { Location: url },
+    });
+  },
+});
 
 Object.assign(globalThis, { Request, Response, Headers });
