@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'http';
 
 import { defineAdapter } from './core';
 import { Response } from './Response';
-import { isReadable, toReadStream } from './support/streams';
+import { isReadable } from './support/streams';
 import { StaticFile } from './core/StaticFile';
 import { pipeStreamAsync } from './support/pipeStreamAsync';
 import { fromStaticFile } from './support/fromStaticFile';
@@ -37,8 +37,7 @@ export const createApplication = defineAdapter((applicationOptions) => ({
       const response = await getResponse(request);
       const { status, statusText, headers, body } = response;
       if (isReadable(body)) {
-        const readStream = toReadStream(body);
-        await pipeStreamAsync(readStream, nodeResponse, {
+        await pipeStreamAsync(body, nodeResponse, {
           beforeFirstWrite: () =>
             nodeResponse.writeHead(status, statusText, headers.toNodeHeaders()),
         });

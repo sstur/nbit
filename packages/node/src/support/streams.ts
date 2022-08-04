@@ -5,9 +5,9 @@ export function isReadable(input: unknown): input is Readable | ReadableStream {
   return isLegacyReadableStream(input) || isWebReadableStream(input);
 }
 
-export function toReadStream(input: Readable | ReadableStream): Readable {
-  return isWebReadableStream(input) ? Readable.fromWeb(input) : input;
-}
+// export function toReadStream(input: Readable | ReadableStream): Readable {
+//   return isWebReadableStream(input) ? Readable.fromWeb(input) : input;
+// }
 
 function isLegacyReadableStream(input: unknown): input is Readable {
   return input instanceof Readable;

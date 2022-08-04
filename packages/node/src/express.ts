@@ -11,7 +11,7 @@ import { StaticFile } from './core/StaticFile';
 import { defineErrors } from './core/support/defineErrors';
 import { Response } from './Response';
 import { resolveFilePath } from './fs';
-import { isReadable, toReadStream } from './support/streams';
+import { isReadable } from './support/streams';
 import { Headers } from './Headers';
 import { Request } from './Request';
 import { pipeStreamAsync } from './support/pipeStreamAsync';
@@ -94,8 +94,7 @@ export const createApplication = defineAdapter((applicationOptions) => {
         }
         const { status, statusText, headers, body } = response;
         if (isReadable(body)) {
-          const readStream = toReadStream(body);
-          await pipeStreamAsync(readStream, expressResponse, {
+          await pipeStreamAsync(body, expressResponse, {
             beforeFirstWrite: () =>
               expressResponse.writeHead(
                 status,

@@ -5,7 +5,6 @@ import { Readable } from 'stream';
 import type { ReadableStream } from 'stream/web';
 
 import { readEntireStream } from './support/readEntireStream';
-import { toReadStream } from './support/streams';
 import type { JSONValue } from './types';
 
 // TODO: Include null and undefined
@@ -30,85 +29,65 @@ export type Options = {
 };
 
 export class Body {
-  private _body: BodyInit | null;
+  readonly body: Readable | null;
   private _bodyUsed = false;
-  private _options: Options;
+  private options: Options;
 
   constructor(body: BodyInit | null, options?: Options) {
-    this._body = body;
-    this._options = options ?? {};
-  }
-
-  get body() {
-    return this._body;
+    this.body = body == null ? null : toStream(body);
+    this.options = options ?? {};
   }
 
   get bodyUsed() {
-    const body = this._body;
+    const { body } = this;
     if (body == null) {
       return false;
     }
-    if (
-      this._bodyUsed ||
-      body instanceof Uint8Array ||
-      typeof body === 'string'
-    ) {
+    if (this._bodyUsed) {
       return this._bodyUsed;
     }
-    if (body instanceof Readable) {
-      // In Node v16.8+ we can rely on Readable.isDisturbed()
-      if (Readable.isDisturbed) {
-        return Readable.isDisturbed(body);
-      }
-      // In Node v14.18+ we can rely on stream.readableDidRead
-      // https://nodejs.org/docs/latest-v14.x/api/stream.html#stream_readable_readabledidread
-      const { readableDidRead } = body;
-      if (typeof readableDidRead === 'boolean') {
-        return readableDidRead;
-      }
-      // If it's an IncomingMessage, so we can rely on the _consuming field
-      const consuming = Object(body)._consuming;
-      if (typeof consuming === 'boolean') {
-        return consuming;
-      }
-      // If nothing else, we'll rely on our own internal flag
-      return this._bodyUsed;
-    }
-    // For Web Streams (Node v16.5+) we'll rely on Readable.isDisturbed() if
-    // available (Node v16.8+) otherwise fall back to our own internal flag.
+    // In Node v16.8+ we can rely on Readable.isDisturbed()
     if (Readable.isDisturbed) {
-      return Readable.isDisturbed(body as any);
+      return Readable.isDisturbed(body);
     }
+    // In Node v14.18+ we can rely on stream.readableDidRead
+    // https://nodejs.org/docs/latest-v14.x/api/stream.html#stream_readable_readabledidread
+    const { readableDidRead } = body;
+    if (typeof readableDidRead === 'boolean') {
+      return readableDidRead;
+    }
+    // If it's an IncomingMessage, we can rely on the _consuming field
+    const consuming = Object(body)._consuming;
+    if (typeof consuming === 'boolean') {
+      return consuming;
+    }
+    // If nothing else, we'll rely on our own internal flag
     return this._bodyUsed;
   }
 
-  private async buffer(methodName: string): Promise<Buffer> {
+  private async consumeBody(methodName: string): Promise<Buffer> {
     if (this.bodyUsed) {
       const className = this.constructor.name;
       throw new TypeError(
         `TypeError: Failed to execute '${methodName}' on '${className}': body stream already read`,
       );
     }
-    const body = this._body;
+    const { body } = this;
     if (body == null) {
       return Buffer.from('');
     }
     this._bodyUsed = true;
-    if (body instanceof Uint8Array) {
-      return Buffer.isBuffer(body) ? body : Buffer.from(body.buffer);
-    }
-    if (typeof body === 'string') {
-      return Buffer.from(body);
-    }
-    const expectedSize = this._options.expectedSize;
-    const maxBufferSize = this._options.maxBufferSize ?? MAX_BUFFER_SIZE;
+    const {
+      expectedSize,
+      maxBufferSize = MAX_BUFFER_SIZE,
+      onReadError,
+    } = this.options;
     try {
-      return await readEntireStream(toReadStream(body), {
+      return await readEntireStream(body, {
         expectedSize,
         maxBufferSize,
       });
     } catch (e) {
-      const { onReadError } = this._options;
       if (e instanceof Error && onReadError) {
         throw onReadError(e);
       }
@@ -117,21 +96,33 @@ export class Body {
   }
 
   async arrayBuffer(): Promise<ArrayBuffer> {
-    const { buffer } = await this.buffer('arrayBuffer');
+    const { buffer } = await this.consumeBody('arrayBuffer');
     return buffer;
   }
 
   async text(): Promise<string> {
-    const body = await this.buffer('text');
+    const body = await this.consumeBody('text');
     return toString(body);
   }
 
   async json<T = JSONValue>(): Promise<T> {
-    const body = await this.buffer('json');
+    const body = await this.consumeBody('json');
     return JSON.parse(toString(body)) as any;
   }
 }
 
-function toString(body: string | Uint8Array): string {
-  return body instanceof Uint8Array ? new TextDecoder().decode(body) : body;
+function toStream(
+  body: Uint8Array | Readable | ReadableStream | string,
+): Readable {
+  if (body instanceof Uint8Array || typeof body === 'string') {
+    return Readable.from(body, { objectMode: false });
+  }
+  if (body instanceof Readable) {
+    return body;
+  }
+  return Readable.fromWeb(body);
+}
+
+function toString(body: Uint8Array): string {
+  return new TextDecoder().decode(body);
 }
