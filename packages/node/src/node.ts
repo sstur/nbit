@@ -33,7 +33,7 @@ export const createApplication = defineAdapter((applicationOptions) => ({
       nodeRequest: IncomingMessage,
       nodeResponse: ServerResponse,
     ) => {
-      const request = Request.fromNodeRequest(nodeRequest);
+      const request = Request.fromNodeRequest(nodeRequest, applicationOptions);
       const response = await getResponse(request);
       const { status, statusText, headers, body } = response;
       if (isReadable(body)) {

@@ -7,7 +7,7 @@ export type RequestOptions = {
    * The max number of bytes that will be buffered into memory when parsing a
    * request body into a format such as JSON.
    */
-  bodyParserMaxLength?: number;
+  bodyParserMaxBufferSize?: number;
 };
 
 export type FileServingOptions = {

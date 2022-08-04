@@ -54,7 +54,10 @@ export const createApplication = defineAdapter((applicationOptions) => {
         expressResponse: ExpressResponse,
         next: NextFunction,
       ) => {
-        const request = Request.fromNodeRequest(expressRequest);
+        const request = Request.fromNodeRequest(
+          expressRequest,
+          applicationOptions,
+        );
         const response = await getResponse(request);
         const error = toError.get(response);
         if (error) {

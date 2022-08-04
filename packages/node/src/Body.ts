@@ -8,6 +8,7 @@ import { readEntireStream } from './support/readEntireStream';
 import { toReadStream } from './support/streams';
 import type { JSONValue } from './types';
 
+// TODO: Include null and undefined
 export type BodyInit =
   | Uint8Array // Includes Buffer which is a subclass of Uint8Array
   | Readable // Traditional Node Streams API
@@ -19,17 +20,18 @@ export type BodyInit =
 const MAX_BUFFER_SIZE = 100 * 1024;
 
 export type Options = {
-  maxBufferSize?: number;
+  expectedSize?: number | undefined;
+  maxBufferSize?: number | undefined;
 };
 
 export class Body {
   private _body: BodyInit | null;
   private _bodyUsed = false;
-  private options: Options;
+  private _options: Options;
 
   constructor(body: BodyInit | null, options?: Options) {
     this._body = body;
-    this.options = options ?? {};
+    this._options = options ?? {};
   }
 
   get body() {
@@ -93,8 +95,10 @@ export class Body {
     if (typeof body === 'string') {
       return Buffer.from(body);
     }
-    const maxBufferSize = this.options.maxBufferSize ?? MAX_BUFFER_SIZE;
+    const expectedSize = this._options.expectedSize;
+    const maxBufferSize = this._options.maxBufferSize ?? MAX_BUFFER_SIZE;
     const buffer = await readEntireStream(toReadStream(body), {
+      expectedSize,
       maxBufferSize,
     });
     this._body = buffer;
