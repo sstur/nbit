@@ -25,6 +25,7 @@ export default [
           'import Bun': '// import Bun',
           'import { Request': '// import { Request',
           'import { Response': '// import { Response',
+          '(..._)': '()',
           'mockable(': '(',
           'process.env.BUN_ENV': 'undefined',
         },

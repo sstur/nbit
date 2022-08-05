@@ -24,6 +24,7 @@ export default [
         values: {
           'import { Request': '// import { Request',
           'import { Response': '// import { Response',
+          '(..._)': '()',
         },
       }),
       cleanup({

@@ -1,6 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import dts from 'rollup-plugin-dts';
 import cleanup from 'rollup-plugin-cleanup';
+import replace from '@rollup/plugin-replace';
 
 export default [
   {
@@ -16,6 +17,13 @@ export default [
       typescript({
         module: 'esnext',
         include: ['../**/*.ts'],
+      }),
+      replace({
+        preventAssignment: true,
+        delimiters: ['', ''],
+        values: {
+          '(..._)': '()',
+        },
       }),
       cleanup({
         extensions: ['js', 'ts'],
