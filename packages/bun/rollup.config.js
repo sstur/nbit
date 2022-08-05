@@ -23,6 +23,8 @@ export default [
         delimiters: ['', ''],
         values: {
           'import Bun': '// import Bun',
+          'import { Request': '// import { Request',
+          'import { Response': '// import { Response',
           'mockable(': '(',
           'process.env.BUN_ENV': 'undefined',
         },
