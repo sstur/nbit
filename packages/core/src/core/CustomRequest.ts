@@ -2,6 +2,7 @@
 import type { Request, Headers } from '../applicationTypes';
 import type { JSONValue, Method, MethodWithBody } from '../types';
 
+import { HttpError } from './HttpError';
 import { parseUrl } from './support/parseUrl';
 
 // TODO: Remove the conditional type when Bun types are updated
@@ -53,11 +54,28 @@ export class CustomRequest<M extends Method, Params extends string> {
     return this.request.text();
   }
 
-  json<T = JSONValue>(..._: BodyAccessorArgs<M>): Promise<T> {
-    return this.request.json<T>();
+  async json<T = JSONValue>(..._: BodyAccessorArgs<M>): Promise<T> {
+    const contentType = getContentType(this.headers);
+    let message = 'Invalid JSON body';
+    if (contentType === 'application/json') {
+      try {
+        return await this.request.json<T>();
+      } catch (e) {
+        message = e instanceof Error ? e.message : String(e);
+      }
+    }
+    throw new HttpError({ status: 400, message });
   }
 
+  // Note: Not implemented yet; we can implement this if we bump the minimum supported Node version to v14.18
   // blob() {
   //   return this.request.blob();
   // }
+}
+
+function getContentType(headers: Headers) {
+  const contentType = headers.get('content-type');
+  if (contentType != null) {
+    return (contentType.split(';')[0] ?? '').toLowerCase();
+  }
 }
