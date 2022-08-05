@@ -15,7 +15,7 @@ export class Response extends Body {
   readonly statusText: string;
   readonly headers: Headers;
 
-  constructor(body: BodyInit, init?: ResponseInit) {
+  constructor(body?: BodyInit, init?: ResponseInit) {
     super(body);
     const { status, statusText, headers } = init ?? {};
     this.status = status ?? 200;

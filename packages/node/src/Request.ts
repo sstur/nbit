@@ -28,7 +28,7 @@ export class Request extends Body {
     const { bodyParserMaxBufferSize: maxBufferSize } = init?.options ?? {};
     const headers = new Headers(init?.headers);
     const expectedSize = getContentLength(headers);
-    super(init?.body ?? null, {
+    super(init?.body, {
       maxBufferSize,
       expectedSize,
       onReadError: (error) => {
