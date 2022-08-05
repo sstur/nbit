@@ -48,7 +48,7 @@ describe('createApplication', () => {
     expect(response.statusText).toBe('');
     const headers = Object.fromEntries(response.headers.entries());
     expect(headers).toEqual({
-      'Content-Type': 'application/json; charset=UTF-8',
+      'Content-Type': 'application/json;charset=UTF-8',
     });
     const parsed = await response.json();
     expect(parsed).toEqual({ path: '/' });
@@ -62,7 +62,7 @@ describe('createApplication', () => {
     expect(response.statusText).toBe('I like tea');
     const headers = Object.fromEntries(response.headers.entries());
     expect(headers).toEqual({
-      'Content-Type': 'application/json; charset=UTF-8',
+      'Content-Type': 'application/json;charset=UTF-8',
       'X-My-Header': 'hello',
     });
     const parsed = await response.json();
@@ -73,7 +73,7 @@ describe('createApplication', () => {
     const handleRequest = createRequestHandler(routes);
     const request = new Request('/auth', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
       body: JSON.stringify({ foo: 1 }),
     });
     const response = await handleRequest(request);
@@ -81,7 +81,7 @@ describe('createApplication', () => {
     expect(response.statusText).toBe('');
     const headers = Object.fromEntries(response.headers.entries());
     expect(headers).toEqual({
-      'Content-Type': 'application/json; charset=UTF-8',
+      'Content-Type': 'application/json;charset=UTF-8',
     });
     const parsed = await response.json();
     expect(parsed).toEqual({ body: { foo: 1 } });

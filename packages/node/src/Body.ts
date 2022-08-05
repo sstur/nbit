@@ -12,9 +12,17 @@ export type BodyInit =
   | Uint8Array // Includes Buffer which is a subclass of Uint8Array
   | Readable // Traditional Node Streams API
   | ReadableStream // New Web Streams API (since Node 16.5)
+  | URLSearchParams
   | string
   | null
   | undefined;
+
+type BodyInitNormalized =
+  | Uint8Array
+  | Readable
+  | ReadableStream
+  | string
+  | null;
 
 // The maximum amount (bytes) we'll read into memory from a body stream.
 // Defaults to 100kb, same as Express, see https://github.com/expressjs/body-parser/blob/9db582d/lib/types/json.js#L54
@@ -31,13 +39,14 @@ export type Options = {
 };
 
 export class Body {
-  private _bodyInit: BodyInit;
+  private _bodyInit: BodyInitNormalized;
   private _bodyStream: Readable | undefined;
   private _bodyUsed = false;
   private options: Options;
 
   constructor(body: BodyInit, options?: Options) {
-    this._bodyInit = body;
+    this._bodyInit =
+      body instanceof URLSearchParams ? body.toString() : body ?? null;
     this.options = options ?? {};
   }
 

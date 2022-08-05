@@ -17,10 +17,17 @@ export class Response extends Body {
 
   constructor(body?: BodyInit, init?: ResponseInit) {
     super(body);
-    const { status, statusText, headers } = init ?? {};
+    const { status, statusText } = init ?? {};
     this.status = status ?? 200;
     this.statusText = statusText ?? '';
-    this.headers = new Headers(headers);
+    const headers = new Headers(init?.headers);
+    if (!headers.has('Content-Type')) {
+      const contentType = getDefaultContentType(body);
+      if (contentType) {
+        headers.set('Content-Type', contentType);
+      }
+    }
+    this.headers = headers;
   }
 
   get ok() {
@@ -42,7 +49,7 @@ export class Response extends Body {
   static json(payload: unknown, init?: ResponseInit) {
     const body = JSON.stringify(payload) ?? 'null';
     const headers = new Headers(init?.headers);
-    headers.set('Content-Type', 'application/json; charset=UTF-8');
+    headers.set('Content-Type', enc('application/json'));
     return new Response(body, {
       ...init,
       headers,
@@ -52,4 +59,19 @@ export class Response extends Body {
   static file(filePath: string, init?: ResponseInit & StaticFileOptions) {
     return new StaticFile(filePath, init);
   }
+}
+
+function getDefaultContentType(body: BodyInit) {
+  if (typeof body === 'string') {
+    return enc('text/plain');
+  }
+  if (body instanceof URLSearchParams) {
+    return enc('application/x-www-form-urlencoded');
+  }
+  return;
+}
+
+/** Add encoding (charset) to content-type value */
+function enc(contentType: string) {
+  return contentType + ';charset=UTF-8';
 }
