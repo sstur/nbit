@@ -2,7 +2,7 @@ import type { IncomingMessage } from 'http';
 
 import { Headers, type HeadersInit } from './Headers';
 import { Body, type BodyInit } from './Body';
-import type { Method, RequestOptions } from './types';
+import type { JSONValue, Method, RequestOptions } from './types';
 import { HttpError } from './core';
 
 // Same as Express
@@ -46,6 +46,19 @@ export class Request extends Body {
     this.headers = headers;
   }
 
+  async json<T = JSONValue>(): Promise<T> {
+    const contentType = getContentType(this.headers);
+    let message = 'Invalid JSON body';
+    if (contentType === 'application/json') {
+      try {
+        return await super.json<T>();
+      } catch (e) {
+        message = e instanceof Error ? e.message : String(e);
+      }
+    }
+    throw new HttpError({ status: 400, message });
+  }
+
   static fromNodeRequest(
     nodeRequest: IncomingMessage,
     options: RequestOptions,
@@ -59,6 +72,13 @@ export class Request extends Body {
       body: nodeRequest,
       options,
     });
+  }
+}
+
+function getContentType(headers: Headers) {
+  const contentType = headers.get('content-type');
+  if (contentType != null) {
+    return (contentType.split(';')[0] ?? '').toLowerCase();
   }
 }
 
