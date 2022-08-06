@@ -3,6 +3,16 @@ import dts from 'rollup-plugin-dts';
 import cleanup from 'rollup-plugin-cleanup';
 import replace from '@rollup/plugin-replace';
 
+const external = [
+  'fs',
+  'fs/promises',
+  'http',
+  'path',
+  'stream',
+  'stream/web',
+  'util',
+];
+
 export default [
   {
     input: 'src/packages/node/index.ts',
@@ -12,7 +22,7 @@ export default [
       strict: false,
       esModule: false,
     },
-    external: ['fs', 'path', 'stream'],
+    external,
     plugins: [
       typescript({
         module: 'esnext',
@@ -36,7 +46,7 @@ export default [
       file: 'build/node/index.d.ts',
       format: 'es',
     },
-    external: ['http', 'stream', 'stream/web'],
+    external,
     plugins: [dts()],
   },
   {
@@ -47,7 +57,7 @@ export default [
       strict: false,
       esModule: false,
     },
-    external: ['path', 'stream'],
+    external,
     plugins: [
       typescript({
         module: 'esnext',
@@ -64,7 +74,7 @@ export default [
       file: 'build/express/index.d.ts',
       format: 'es',
     },
-    external: ['http', 'stream', 'stream/web'],
+    external,
     plugins: [dts()],
   },
 ];
