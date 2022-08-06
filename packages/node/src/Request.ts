@@ -3,7 +3,7 @@ import type { IncomingMessage } from 'http';
 import { Headers, type HeadersInit } from './Headers';
 import { Body, type BodyInit } from './Body';
 import type { Method, RequestOptions } from './types';
-import { HttpError } from './core';
+import { HttpError } from './core/HttpError';
 
 // Same as Express
 const TOO_LARGE = { status: 413, message: 'Request Entity Too Large' };
