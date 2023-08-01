@@ -1,4 +1,7 @@
+#!/bin/sh
+
 yarn build
+
 if [ $? -eq 0 ]; then
     pushd packages/bun/build
     npm publish
