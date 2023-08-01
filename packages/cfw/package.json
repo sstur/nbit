@@ -1,6 +1,6 @@
 {
   "name": "@nbit/cfw",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "files": [
     "index.js",
     "index.d.ts"
