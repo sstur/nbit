@@ -6,7 +6,7 @@ import { HttpError } from './HttpError';
 import { parseUrl } from './support/parseUrl';
 
 // TODO: Remove the conditional type when Bun types are updated
-type BodyStream = Request extends { body: any } ? Request['body'] : never;
+type BodyStream = Request extends { body: infer T } ? T : never;
 type BodyAccessorArgs<M> = M extends MethodWithBody
   ? []
   : [ERROR: 'NO_BODY_ALLOWED_FOR_METHOD'];

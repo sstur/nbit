@@ -50,6 +50,7 @@ export class Body {
     this.options = options ?? {};
   }
 
+  // TODO: This is `Readable | null` but it should be `Readable` to allow request.body.pipe(...)
   get body() {
     if (this._bodyStream) {
       return this._bodyStream;
