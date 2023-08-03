@@ -32,13 +32,11 @@ describe('createApplication', () => {
       path,
       typeof handler,
     ]);
-    expect(JSON.stringify(serializable)).toBe(
-      JSON.stringify([
-        ['GET', '/', 'function'],
-        ['GET', '/foo', 'function'],
-        ['POST', '/auth', 'function'],
-      ]),
-    );
+    expect(serializable).toEqual([
+      ['GET', '/', 'function'],
+      ['GET', '/foo', 'function'],
+      ['POST', '/auth', 'function'],
+    ]);
     const requestHandler = attachRoutes(routes);
     expect(typeof requestHandler).toBe('function');
   });
@@ -50,11 +48,11 @@ describe('createApplication', () => {
     expect(response.status).toBe(200);
     expect(response.statusText).toBe('');
     const headers = Object.fromEntries(response.headers.entries());
-    expect(JSON.stringify(headers)).toBe(
-      JSON.stringify({ 'content-type': 'application/json;charset=utf-8' }),
-    );
+    expect(headers).toEqual({
+      'content-type': 'application/json;charset=utf-8',
+    });
     const parsed = await response.json();
-    expect(JSON.stringify(parsed)).toBe(JSON.stringify({ path: '/' }));
+    expect(parsed).toEqual({ path: '/' });
   });
 
   it('should handle custom response status and headers', async () => {
@@ -62,17 +60,15 @@ describe('createApplication', () => {
     const mockRequest = new Request('http://localhost/foo');
     const response = await requestHandler(mockRequest);
     expect(response.status).toBe(418);
-    // This is currently failing in latest Bun 0.1.5
+    // This is currently failing in latest Bun 0.7.1
     // expect(response.statusText).toBe('I like tea');
     const headers = Object.fromEntries(response.headers.entries());
-    expect(JSON.stringify(headers)).toBe(
-      JSON.stringify({
-        'content-type': 'application/json;charset=utf-8',
-        'x-my-header': 'hello',
-      }),
-    );
+    expect(headers).toEqual({
+      'content-type': 'application/json;charset=utf-8',
+      'x-my-header': 'hello',
+    });
     const parsed = await response.json();
-    expect(JSON.stringify(parsed)).toBe(JSON.stringify({ foo: 42 }));
+    expect(parsed).toEqual({ foo: 42 });
   });
 
   it('should handle a POST request with JSON body', async () => {
@@ -86,10 +82,10 @@ describe('createApplication', () => {
     expect(response.status).toBe(200);
     expect(response.statusText).toBe('');
     const headers = Object.fromEntries(response.headers.entries());
-    expect(JSON.stringify(headers)).toBe(
-      JSON.stringify({ 'content-type': 'application/json;charset=utf-8' }),
-    );
+    expect(headers).toEqual({
+      'content-type': 'application/json;charset=utf-8',
+    });
     const parsed = await response.json();
-    expect(JSON.stringify(parsed)).toBe(JSON.stringify({ body: { foo: 1 } }));
+    expect(parsed).toEqual({ body: { foo: 1 } });
   });
 });
