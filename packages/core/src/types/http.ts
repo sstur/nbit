@@ -10,6 +10,14 @@ export type RequestOptions = {
   bodyParserMaxBufferSize?: number;
 };
 
+export type ResponseOptions = {
+  /**
+   * This error handler, if specified, will be used to generate a response when
+   * an exception was raised during the execution of any of the handlers.
+   */
+  errorHandler?: (error: Error) => MaybePromise<Response>;
+};
+
 export type FileServingOptions = {
   /**
    * The root from which file names will be resolved when serving files.

@@ -7,6 +7,7 @@ import type {
   Expand,
   MaybePromise,
   Method,
+  ResponseOptions,
 } from '../types';
 import { type Request, Response } from '../applicationTypes';
 
@@ -16,6 +17,7 @@ import { CustomRequest } from './CustomRequest';
 
 type Options<CtxGetter> = Expand<
   RequestOptions &
+    ResponseOptions &
     FileServingOptions & {
       /**
        * An optional way to define extra context (e.g. an auth method) that will
@@ -51,7 +53,7 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
   >(
     applicationOptions: Options<CtxGetter> = {},
   ) => {
-    const { getContext } = applicationOptions;
+    const { getContext, errorHandler } = applicationOptions;
     type RequestContext = ReturnType<CtxGetter>;
     const app = getApp<RequestContext>();
     type App = typeof app;
@@ -99,10 +101,17 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
           if (e instanceof HttpError) {
             const { status, message } = e;
             return new Response(message, { status });
-          } else {
-            const error = e instanceof Error ? e : new Error(String(e));
-            return await adapter.onError(request, error);
           }
+          const error = e instanceof Error ? e : new Error(String(e));
+          if (errorHandler) {
+            try {
+              return await errorHandler(error);
+            } catch (e) {
+              const error = e instanceof Error ? e : new Error(String(e));
+              return await adapter.onError(request, error);
+            }
+          }
+          return await adapter.onError(request, error);
         }
       };
     };
