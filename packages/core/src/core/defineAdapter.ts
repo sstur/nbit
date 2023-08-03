@@ -137,5 +137,9 @@ function getApp<RequestContext>() {
       path: P,
       handler: Handler<'DELETE', P, RequestContext>,
     ) => ['DELETE', path as string, handler] as Route<RequestContext>,
+    all: <P extends string>(
+      path: P,
+      handler: Handler<'*', P, RequestContext>,
+    ) => ['*', path as string, handler] as Route<RequestContext>,
   };
 }
