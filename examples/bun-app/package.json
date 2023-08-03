@@ -12,7 +12,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "bun-types": "^0.1.4",
+    "bun-types": "^0.7.1",
     "eslint": "^8.19.0",
     "eslint-config-xt": "^1.7.0",
     "nodemon": "^2.0.19",
