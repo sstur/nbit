@@ -8,7 +8,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "version": "yarn version"
+    "version": "yarn version",
+    "clean": "rm -rf .turbo"
   },
   "dependencies": {},
   "devDependencies": {},
