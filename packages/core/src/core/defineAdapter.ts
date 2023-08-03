@@ -6,6 +6,7 @@ import type {
   Route,
   Expand,
   MaybePromise,
+  Method,
 } from '../types';
 import { type Request, Response } from '../applicationTypes';
 
@@ -137,9 +138,10 @@ function getApp<RequestContext>() {
       path: P,
       handler: Handler<'DELETE', P, RequestContext>,
     ) => ['DELETE', path as string, handler] as Route<RequestContext>,
-    all: <P extends string>(
+    route: <P extends string>(
+      method: Method,
       path: P,
       handler: Handler<'*', P, RequestContext>,
-    ) => ['*', path as string, handler] as Route<RequestContext>,
+    ) => [method, path as string, handler] as Route<RequestContext>,
   };
 }
