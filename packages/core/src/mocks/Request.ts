@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Headers, type HeadersInit } from './Headers';
+import type { Method } from '../types';
 
-type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
+import { Headers, type HeadersInit } from './Headers';
 
 type RequestInit = {
   method?: Method;

@@ -45,18 +45,27 @@ type ExtractParams<T extends string> = string extends T
   ? Param
   : never;
 
-export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | '*';
+export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+export type MethodWithWildcard = Method | '*';
 
 export type MethodWithBody = 'POST' | 'PUT';
 
-export type Handler<M extends Method, P extends string, RequestContext> = (
-  request: MaybeIntersect<CustomRequest<M, ExtractParams<P>>, RequestContext>,
+export type Handler<
+  M extends MethodWithWildcard,
+  P extends string,
+  RequestContext,
+> = (
+  request: MaybeIntersect<
+    CustomRequest<M extends Method ? M : 'GET', ExtractParams<P>>,
+    RequestContext
+  >,
 ) => MaybePromise<
   Response | StaticFile | JsonPayload | null | undefined | void
 >;
 
 export type Route<RequestContext> = [
-  Method,
+  MethodWithWildcard,
   string,
-  Handler<Method, string, RequestContext>,
+  Handler<MethodWithWildcard, string, RequestContext>,
 ];
