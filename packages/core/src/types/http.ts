@@ -45,7 +45,7 @@ type ExtractParams<T extends string> = string extends T
   ? Param
   : never;
 
-export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
+export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'HEAD' | 'OPTIONS';
 
 export type MethodWithWildcard = Method | '*';
 

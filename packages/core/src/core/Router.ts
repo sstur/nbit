@@ -1,4 +1,4 @@
-type Method = 'GET' | 'PUT' | 'POST' | 'HEAD' | 'DELETE' | 'OPTIONS' | '*';
+import type { MethodWithWildcard as Method } from '../types';
 
 type Captures = Record<string, string>;
 
