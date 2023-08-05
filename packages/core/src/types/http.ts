@@ -49,7 +49,7 @@ export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'HEAD' | 'OPTIONS';
 
 export type MethodWithWildcard = Method | '*';
 
-export type MethodWithBody = 'POST' | 'PUT';
+export type MethodHasBody = 'POST' | 'PUT';
 
 export type Handler<
   M extends MethodWithWildcard,
