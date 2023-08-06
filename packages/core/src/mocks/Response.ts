@@ -1,4 +1,5 @@
-import type { HeadersInit } from './Headers';
+import { Body, type BodyInit } from './Body';
+import { Headers, type HeadersInit } from './Headers';
 
 export type ResponseInit = {
   headers?: HeadersInit;
@@ -6,15 +7,16 @@ export type ResponseInit = {
   statusText?: string;
 };
 
-type ResponseBody = Uint8Array | string;
-
-export class Response {
+export class Response extends Body {
   readonly status: number;
+  readonly statusText: string;
   readonly headers: HeadersInit;
 
-  constructor(readonly body: ResponseBody, readonly init: ResponseInit = {}) {
+  constructor(body: BodyInit, init: ResponseInit = {}) {
+    super(body);
     this.status = init.status ?? 200;
-    this.headers = init.headers ?? [];
+    this.statusText = init.statusText ?? '';
+    this.headers = new Headers(init.headers);
   }
 
   static json(input: unknown, init?: ResponseInit) {

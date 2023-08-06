@@ -1,4 +1,5 @@
-import { Request } from '../Request';
+import { Request } from '../applicationTypes';
+import { HttpError } from '../core';
 import { CustomRequest } from '../core/CustomRequest';
 
 describe('CustomRequest', () => {
@@ -24,7 +25,9 @@ describe('CustomRequest', () => {
       body: JSON.stringify({ foo: 1 }),
     });
     const customRequest = new CustomRequest(request);
-    await expect(customRequest.json()).rejects.toThrow(`Invalid JSON body`);
+    await expect(customRequest.json()).rejects.toEqual(
+      new HttpError({ status: 400, message: 'Invalid JSON body' }),
+    );
   });
 
   it('should throw if no content type', async () => {
@@ -33,6 +36,8 @@ describe('CustomRequest', () => {
       body: JSON.stringify({ foo: 1 }),
     });
     const customRequest = new CustomRequest(request);
-    await expect(customRequest.json()).rejects.toThrow(`Invalid JSON body`);
+    await expect(customRequest.json()).rejects.toEqual(
+      new HttpError({ status: 400, message: 'Invalid JSON body' }),
+    );
   });
 });

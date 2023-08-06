@@ -42,7 +42,7 @@ describe('defineAdapter', () => {
     const requestHandler = attachRoutes(routes);
     const request = new Request('http://localhost/foo/123');
     const response = await requestHandler(request);
-    expect(response.body).toEqual(JSON.stringify({ id: '123' }));
+    expect(await response.json()).toEqual({ id: '123' });
   });
 
   it('should return 404 response for unknown route', async () => {
@@ -50,7 +50,7 @@ describe('defineAdapter', () => {
     const request = new Request('http://localhost/baz');
     const response = await requestHandler(request);
     expect(response.status).toBe(404);
-    expect(response.body).toBe('Not found');
+    expect(await response.text()).toBe('Not found');
   });
 
   it('should allow custom 404 handler', async () => {
@@ -63,7 +63,7 @@ describe('defineAdapter', () => {
     const request = new Request('http://localhost/baz');
     const response = await requestHandler(request);
     expect(response.status).toBe(404);
-    expect(response.body).toBe('Oops, 404');
+    expect(await response.text()).toBe('Oops, 404');
   });
 
   it('should use TS to disallow body operations on non-body methods', () => {
@@ -127,9 +127,7 @@ describe('defineAdapter', () => {
     const request = new Request('http://localhost/error');
     const response = await requestHandler(request);
     expect(response.status).toBe(500);
-    expect(response.body).toBe(
-      JSON.stringify({ name: 'Error', message: 'Oops' }),
-    );
+    expect(await response.json()).toEqual({ name: 'Error', message: 'Oops' });
   });
 
   it('should fall back to default error handler if custom errorHandler throws', async () => {
@@ -142,6 +140,6 @@ describe('defineAdapter', () => {
     const request = new Request('http://localhost/error');
     const response = await requestHandler(request);
     expect(response.status).toBe(500);
-    expect(response.body).toBe('Error: Thrown from errorHandler');
+    expect(await response.text()).toBe('Error: Thrown from errorHandler');
   });
 });
