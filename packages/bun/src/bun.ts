@@ -5,8 +5,10 @@ import { serveFile } from './support/serveFile';
 
 export const createApplication = defineAdapter((applicationOptions) => {
   // Note: This `fromStaticFile` implementation is identical to that of node
-  // except it uses a custom serveFile (which uses a custom statAsync and
-  // returns a FileBlob instead of read stream).
+  // except it uses a custom serveFile which uses a custom statAsync and
+  // returns a FileBlob instead of read stream. This is because at the time of
+  // initial implementation Bun didn't have an async version of fs.stat and
+  // didn't support streaming a file as the response body.
   const fromStaticFile = async (
     requestHeaders: Headers,
     file: StaticFile,

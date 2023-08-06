@@ -13,6 +13,10 @@ type FileResponse = {
   body?: FileBlob;
 };
 
+// This uses a custom statAsync and returns a FileBlob instead of read stream.
+// At the time of initial implementation Bun didn't have an async version of
+// fs.stat and didn't support streaming a file as the response body.
+// TODO: Revisit this.
 export async function serveFile(
   requestHeaders: Headers,
   fullFilePath: string,
