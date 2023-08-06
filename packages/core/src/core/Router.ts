@@ -1,4 +1,4 @@
-import type { MethodWithWildcard as Method } from '../types';
+import type { MethodAny as Method } from '../types';
 
 type Captures = Record<string, string>;
 

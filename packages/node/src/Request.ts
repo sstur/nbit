@@ -2,7 +2,7 @@ import type { IncomingMessage } from 'http';
 
 import { Headers, type HeadersInit } from './Headers';
 import { Body, type BodyInit } from './Body';
-import type { Method, RequestOptions } from './types';
+import type { MethodAny, RequestOptions } from './types';
 import { HttpError } from './core/HttpError';
 
 // Same as Express
@@ -13,14 +13,14 @@ const SIZE_MISMATCH = {
 };
 
 type RequestInit = {
-  method?: Method | Lowercase<Method>;
+  method?: MethodAny;
   headers?: HeadersInit;
   body?: BodyInit;
   options?: RequestOptions;
 };
 
 export class Request extends Body {
-  readonly method: Method;
+  readonly method: MethodAny;
   readonly url: string;
   readonly headers: Headers;
 
@@ -42,7 +42,7 @@ export class Request extends Body {
       },
     });
     this.url = url;
-    this.method = (init?.method ? init.method.toUpperCase() : 'GET') as Method;
+    this.method = init?.method ? init.method.toUpperCase() : 'GET';
     this.headers = headers;
   }
 
@@ -50,7 +50,7 @@ export class Request extends Body {
     nodeRequest: IncomingMessage,
     options: RequestOptions,
   ) {
-    const method = (nodeRequest.method ?? 'GET').toUpperCase() as Method;
+    const method = (nodeRequest.method ?? 'GET').toUpperCase();
     const pathname = nodeRequest.url ?? '/';
     const headers = Headers.fromNodeRawHeaders(nodeRequest.rawHeaders);
     return new Request(pathname, {

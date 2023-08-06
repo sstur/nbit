@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request, Headers } from '../applicationTypes';
-import type { JSONValue, Method, MethodHasBody } from '../types';
+import type { JSONValue, MethodAny, MethodNoBody } from '../types';
 
 import { HttpError } from './HttpError';
 import { parseUrl } from './support/parseUrl';
 
 // TODO: Remove the conditional type when Bun types are updated
 type BodyStream = Request extends { body: infer T } ? T : never;
-type BodyAccessorArgs<M> = M extends MethodHasBody
-  ? []
-  : [ERROR: 'NO_BODY_ALLOWED_FOR_METHOD'];
+type BodyAccessorArgs<M> = M extends MethodNoBody
+  ? [ERROR: 'NO_BODY_ALLOWED_FOR_METHOD']
+  : [];
 
-export class CustomRequest<M extends Method, Params extends string> {
+export class CustomRequest<M extends MethodAny, Params extends string> {
   private request: Request;
   readonly method: M;
   readonly url: string;
@@ -36,7 +36,7 @@ export class CustomRequest<M extends Method, Params extends string> {
     this.params = {} as { [K in Params]: string };
   }
 
-  get body(): M extends MethodHasBody ? BodyStream : never {
+  get body(): M extends MethodNoBody ? never : BodyStream {
     // TODO: Remove the Object() hack when Bun types are updated
     return Object(this.request).body as any;
   }

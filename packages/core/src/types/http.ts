@@ -2,6 +2,8 @@ import type { Response } from '../applicationTypes';
 import type { StaticFile } from '../core/StaticFile';
 import type { CustomRequest } from '../core/CustomRequest';
 
+import type { LooseUnion } from './utilities';
+
 export type RequestOptions = {
   /**
    * The max number of bytes that will be buffered into memory when parsing a
@@ -45,27 +47,24 @@ type ExtractParams<T extends string> = string extends T
   ? Param
   : never;
 
-export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'HEAD' | 'OPTIONS';
+// List of known methods for auto-complete
+type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'HEAD' | 'OPTIONS';
 
-export type MethodWithWildcard = Method | '*';
+// Using exclude here to flatten for readability
+type MethodOrWildcard = Exclude<Method | '*', ''>;
 
-export type MethodHasBody = 'POST' | 'PUT';
+export type MethodAny = LooseUnion<MethodOrWildcard>;
 
-export type Handler<
-  M extends MethodWithWildcard,
-  P extends string,
-  RequestContext,
-> = (
-  request: MaybeIntersect<
-    CustomRequest<M extends Method ? M : 'GET', ExtractParams<P>>,
-    RequestContext
-  >,
+export type MethodNoBody = Exclude<Method, 'POST' | 'PUT'>;
+
+export type Handler<M extends MethodAny, P extends string, RequestContext> = (
+  request: MaybeIntersect<CustomRequest<M, ExtractParams<P>>, RequestContext>,
 ) => MaybePromise<
   Response | StaticFile | JsonPayload | null | undefined | void
 >;
 
 export type Route<RequestContext> = [
-  MethodWithWildcard,
+  MethodAny,
   string,
-  Handler<MethodWithWildcard, string, RequestContext>,
+  Handler<MethodAny, string, RequestContext>,
 ];
