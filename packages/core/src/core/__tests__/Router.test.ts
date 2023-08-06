@@ -1,4 +1,4 @@
-import { createRouter } from '../core/Router';
+import { createRouter } from '../Router';
 
 describe('Basic routing', () => {
   // Payload can be any type really. It's typically a route handler, but we'll

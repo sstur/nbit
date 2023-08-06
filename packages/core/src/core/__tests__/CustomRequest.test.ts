@@ -1,6 +1,6 @@
-import { Request } from '../applicationTypes';
-import { HttpError } from '../core';
-import { CustomRequest } from '../core/CustomRequest';
+import { Request } from '../../applicationTypes';
+import { CustomRequest } from '../CustomRequest';
+import { HttpError } from '../HttpError';
 
 describe('CustomRequest', () => {
   it('should instantiate with full url', async () => {
