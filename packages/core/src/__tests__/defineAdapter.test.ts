@@ -1,5 +1,9 @@
+import { expectTypeOf } from 'expect-type';
+
 import { Request, Response } from '../applicationTypes';
 import { defineAdapter } from '../core/defineAdapter';
+
+type BodyStream = Exclude<Request['body'], null>;
 
 describe('defineAdapter', () => {
   const createApplication = defineAdapter((_applicationOptions) => {
@@ -60,6 +64,57 @@ describe('defineAdapter', () => {
     const response = await requestHandler(request);
     expect(response.status).toBe(404);
     expect(response.body).toBe('Oops, 404');
+  });
+
+  it('should use TS to disallow body operations on non-body methods', () => {
+    defineRoutes((app) => [
+      app.get('/', (request) => {
+        expectTypeOf(request.method).toEqualTypeOf<'GET'>();
+        expectTypeOf(request.body).toEqualTypeOf<null>();
+        // @ts-expect-error - Should not be able to call method that requires request body
+        request.json();
+        // @ts-expect-error - Should not be able to call method that requires request body
+        request.text();
+        // @ts-expect-error - Should not be able to call method that requires request body
+        request.arrayBuffer();
+      }),
+      app.delete('/', (request) => {
+        expectTypeOf(request.method).toEqualTypeOf<'DELETE'>();
+        expectTypeOf(request.body).toEqualTypeOf<null>();
+      }),
+      app.post('/', (request) => {
+        expectTypeOf(request.method).toEqualTypeOf<'POST'>();
+        expectTypeOf(request.body).toEqualTypeOf<BodyStream>();
+      }),
+      app.route('HEAD', '/', (request) => {
+        expectTypeOf(request.method).toEqualTypeOf<'HEAD'>();
+        expectTypeOf(request.body).toEqualTypeOf<null>();
+      }),
+      app.route('POST', '/', (request) => {
+        expectTypeOf(request.method).toEqualTypeOf<'POST'>();
+        expectTypeOf(request.body).toEqualTypeOf<BodyStream>();
+      }),
+    ]);
+  });
+
+  it('should uppercase request method', async () => {
+    const routes = defineRoutes((app) => [
+      app.route('get', '/', (request) => {
+        expectTypeOf(request.method).toEqualTypeOf<'GET'>();
+      }),
+      app.route('foo', '/', (request) => {
+        expectTypeOf(request.method).toEqualTypeOf<'FOO'>();
+      }),
+    ]);
+    const serializable = routes.map(([method, path, handler]) => [
+      method,
+      path,
+      typeof handler,
+    ]);
+    expect(serializable).toEqual([
+      ['GET', '/', 'function'],
+      ['FOO', '/', 'function'],
+    ]);
   });
 
   it('should invoke custom errorHandler', async () => {
