@@ -1,17 +1,15 @@
-import type { MethodAny as Method } from '../types';
-
 type Captures = Record<string, string>;
 
 type Match<T> = [T, Captures];
 
 type Route<T> = {
-  method: Method;
+  method: string;
   matcher: (path: string) => Captures | null;
   payload: T;
 };
 
 export type Router<T> = {
-  insert: (method: Method, pattern: string, payload: T) => void;
+  insert: (method: string, pattern: string, payload: T) => void;
   getMatches: (method: string, path: string) => Array<Match<T>>;
 };
 
@@ -19,7 +17,7 @@ export function createRouter<T>() {
   const routes: Array<Route<T>> = [];
 
   return {
-    insert(method: Method, pattern: string, payload: T) {
+    insert(method: string, pattern: string, payload: T) {
       routes.push({
         method,
         matcher: getMatcher(pattern),

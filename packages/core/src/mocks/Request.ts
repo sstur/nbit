@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { MethodAny } from '../types';
-
 import { Headers, type HeadersInit } from './Headers';
 
 type RequestInit = {
-  method?: MethodAny;
+  method?: string;
   headers?: HeadersInit;
   body?: Uint8Array | string;
 };
 
 export class Request {
   readonly url: string;
-  readonly method: MethodAny;
+  readonly method: string;
   readonly headers: Headers;
   // TODO: This should be a readable stream
   readonly body: Uint8Array | string | null;

@@ -2,7 +2,7 @@ import type { IncomingMessage } from 'http';
 
 import { Headers, type HeadersInit } from './Headers';
 import { Body, type BodyInit } from './Body';
-import type { MethodAny, RequestOptions } from './types';
+import type { RequestOptions } from './types';
 import { HttpError } from './core/HttpError';
 
 // Same as Express
@@ -13,14 +13,14 @@ const SIZE_MISMATCH = {
 };
 
 type RequestInit = {
-  method?: MethodAny;
+  method?: string;
   headers?: HeadersInit;
   body?: BodyInit;
   options?: RequestOptions;
 };
 
 export class Request extends Body {
-  readonly method: MethodAny;
+  readonly method: string;
   readonly url: string;
   readonly headers: Headers;
 

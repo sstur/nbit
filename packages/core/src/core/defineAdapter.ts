@@ -7,7 +7,8 @@ import type {
   Expand,
   MaybePromise,
   ResponseOptions,
-  MethodAny,
+  Method,
+  LooseUnion,
 } from '../types';
 import { type Request, Response } from '../applicationTypes';
 
@@ -129,6 +130,11 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
   return createApplication;
 }
 
+// Using exclude here to flatten for readability
+type MethodOrWildcard = Exclude<Method | '*', ''>;
+
+type MethodOrWildcardOrString = LooseUnion<MethodOrWildcard>;
+
 function getApp<RequestContext>() {
   return {
     get: <P extends string>(
@@ -147,7 +153,7 @@ function getApp<RequestContext>() {
       path: P,
       handler: Handler<'DELETE', P, RequestContext>,
     ) => ['DELETE', path as string, handler] as Route<RequestContext>,
-    route: <M extends MethodAny, P extends string>(
+    route: <M extends MethodOrWildcardOrString, P extends string>(
       method: M,
       path: P,
       handler: Handler<Uppercase<M>, P, RequestContext>,

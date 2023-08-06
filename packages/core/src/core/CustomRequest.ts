@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request, Headers } from '../applicationTypes';
-import type { JSONValue, MethodAny, MethodNoBody } from '../types';
+import type { JSONValue, MethodNoBody } from '../types';
 
 import { HttpError } from './HttpError';
 import { parseUrl } from './support/parseUrl';
@@ -11,7 +11,7 @@ type BodyAccessorArgs<M> = M extends MethodNoBody
   ? [ERROR: 'NO_BODY_ALLOWED_FOR_METHOD']
   : [];
 
-export class CustomRequest<M extends MethodAny, Params extends string> {
+export class CustomRequest<M extends string, Params extends string> {
   private request: Request;
   readonly method: M;
   readonly url: string;
