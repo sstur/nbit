@@ -7,7 +7,6 @@ import type { ReadableStream } from 'stream/web';
 import { readEntireStream } from './support/readEntireStream';
 import type { JSONValue } from './types';
 
-// TODO: Include null and undefined
 export type BodyInit =
   | Uint8Array // Includes Buffer which is a subclass of Uint8Array
   | Readable // Traditional Node Streams API
