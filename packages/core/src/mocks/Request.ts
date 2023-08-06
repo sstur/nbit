@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Headers, type HeadersInit } from './Headers';
 
+class ReadableStream {}
+
 type RequestInit = {
   method?: string;
   headers?: HeadersInit;
@@ -11,8 +13,7 @@ export class Request {
   readonly url: string;
   readonly method: string;
   readonly headers: Headers;
-  // TODO: This should be a readable stream
-  readonly body: Uint8Array | string | null;
+  readonly body: ReadableStream | null;
   readonly bodyUsed = false;
 
   constructor(url: string, readonly init: RequestInit = {}) {
@@ -24,11 +25,11 @@ export class Request {
   }
 
   async arrayBuffer(): Promise<ArrayBuffer> {
-    return null as any;
+    return Buffer.from('');
   }
 
   async text(): Promise<string> {
-    return null as any;
+    return '';
   }
 
   async json<T>(): Promise<T> {
