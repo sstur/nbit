@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Request, Headers } from '../applicationTypes';
+import { Request, type Headers } from '../applicationTypes';
 import type { JSONValue, MethodNoBody } from '../types';
 
 import { HttpError } from './HttpError';
 import { parseUrl } from './support/parseUrl';
 
 // TODO: Remove the conditional type when Bun types are updated
-type BodyStream = Request extends { body: infer T } ? T : never;
+type BodyStream = Request extends { body: infer T } ? Exclude<T, null> : never;
 type BodyAccessorArgs<M> = M extends MethodNoBody
   ? [ERROR: 'NO_BODY_ALLOWED_FOR_METHOD']
   : [];
+
+const canHaveNullBody = new Set(['GET', 'DELETE', 'HEAD', 'OPTIONS']);
 
 export class CustomRequest<M extends string, Params extends string> {
   private request: Request;
@@ -21,6 +23,7 @@ export class CustomRequest<M extends string, Params extends string> {
   readonly search: string;
   readonly query: URLSearchParams;
   readonly params: { [K in Params]: string };
+  private _fallbackBody: BodyStream | undefined;
 
   constructor(request: Request) {
     this.request = request;
@@ -36,9 +39,16 @@ export class CustomRequest<M extends string, Params extends string> {
     this.params = {} as { [K in Params]: string };
   }
 
-  get body(): M extends MethodNoBody ? never : BodyStream {
+  get body(): M extends MethodNoBody ? null : BodyStream {
     // TODO: Remove the Object() hack when Bun types are updated
-    return Object(this.request).body as any;
+    const body = Object(this.request).body as BodyStream | null;
+    // Ensure that for requests that can have a body we never return null
+    if (!canHaveNullBody.has(this.method) && body == null) {
+      const emptyBody =
+        this._fallbackBody ?? (this._fallbackBody = createEmptyBody());
+      return emptyBody as any;
+    }
+    return body as any;
   }
 
   get bodyUsed() {
@@ -78,4 +88,14 @@ function getContentType(headers: Headers) {
   if (contentType != null) {
     return (contentType.split(';')[0] ?? '').toLowerCase();
   }
+}
+
+// This is a bit of a roundabout way to do this but it should work with any of
+// the supported platform's Request implementation.
+function createEmptyBody(): BodyStream {
+  const request = new Request('http://localhost/', {
+    method: 'POST',
+    body: '',
+  });
+  return request.body as any;
 }
