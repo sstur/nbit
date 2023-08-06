@@ -42,7 +42,7 @@ describe('createApplication', () => {
 
   it('should handle a GET request', async () => {
     const handleRequest = createRequestHandler(routes);
-    const request = new Request('/');
+    const request = new Request('http://localhost/');
     const response = await handleRequest(request);
     expect(response.status).toBe(200);
     expect(response.statusText).toBe('');
@@ -56,7 +56,7 @@ describe('createApplication', () => {
 
   it('should handle custom response status and headers', async () => {
     const handleRequest = createRequestHandler(routes);
-    const request = new Request('/foo');
+    const request = new Request('http://localhost/foo');
     const response = await handleRequest(request);
     expect(response.status).toBe(418);
     expect(response.statusText).toBe('I like tea');
@@ -71,7 +71,7 @@ describe('createApplication', () => {
 
   it('should handle a POST request with JSON body', async () => {
     const handleRequest = createRequestHandler(routes);
-    const request = new Request('/auth', {
+    const request = new Request('http://localhost/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json;charset=UTF-8' },
       body: JSON.stringify({ foo: 1 }),

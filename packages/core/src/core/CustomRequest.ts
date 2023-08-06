@@ -27,12 +27,13 @@ export class CustomRequest<M extends string, Params extends string> {
 
   constructor(request: Request) {
     this.request = request;
-    const { method, url, headers } = request;
+    const { method, headers } = request;
     this.method = method as M;
-    this.url = url;
+    const url = parseUrl(request.url);
+    this.url = url.href;
     this.headers = headers;
     // Attach some custom fields
-    const { pathname, search, searchParams } = parseUrl(url);
+    const { pathname, search, searchParams } = url;
     this.path = pathname;
     this.search = search;
     this.query = searchParams;

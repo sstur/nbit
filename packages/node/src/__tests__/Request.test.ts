@@ -4,22 +4,17 @@ import { Readable } from 'stream';
 import { Request } from '../Request';
 
 describe('Request', () => {
-  it('should construct with just path', () => {
-    const request = new Request('/');
-    expect(request.method).toBe('GET');
-    expect(request.url).toBe('/');
-    expect(Object.fromEntries(request.headers)).toEqual({});
-    expect(request.body).toBe(null);
-    expect(request.bodyRaw).toBe(null);
+  it('should not construct with just path', () => {
+    expect(() => new Request('/')).toThrow('Invalid URL');
   });
 
   it('should respect method and headers', () => {
-    const request = new Request('/', {
+    const request = new Request('http://localhost/', {
       method: 'PUT',
       headers: { foo: 'foo', 'content-type': 'bar' },
     });
     expect(request.method).toBe('PUT');
-    expect(request.url).toBe('/');
+    expect(request.url).toBe('http://localhost/');
     expect(Object.fromEntries(request.headers)).toEqual({
       foo: 'foo',
       'content-type': 'bar',
@@ -29,18 +24,18 @@ describe('Request', () => {
   });
 
   it('should construct with a null body', () => {
-    const request = new Request('/', { body: null });
+    const request = new Request('http://localhost/', { body: null });
     expect(request.method).toBe('GET');
-    expect(request.url).toBe('/');
+    expect(request.url).toBe('http://localhost/');
     expect(Object.fromEntries(request.headers)).toEqual({});
     expect(request.body).toBe(null);
     expect(request.bodyRaw).toBe(null);
   });
 
   it('should construct with a string body', () => {
-    const request = new Request('/', { body: 'foo' });
+    const request = new Request('http://localhost/', { body: 'foo' });
     expect(request.method).toBe('GET');
-    expect(request.url).toBe('/');
+    expect(request.url).toBe('http://localhost/');
     expect(Object.fromEntries(request.headers)).toEqual({});
     expect(request.body instanceof Readable).toBe(true);
     expect(request.bodyRaw).toBe('foo');
@@ -48,7 +43,10 @@ describe('Request', () => {
 
   it('should construct with a buffer body', () => {
     const buffer = Buffer.from('foo');
-    const request = new Request('/foo', { method: 'post', body: buffer });
+    const request = new Request('http://localhost/foo', {
+      method: 'post',
+      body: buffer,
+    });
     expect(request.method).toBe('POST');
     expect(Object.fromEntries(request.headers)).toEqual({});
     expect(request.body instanceof Readable).toBe(true);
@@ -57,7 +55,7 @@ describe('Request', () => {
 
   it('should construct with a stream body', async () => {
     const stream = Readable.from('foo', { objectMode: false });
-    const request = new Request('/foo', { body: stream });
+    const request = new Request('http://localhost/foo', { body: stream });
     expect(Object.fromEntries(request.headers)).toEqual({});
     expect(request.body).toBe(stream);
     expect(request.bodyRaw).toBe(stream);
@@ -72,7 +70,7 @@ describe('Request', () => {
 
   it('should parse a json body from buffer', async () => {
     const buffer = Buffer.from(JSON.stringify({ foo: 1 }));
-    const request = new Request('/foo', {
+    const request = new Request('http://localhost/foo', {
       method: 'post',
       headers: { 'content-type': 'application/json' },
       body: buffer,
@@ -95,7 +93,10 @@ describe('Request', () => {
     const stream = Readable.from(JSON.stringify({ foo: 1 }), {
       objectMode: false,
     });
-    const request = new Request('/foo', { method: 'get', body: stream });
+    const request = new Request('http://localhost/foo', {
+      method: 'get',
+      body: stream,
+    });
     expect(Object.fromEntries(request.headers)).toEqual({});
     const parsed = await request.json();
     expect(parsed).toEqual({ foo: 1 });
@@ -106,7 +107,7 @@ describe('Request', () => {
   });
 
   it('should throw if unable to parse json', async () => {
-    const request = new Request('/foo', {
+    const request = new Request('http://localhost/foo', {
       method: 'post',
       body: '[1, 2',
     });
@@ -116,7 +117,7 @@ describe('Request', () => {
   });
 
   it('should throw if content-length smaller than body size', async () => {
-    const request = new Request('/foo', {
+    const request = new Request('http://localhost/foo', {
       method: 'post',
       headers: { 'content-length': '2' },
       body: 'foo',
@@ -127,7 +128,7 @@ describe('Request', () => {
   });
 
   it('should throw if content-length greater than body size', async () => {
-    const request = new Request('/foo', {
+    const request = new Request('http://localhost/foo', {
       method: 'post',
       headers: { 'content-length': '4' },
       body: 'foo',
@@ -138,7 +139,7 @@ describe('Request', () => {
   });
 
   it('should throw if body size exceeds maximum allowed', async () => {
-    const request = new Request('/foo', {
+    const request = new Request('http://localhost/foo', {
       method: 'post',
       headers: { 'content-length': '4' },
       body: 'x'.repeat(1001),

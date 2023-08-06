@@ -4,6 +4,7 @@ import { Headers, type HeadersInit } from './Headers';
 import { Body, type BodyInit } from './Body';
 import type { RequestOptions } from './types';
 import { HttpError } from './core/HttpError';
+import { parseUrl } from './core/support/parseUrl';
 
 // Same as Express
 const TOO_LARGE = { status: 413, message: 'Request Entity Too Large' };
@@ -24,7 +25,7 @@ export class Request extends Body {
   readonly url: string;
   readonly headers: Headers;
 
-  constructor(url: string, init?: RequestInit) {
+  constructor(url: string | URL, init?: RequestInit) {
     const { bodyParserMaxBufferSize: maxBufferSize } = init?.options ?? {};
     const headers = new Headers(init?.headers);
     const expectedSize = getContentLength(headers);
@@ -41,7 +42,8 @@ export class Request extends Body {
         return error;
       },
     });
-    this.url = url;
+    const parsedUrl = url instanceof URL ? url : new URL(url);
+    this.url = parsedUrl.href;
     this.method = init?.method ? init.method.toUpperCase() : 'GET';
     this.headers = headers;
   }
@@ -51,9 +53,9 @@ export class Request extends Body {
     options: RequestOptions,
   ) {
     const method = (nodeRequest.method ?? 'GET').toUpperCase();
-    const pathname = nodeRequest.url ?? '/';
+    const url = parseUrl(nodeRequest.url ?? '/');
     const headers = Headers.fromNodeRawHeaders(nodeRequest.rawHeaders);
-    return new Request(pathname, {
+    return new Request(url, {
       method,
       headers,
       body: nodeRequest,

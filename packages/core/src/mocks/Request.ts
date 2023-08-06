@@ -12,9 +12,10 @@ export class Request extends Body {
   readonly method: string;
   readonly headers: Headers;
 
-  constructor(url: string, readonly init: RequestInit = {}) {
+  constructor(url: string | URL, readonly init: RequestInit = {}) {
     super(init.body ?? null);
-    this.url = url;
+    const parsedUrl = url instanceof URL ? url : new URL(url);
+    this.url = parsedUrl.href;
     this.method = init.method ?? 'GET';
     this.headers = new Headers(init.headers);
   }
