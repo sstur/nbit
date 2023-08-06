@@ -142,6 +142,7 @@ function getApp<RequestContext>() {
       method: Method,
       path: P,
       handler: Handler<'*', P, RequestContext>,
-    ) => [method, path as string, handler] as Route<RequestContext>,
+    ) =>
+      [method.toUpperCase(), path as string, handler] as Route<RequestContext>,
   };
 }
