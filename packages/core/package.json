@@ -6,30 +6,19 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
-    "unit": "jest --passWithNoTests",
+    "unit": "vitest run",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn unit",
     "clean": "rm -rf .turbo lib coverage"
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/jest": "^28.1.4",
     "eslint": "^8.19.0",
     "eslint-config-xt": "^1.7.0",
     "expect-type": "^0.13.0",
-    "jest": "^28.1.2",
     "prettier": "^2.7.1",
-    "ts-jest": "^28.0.5",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^4.7.4"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "globals": {
-      "ts-jest": {
-        "isolatedModules": true
-      }
-    },
-    "testEnvironment": "node"
+    "typescript": "^4.7.4",
+    "vitest": "^0.34.1"
   },
   "eslintConfig": {
     "extends": "xt",

@@ -1,5 +1,3 @@
-import { describe, expect, it } from 'bun:test';
-
 import CustomResponse from '../Response';
 import { StaticFile } from '../core/StaticFile';
 

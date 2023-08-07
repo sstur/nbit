@@ -1,4 +1,3 @@
-import { describe, it } from 'bun:test';
 import { expectTypeOf } from 'expect-type';
 
 import { createApplication } from '../bun';

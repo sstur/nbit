@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, it } from 'bun:test';
-
 import fs from '../../builtins/fs';
 import Bun from '../../builtins/Bun';
 import { serveFile } from '../serveFile';

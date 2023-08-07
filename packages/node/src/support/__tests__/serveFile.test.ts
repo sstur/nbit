@@ -1,24 +1,36 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import fs from 'fs';
-import fsPromises from 'fs/promises';
-
 import { serveFile } from '../serveFile';
 import { Headers } from '../../Headers';
 
-describe('serveFile', () => {
-  beforeEach(() => {
-    jest.spyOn(fs, 'createReadStream').mockImplementation((filePath) => {
+vi.mock('fs', async (importOriginal) => {
+  const fs = await importOriginal();
+  return {
+    ...Object(fs),
+    createReadStream: vi.fn().mockImplementation((filePath) => {
       return { _stream: filePath } as any;
-    });
-  });
+    }),
+  };
+});
 
-  afterEach(() => jest.restoreAllMocks());
+vi.mock('fs/promises', async (importOriginal) => {
+  const fs = await importOriginal();
+  return {
+    ...Object(fs),
+    stat: vi.fn().mockImplementation(async (path) => {
+      const fileName = path.split('/').pop().split('.')[0] ?? '';
+      const parts = fileName.split('-').slice(1);
+      if (!parts.length) {
+        throw new Error('ENOENT: no such file or directory');
+      }
+      const [size, isFile] = parts;
+      return mockStat(Number(size), Boolean(Number(isFile)));
+    }),
+  };
+});
 
+describe('serveFile', () => {
   it('should serve a file that exists', async () => {
-    jest
-      .spyOn(fsPromises, 'stat')
-      .mockImplementation(async () => mockStat(42, true) as any);
-    const filePath = '/foo/thing.png';
+    const filePath = '/foo/thing-42-1.png';
     const result = await serveFile(new Headers(), filePath);
     expect(result).toEqual({
       headers: {
@@ -32,30 +44,19 @@ describe('serveFile', () => {
   });
 
   it('should return null if the file does not exist', async () => {
-    jest
-      .spyOn(fsPromises, 'stat')
-      .mockImplementation(() =>
-        Promise.reject(new Error('ENOENT: no such file or directory')),
-      );
     const filePath = './foo.txt';
     const result = await serveFile(new Headers(), filePath);
     expect(result).toEqual(null);
   });
 
   it('should return null if the entry at path is not a file', async () => {
-    jest
-      .spyOn(fsPromises, 'stat')
-      .mockImplementation(async () => mockStat(5, false) as any);
-    const filePath = './foo/dir';
+    const filePath = './foo/dir-5-0';
     const result = await serveFile(new Headers(), filePath);
     expect(result).toEqual(null);
   });
 
   it('should fall back to default content type', async () => {
-    jest
-      .spyOn(fsPromises, 'stat')
-      .mockImplementation(async () => mockStat(15, true) as any);
-    const filePath = './foo/file.asdf';
+    const filePath = './foo/file-15-1.asdf';
     const result = await serveFile(new Headers(), filePath);
     expect(result).toEqual({
       headers: {

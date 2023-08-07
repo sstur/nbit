@@ -1,5 +1,3 @@
-import { describe, expect, it } from 'bun:test';
-
 import { createApplication } from '../bun';
 
 describe('createApplication', () => {
