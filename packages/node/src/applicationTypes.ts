@@ -3,6 +3,7 @@
  * shared (symlinked) across several packages.
  */
 
+export const PLATFORM = 'node';
 export { Request } from './Request';
 export { Response, type ResponseInit } from './Response';
 export { Headers, type HeadersInit } from './Headers';
