@@ -20,13 +20,16 @@ export type ResponseOptions = {
 
 export type FileServingOptions = {
   /**
-   * The root from which file names will be resolved when serving files.
-   * Defaults to current working directory.
+   * The root from which file paths will be resolved when serving files.
+   * Defaults to current working directory (or `/` in serverless environments).
    */
   root?: string;
   /**
-   * An array of paths (relative to root) from which static files are _allowed_
-   * to be served.
+   * An array of paths (relative to `root`) from which static files are allowed
+   * to be served when invoking `Response.file(filePath)`. If `allowStaticFrom`
+   * is not specified, or if the fully-resolved filePath does not exist within
+   * an allowed path, all files will be treated as non-existent, resulting in
+   * 404.
    */
   allowStaticFrom?: Array<string>;
 };

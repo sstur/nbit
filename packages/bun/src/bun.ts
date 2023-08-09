@@ -4,11 +4,7 @@ import { resolveFilePath } from './fs';
 import { serveFile } from './support/serveFile';
 
 export const createApplication = defineAdapter((applicationOptions) => {
-  // Note: This `fromStaticFile` implementation is identical to that of node
-  // except it uses a custom serveFile which uses a custom statAsync and
-  // returns a FileBlob instead of read stream. This is because at the time of
-  // initial implementation Bun didn't have an async version of fs.stat and
-  // didn't support streaming a file as the response body.
+  // This `fromStaticFile` function is identical to that of node.
   const fromStaticFile = async (
     requestHeaders: Headers,
     file: StaticFile,
@@ -25,7 +21,7 @@ export const createApplication = defineAdapter((applicationOptions) => {
     }
     // Use the status from fileResponse if provided (e.g. "304 Not Modified")
     // otherwise fall back to user-specified value or default.
-    const responseStatus = fileResponse.status ?? init?.status ?? 200;
+    const responseStatus = fileResponse.status ?? init.status ?? 200;
     const responseHeaders = new Headers(init.headers);
     // Merge in the headers without overwriting existing headers
     for (const [key, value] of Object.entries(fileResponse.headers ?? {})) {

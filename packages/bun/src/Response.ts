@@ -1,7 +1,7 @@
-import { StaticFile, type StaticFileOptions } from './core/StaticFile';
+import { StaticFile, type StaticFileInit } from './core/StaticFile';
 
 export default class CustomResponse extends Response {
-  static file(filePath: string, init?: ResponseInit & StaticFileOptions) {
+  static file(filePath: string, init?: StaticFileInit) {
     return new StaticFile(filePath, init);
   }
 }

@@ -1,4 +1,4 @@
-import { StaticFile, type StaticFileOptions } from './core/StaticFile';
+import { StaticFile, type StaticFileInit } from './core/StaticFile';
 import { Headers, type HeadersInit } from './Headers';
 import { Body, type BodyInit } from './Body';
 
@@ -56,7 +56,7 @@ export class Response extends Body {
     });
   }
 
-  static file(filePath: string, init?: ResponseInit & StaticFileOptions) {
+  static file(filePath: string, init?: StaticFileInit) {
     return new StaticFile(filePath, init);
   }
 }

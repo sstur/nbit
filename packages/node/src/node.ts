@@ -11,6 +11,7 @@ import { Request } from './Request';
 import { Headers } from './Headers';
 
 export const createApplication = defineAdapter((applicationOptions) => {
+  // This `fromStaticFile` function is identical to that of bun.
   const fromStaticFile = async (
     requestHeaders: Headers,
     file: StaticFile,
