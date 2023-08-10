@@ -19,7 +19,7 @@ describe('CustomRequest', () => {
   });
 
   it('should throw if wrong content type', async () => {
-    const request = new Request('/foo', {
+    const request = new Request('http://localhost/foo', {
       method: 'post',
       headers: { 'content-type': 'text/plain' },
       body: JSON.stringify({ foo: 1 }),
@@ -31,7 +31,7 @@ describe('CustomRequest', () => {
   });
 
   it('should throw if no content type', async () => {
-    const request = new Request('/foo', {
+    const request = new Request('http://localhost/foo', {
       method: 'post',
       body: JSON.stringify({ foo: 1 }),
     });
