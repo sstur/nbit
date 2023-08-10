@@ -35,6 +35,7 @@ export class Headers {
   get(name: string) {
     const entry = this.headers.get(name.toLowerCase());
     if (entry) {
+      // TODO: This is wrong / not spec compliant. Should .join()
       return entry[1][0] ?? null;
     }
     return null;
