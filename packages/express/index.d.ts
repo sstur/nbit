@@ -1,1 +1,1 @@
-export * from '@nbit/node/src/packages/express';
+export * from '../node/src/packages/express';

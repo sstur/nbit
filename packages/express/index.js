@@ -1,1 +1,1 @@
-module.exports = require('@nbit/node/src/packages/express');
+module.exports = require('../node/build/express/index.js');
