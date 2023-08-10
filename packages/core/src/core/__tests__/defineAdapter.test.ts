@@ -18,7 +18,8 @@ describe('defineAdapter', () => {
         if (result === undefined) {
           return new Response('Not found', { status: 404 });
         }
-        return Response.json(result);
+        const { filePath, responseInit } = result;
+        return new Response(filePath, responseInit);
       },
       createNativeHandler: (handleRequest) => handleRequest,
     };

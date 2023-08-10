@@ -65,9 +65,6 @@ export const createApplication = defineAdapter((applicationOptions) => {
         toStaticFile.set(response, staticFile);
         return response;
       }
-      if (result instanceof Response) {
-        return result;
-      }
       if (result === undefined) {
         // In the other implementations we return a 404 Response here, but in
         // this case we're throwing a special NoRouteError to signal to the
@@ -77,7 +74,7 @@ export const createApplication = defineAdapter((applicationOptions) => {
         // handleRequest below.
         throw new Errors.NoRouteError();
       }
-      return Response.json(result);
+      return result;
     },
     createNativeHandler: (getResponse) => {
       const handleRequest = async (

@@ -15,6 +15,7 @@ import { type Request, Response } from '../web-io';
 import { createRouter } from './Router';
 import { HttpError } from './HttpError';
 import { CustomRequest } from './CustomRequest';
+import { StaticFile } from './StaticFile';
 
 type Options<CtxGetter> = Expand<
   RequestOptions &
@@ -32,7 +33,10 @@ type ContextGetter = (request: Request) => object | undefined;
 
 type Adapter<NativeHandler> = {
   onError: (request: Request, error: Error) => MaybePromise<Response>;
-  toResponse: (request: Request, result: unknown) => MaybePromise<Response>;
+  toResponse: (
+    request: Request,
+    result: Response | StaticFile | undefined,
+  ) => MaybePromise<Response>;
   createNativeHandler: (
     requestHandler: (request: Request) => Promise<Response>,
   ) => NativeHandler;
@@ -87,10 +91,18 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
           Object.assign(customRequest, { params: captures });
           const result = await handler(customRequest);
           if (result !== undefined) {
-            // TODO: If result is an object containing a circular reference,
-            // this next line will throw. It would be useful to include some
-            // indication of which handler caused the error.
-            return await adapter.toResponse(request, result);
+            let resolvedResponse: Response | StaticFile;
+            if (result instanceof Response || result instanceof StaticFile) {
+              resolvedResponse = result;
+            } else {
+              // TODO: If result is an object containing a circular reference,
+              // this next line will throw. We should catch this and throw an
+              // error indicating which handler returned a non-serializable
+              // value. To do this we'll need to modify Router to track the
+              // route string.
+              resolvedResponse = Response.json(result);
+            }
+            return await adapter.toResponse(request, resolvedResponse);
           }
         }
         return await adapter.toResponse(request, undefined);

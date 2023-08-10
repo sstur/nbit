@@ -1,8 +1,9 @@
 import { expectTypeOf } from 'expect-type';
 
-import type { Request, Headers } from '../../web-io';
-import Response from '../CustomResponse';
+import { type Request, type Headers, Response } from '../../web-io';
+import CustomResponse from '../CustomResponse';
 import type { CustomRequest } from '../CustomRequest';
+import { type StaticFile } from '../StaticFile';
 import type { JSONValue, Route } from '../../types';
 import { defineAdapter } from '../defineAdapter';
 
@@ -19,7 +20,9 @@ describe('Types', () => {
         if (result === undefined) {
           return new Response('Not found', { status: 404 });
         }
-        return Response.json(result);
+        expectTypeOf(result).toEqualTypeOf<StaticFile>();
+        const { filePath, responseInit } = result;
+        return new Response(filePath, responseInit);
       },
       createNativeHandler: (handleRequest) => handleRequest,
     };
@@ -143,7 +146,7 @@ describe('Types', () => {
       app.post('/', async (_request) => new Response('')),
       app.post('/', async (_request) => Response.json('foo')),
       // It should allow us to return an instance of StaticFile
-      app.post('/', async (_request) => Response.file('/foo.txt')),
+      app.post('/', async (_request) => CustomResponse.file('/foo.txt')),
     ]);
     expectTypeOf(routes).toEqualTypeOf<Array<Route<undefined>>>();
   });
