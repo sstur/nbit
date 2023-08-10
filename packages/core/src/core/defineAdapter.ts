@@ -16,6 +16,12 @@ import { createRouter } from './Router';
 import { HttpError } from './HttpError';
 import { CustomRequest } from './CustomRequest';
 import { StaticFile } from './StaticFile';
+import { defineErrors } from './support/defineErrors';
+
+const Errors = defineErrors({
+  StringifyError:
+    'Failed to stringify value returned from route handler: {route}',
+});
 
 type Options<CtxGetter> = Expand<
   RequestOptions &
@@ -87,7 +93,7 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
         }
         const { method, path } = customRequest;
         const matches = router.getMatches(method, path);
-        for (const [handler, captures] of matches) {
+        for (const [handler, captures, route] of matches) {
           Object.assign(customRequest, { params: captures });
           const result = await handler(customRequest);
           if (result !== undefined) {
@@ -95,12 +101,16 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
             if (result instanceof Response || result instanceof StaticFile) {
               resolvedResponse = result;
             } else {
-              // TODO: If result is an object containing a circular reference,
-              // this next line will throw. We should catch this and throw an
-              // error indicating which handler returned a non-serializable
-              // value. To do this we'll need to modify Router to track the
-              // route string.
-              resolvedResponse = Response.json(result);
+              try {
+                resolvedResponse = Response.json(result);
+              } catch (e) {
+                const error = e instanceof Error ? e : new Error(String(e));
+                const [method, pattern] = route;
+                throw new Errors.StringifyError(
+                  { route: `${method}:${pattern}` },
+                  { cause: error },
+                );
+              }
             }
             return await adapter.toResponse(request, resolvedResponse);
           }

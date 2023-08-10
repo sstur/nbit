@@ -22,8 +22,8 @@ export function defineErrors<S extends string, T extends Record<string, S>>(
   [K in keyof T as K extends `${string}Error`
     ? K
     : never]: T[K] extends StringWithPlaceholder
-    ? new (params: Parse<T[K]>) => Error
-    : new () => Error;
+    ? new (params: Parse<T[K]>, options?: ErrorOptions) => Error
+    : new (params?: null, options?: ErrorOptions) => Error;
 } {
   return Object.fromEntries(
     Object.entries(input).map(([name, message]) => [
@@ -34,7 +34,13 @@ export function defineErrors<S extends string, T extends Record<string, S>>(
             params?: Record<string, unknown>,
             options?: ErrorOptions,
           ) {
-            super(params ? resolveMessage(message, params) : message, options);
+            let resolvedMessage = params
+              ? resolveMessage(message, params)
+              : message;
+            if (options?.cause) {
+              resolvedMessage += '\n' + indent(String(options.cause));
+            }
+            super(resolvedMessage, options);
           }
           get name() {
             return name;
@@ -58,4 +64,12 @@ function resolveMessage(message: string, params: Record<string, unknown>) {
   return message.replace(/\{(.*?)\}/g, (_, key) => {
     return params[key] == null ? '' : String(params[key]);
   });
+}
+
+function indent(message: string) {
+  const lineBreak = /\r\n|\r|\n/;
+  return message
+    .split(lineBreak)
+    .map((line) => '    ' + line)
+    .join('\n');
 }

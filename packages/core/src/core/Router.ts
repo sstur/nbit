@@ -1,9 +1,10 @@
 type Captures = Record<string, string>;
 
-type Match<T> = [T, Captures];
+type Match<T> = [T, Captures, [method: string, pattern: string]];
 
 type Route<T> = {
   method: string;
+  pattern: string;
   matcher: (path: string) => Captures | null;
   payload: T;
 };
@@ -20,6 +21,7 @@ export function createRouter<T>() {
     insert(method: string, pattern: string, payload: T) {
       routes.push({
         method,
+        pattern,
         matcher: getMatcher(pattern),
         payload,
       });
@@ -32,7 +34,8 @@ export function createRouter<T>() {
         }
         const captures = route.matcher(path);
         if (captures) {
-          results.push([route.payload, captures]);
+          const { method, pattern, payload } = route;
+          results.push([payload, captures, [method, pattern]]);
         }
       }
       return results;

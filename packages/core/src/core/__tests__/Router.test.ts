@@ -34,46 +34,50 @@ describe('Basic routing', () => {
   it('should match correct method and path', () => {
     expect(router.getMatches('GET', '/')).toEqual([
       // Each match is a tuple with payload and a captures object
-      [{ name: 'home' }, {}],
+      [{ name: 'home' }, {}, ['GET', '/']],
     ]);
     expect(router.getMatches('POST', '/users/123')).toEqual([
-      [{ name: 'user_post' }, { id: '123' }],
+      [{ name: 'user_post' }, { id: '123' }, ['POST', '/users/:id']],
     ]);
     expect(router.getMatches('GET', '/login')).toEqual([
-      [{ name: 'login' }, {}],
+      [{ name: 'login' }, {}, ['*', '/login']],
     ]);
     expect(router.getMatches('POST', '/login')).toEqual([
-      [{ name: 'login' }, {}],
+      [{ name: 'login' }, {}, ['*', '/login']],
     ]);
   });
 
   it('should return multiple matches if applicable', () => {
     expect(router.getMatches('GET', '/about')).toEqual([
-      [{ name: 'about' }, {}],
-      [{ name: 'about2' }, {}],
+      [{ name: 'about' }, {}, ['GET', '/about']],
+      [{ name: 'about2' }, {}, ['GET', '/about']],
     ]);
     expect(router.getMatches('GET', '/users/me')).toEqual([
-      [{ name: 'user_me' }, {}],
-      [{ name: 'user_get' }, { id: 'me' }],
+      [{ name: 'user_me' }, {}, ['GET', '/users/me']],
+      [{ name: 'user_get' }, { id: 'me' }, ['GET', '/users/:id']],
     ]);
   });
 
   it('should capture multiple params', () => {
     expect(router.getMatches('POST', '/users/23/pets/4')).toEqual([
-      [{ name: 'pet' }, { userId: '23', petId: '4' }],
+      [
+        { name: 'pet' },
+        { userId: '23', petId: '4' },
+        ['POST', '/users/:userId/pets/:petId'],
+      ],
     ]);
   });
 
   it('should correctly handle wildcard paths', () => {
     expect(router.getMatches('PUT', '/files')).toEqual([]);
     expect(router.getMatches('PUT', '/files/')).toEqual([
-      [{ name: 'files' }, { '*': '' }],
+      [{ name: 'files' }, { '*': '' }, ['PUT', '/files/*']],
     ]);
     expect(router.getMatches('PUT', '/files/foo')).toEqual([
-      [{ name: 'files' }, { '*': 'foo' }],
+      [{ name: 'files' }, { '*': 'foo' }, ['PUT', '/files/*']],
     ]);
     expect(router.getMatches('PUT', '/files/foo/bar.txt')).toEqual([
-      [{ name: 'files' }, { '*': 'foo/bar.txt' }],
+      [{ name: 'files' }, { '*': 'foo/bar.txt' }, ['PUT', '/files/*']],
     ]);
   });
 });

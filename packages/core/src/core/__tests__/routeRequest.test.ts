@@ -102,4 +102,37 @@ describe('routeRequest', () => {
     const parsed = await response.json();
     expect(parsed).toEqual({ body: { foo: 1 } });
   });
+
+  it('should throw correct JSON serialization error', async () => {
+    const routes = defineRoutes((app) => [
+      app.get('/a', async (_request) => {
+        const data: Record<string, unknown> = { a: 1 };
+        data.circ = data;
+        return Response.json(data);
+      }),
+      app.get('/b', async (_request) => {
+        const data: Record<string, unknown> = { b: 2 };
+        data.circ = data;
+        return data;
+      }),
+    ]);
+    const handleRequest = createRequestHandler(routes);
+    const request = new Request('http://localhost/a');
+    const response = await handleRequest(request);
+    expect(response.status).toBe(500);
+    const message = (await response.text()).split('\n')[0];
+    // Depending on JS engine, message will one of the following:
+    // - TypeError: Converting circular structure to JSON
+    // - TypeError: JSON.stringify cannot serialize cyclic structures.
+    expect(message?.startsWith('TypeError:')).toBe(true);
+    const request2 = new Request('http://localhost/b');
+    const response2 = await handleRequest(request2);
+    expect(response2.status).toBe(500);
+    const message2 = await response2.text();
+    const lines = message2.split('\n').map((s) => s.trim());
+    expect(lines[0]).toBe(
+      'StringifyError: Failed to stringify value returned from route handler: GET:/b',
+    );
+    expect(lines[1]?.startsWith('TypeError:')).toBe(true);
+  });
 });
