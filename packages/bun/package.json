@@ -1,6 +1,6 @@
 {
   "name": "@nbit/bun",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "files": [
     "index.js",
     "index.d.ts"
