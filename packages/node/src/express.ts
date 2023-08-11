@@ -57,7 +57,9 @@ export const createApplication = defineAdapter((applicationOptions) => {
               return maybeResponse;
             }
           }
-          return new Response('Not found', { status: 404 });
+          // Returning undefined here allows the caller (in defineAdapter) to
+          // construct a new 404 response.
+          return;
         }
         // Hacky: We're creating a dummy response here and keeping a weakmap
         // reference to the StaticFile for use below.

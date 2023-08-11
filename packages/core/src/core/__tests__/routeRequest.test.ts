@@ -8,11 +8,8 @@ describe('routeRequest', () => {
         return new Response(String(error), { status: 500 });
       },
       toResponse: async (request, result) => {
-        if (result instanceof Response) {
+        if (result instanceof Response || result === undefined) {
           return result;
-        }
-        if (result === undefined) {
-          return new Response('Not found', { status: 404 });
         }
         const { filePath, responseInit } = result;
         return new Response(filePath, responseInit);

@@ -61,14 +61,10 @@ export const createApplication = defineAdapter((applicationOptions) => {
       return new Response(String(error), { status: 500 });
     },
     toResponse: async (request, result) => {
-      const response: Response | undefined =
-        result instanceof StaticFile
-          ? await fromStaticFile(request.headers, result)
-          : result;
-      if (response === undefined) {
-        return new Response('Not found', { status: 404 });
+      if (result instanceof StaticFile) {
+        return await fromStaticFile(request.headers, result);
       }
-      return response;
+      return result;
     },
     createNativeHandler: (getResponse) => {
       const handleRequest = async (

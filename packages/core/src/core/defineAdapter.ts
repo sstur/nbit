@@ -42,7 +42,7 @@ type Adapter<NativeHandler> = {
   toResponse: (
     request: Request,
     result: Response | StaticFile | undefined,
-  ) => MaybePromise<Response>;
+  ) => MaybePromise<Response | undefined>;
   createNativeHandler: (
     requestHandler: (request: Request) => Promise<Response>,
   ) => NativeHandler;
@@ -85,7 +85,6 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
         }
       }
       const routeRequest = async (request: Request) => {
-        // TODO: Use await here?
         const context = getContext?.(request);
         const customRequest = new CustomRequest(request);
         if (context) {
@@ -104,38 +103,39 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
               try {
                 resolvedResponse = Response.json(result);
               } catch (e) {
-                const error = e instanceof Error ? e : new Error(String(e));
                 const [method, pattern] = route;
                 throw new Errors.StringifyError(
                   { route: `${method}:${pattern}` },
-                  { cause: error },
+                  { cause: toError(e) },
                 );
               }
             }
             return await adapter.toResponse(request, resolvedResponse);
           }
         }
-        return await adapter.toResponse(request, undefined);
       };
       return async (request: Request): Promise<Response> => {
         try {
-          return await routeRequest(request);
+          const response = await routeRequest(request);
+          if (response) {
+            return response;
+          }
         } catch (e) {
           if (e instanceof HttpError) {
             const { status, message } = e;
             return new Response(message, { status });
           }
-          const error = e instanceof Error ? e : new Error(String(e));
+          const error = toError(e);
           if (errorHandler) {
             try {
               return await errorHandler(error);
             } catch (e) {
-              const error = e instanceof Error ? e : new Error(String(e));
-              return await adapter.onError(request, error);
+              return await adapter.onError(request, toError(e));
             }
           }
           return await adapter.onError(request, error);
         }
+        return new Response('Not found', { status: 404 });
       };
     };
 
@@ -182,4 +182,8 @@ function getApp<RequestContext>() {
     ) =>
       [method.toUpperCase(), path as string, handler] as Route<RequestContext>,
   };
+}
+
+function toError(e: unknown) {
+  return e instanceof Error ? e : new Error(String(e));
 }

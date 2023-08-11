@@ -14,11 +14,8 @@ describe('Types', () => {
         return new Response(String(error), { status: 500 });
       },
       toResponse: async (request, result) => {
-        if (result instanceof Response) {
+        if (result instanceof Response || result === undefined) {
           return result;
-        }
-        if (result === undefined) {
-          return new Response('Not found', { status: 404 });
         }
         expectTypeOf(result).toEqualTypeOf<StaticFile>();
         const { filePath, responseInit } = result;
