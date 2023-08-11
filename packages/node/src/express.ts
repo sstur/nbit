@@ -29,6 +29,8 @@ export const createApplication = defineAdapter((applicationOptions) => {
 
   return {
     onError: (request, error) => {
+      // Hacky: We're creating a dummy response here and keeping a weakmap
+      // reference to the error for use below.
       const response = new Response(String(error), { status: 500 });
       toError.set(response, error);
       return response;
@@ -36,6 +38,29 @@ export const createApplication = defineAdapter((applicationOptions) => {
     toResponse: async (request, result) => {
       if (result instanceof StaticFile) {
         const staticFile = result;
+        const customServeFile = applicationOptions.serveFile;
+        if (customServeFile) {
+          const { filePath, options, responseInit: init } = staticFile;
+          const resolved = resolveFilePath(filePath, applicationOptions);
+          if (resolved) {
+            const [fullFilePath] = resolved;
+            const { status, statusText, headers } = new Response(null, init);
+            const maybeResponse = await customServeFile({
+              filePath,
+              fullFilePath,
+              status,
+              statusText,
+              headers,
+              options,
+            });
+            if (maybeResponse) {
+              return maybeResponse;
+            }
+          }
+          return new Response('Not found', { status: 404 });
+        }
+        // Hacky: We're creating a dummy response here and keeping a weakmap
+        // reference to the StaticFile for use below.
         const response = new Response(staticFile.filePath);
         toStaticFile.set(response, staticFile);
         return response;
@@ -44,6 +69,12 @@ export const createApplication = defineAdapter((applicationOptions) => {
         return result;
       }
       if (result === undefined) {
+        // In the other implementations we return a 404 Response here, but in
+        // this case we're throwing a special NoRouteError to signal to the
+        // calling function that control should be passed back to Express.
+        // In practice, this error will first be sent to the onError function
+        // above, which will use a separate trick to pass the error to
+        // handleRequest below.
         throw new Errors.NoRouteError();
       }
       return Response.json(result);
@@ -70,9 +101,9 @@ export const createApplication = defineAdapter((applicationOptions) => {
           // Resolve the file path relative to the project root.
           const resolved = resolveFilePath(filePath, applicationOptions);
           if (!resolved) {
-            // TODO: Better error
-            expressResponse.writeHead(403);
-            expressResponse.end('Unable to serve file');
+            // For consistency with the other implementations, send a 404 here
+            expressResponse.writeHead(404);
+            expressResponse.end('Not found');
             return;
           }
           const [fullFilePath, allowedRoot] = resolved;

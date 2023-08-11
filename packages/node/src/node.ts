@@ -14,14 +14,27 @@ export const createApplication = defineAdapter((applicationOptions) => {
   // This `fromStaticFile` function is identical to that of bun.
   const fromStaticFile = async (
     requestHeaders: Headers,
-    file: StaticFile,
+    staticFile: StaticFile,
   ): Promise<Response | undefined> => {
-    const { filePath, options, responseInit: init } = file;
+    const { filePath, options, responseInit: init } = staticFile;
     const resolved = resolveFilePath(filePath, applicationOptions);
     if (!resolved) {
       return;
     }
     const [fullFilePath] = resolved;
+    const customServeFile = applicationOptions.serveFile;
+    if (customServeFile) {
+      const { status, statusText, headers } = new Response(null, init);
+      const maybeResponse = await customServeFile({
+        filePath,
+        fullFilePath,
+        status,
+        statusText,
+        headers,
+        options,
+      });
+      return maybeResponse ?? undefined;
+    }
     const fileResponse = await serveFile(requestHeaders, fullFilePath, options);
     if (!fileResponse) {
       return;

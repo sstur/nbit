@@ -1,5 +1,5 @@
-import type { Response } from '../applicationTypes';
-import type { StaticFile } from '../core/StaticFile';
+import type { Headers, Response } from '../applicationTypes';
+import type { StaticFile, StaticFileOptions } from '../core/StaticFile';
 import type { CustomRequest } from '../core/CustomRequest';
 
 export type RequestOptions = {
@@ -32,6 +32,42 @@ export type FileServingOptions = {
    * 404.
    */
   allowStaticFrom?: Array<string>;
+  /**
+   * Overrides the default serveFile. Useful within tests or serverless
+   * environments.
+   *
+   * This is invoked when a request handler returns `Response.file(filePath)`.
+   *
+   * If the `root` option is specified, `filePath` will be resolved relative to
+   * that, otherwise it will be resolved relative to process.cwd (or `/` in
+   * serverless environments). The fully resolved path will be checked against
+   * `allowStaticFrom` and if that check does not pass (or allowStaticFrom is
+   * not specified) then `serveFile` will never be invoked and a 404 response
+   * will be sent.
+   *
+   * Return null to indicate no valid file exists at the given path, resulting
+   * in 404 response.
+   *
+   * Note: A comprehensive implementation of serveFile should specify response
+   * headers such as Content-Type, Last-Modified, ETag and Cache-Control (see
+   * packages/core/src/fs/fileServing.ts). It should also potentially send a
+   * response status of 304 based on request headers like `If-Modified-Since`
+   * and/or `If-None-Match` (see packages/core/src/fs/caching.ts).
+   */
+  serveFile?: (params: {
+    /** The original path specified in Response.file(...) */
+    filePath: string;
+    /** The fully resolved path starting with `/` */
+    fullFilePath: string;
+    /** Specified at call site, e.g. Response.file(filePath, { status }) */
+    status: number;
+    /** Specified at call site, e.g. Response.file(filePath, { statusText }) */
+    statusText: string;
+    /** Specified at call site, e.g. Response.file(filePath, { headers }) */
+    headers: Headers;
+    /** File serving options such as `maxAge`, specified at call site, e.g. Response.file(filePath, { maxAge }) */
+    options: StaticFileOptions;
+  }) => Promise<Response | null>;
 };
 
 export type MaybePromise<T> = T | Promise<T>;
