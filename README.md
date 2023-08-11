@@ -410,7 +410,7 @@ const routes = defineRoutes((app) => [
 const requestHandler = createRequestHandler(routes);
 
 it('should handle a request', async () => {
-  const request = new Request('/');
+  const request = new Request('http://localhost/');
   const response = await requestHandler(request);
   expect(response.status).toBe(200);
   const data = await response.json();
