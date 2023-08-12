@@ -1,5 +1,5 @@
 import { createApplication, Response } from '..';
-import { Request } from '../Request';
+import { Request } from '../applicationTypes';
 
 describe('createApplication', () => {
   const { defineRoutes, createRequestHandler } = createApplication();

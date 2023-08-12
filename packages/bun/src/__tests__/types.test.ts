@@ -1,7 +1,7 @@
 import { expectTypeOf } from 'expect-type';
 
 import { createApplication } from '../bun';
-import Response from '../Response';
+import Response from '../core/CustomResponse';
 import type { CustomRequest } from '../core/CustomRequest';
 import type { JSONValue, Route } from '../types';
 

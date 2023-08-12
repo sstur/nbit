@@ -1,5 +1,5 @@
-import { Request } from '../Request';
-import { Response } from '../Response';
+import { Request } from '../applicationTypes';
+import Response from '../core/CustomResponse';
 import { createApplication } from '../express';
 
 describe('serveFile', () => {

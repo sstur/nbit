@@ -4,8 +4,7 @@ import { TextDecoder } from 'util';
 import { Readable } from 'stream';
 import type { ReadableStream } from 'stream/web';
 
-import { readEntireStream } from './support/readEntireStream';
-import type { JSONValue } from './types';
+import { readEntireStream } from '../support/readEntireStream';
 
 export type BodyInit =
   | Uint8Array // Includes Buffer which is a subclass of Uint8Array
@@ -155,7 +154,7 @@ export class Body {
     return toString(body);
   }
 
-  async json<T = JSONValue>(): Promise<T> {
+  async json<T = unknown>(): Promise<T> {
     const body = await this.consumeBody('json');
     return JSON.parse(toString(body)) as any;
   }

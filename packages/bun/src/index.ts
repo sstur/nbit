@@ -1,4 +1,4 @@
 export { HttpError } from './core';
-export { default as Request } from './builtins/Request';
-export { default as Response } from './Response';
+export { Request } from './web-io';
+export { default as Response } from './core/CustomResponse';
 export { createApplication } from './bun';

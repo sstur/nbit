@@ -9,12 +9,12 @@ import type {
 import { defineAdapter } from './core';
 import { StaticFile } from './core/StaticFile';
 import { defineErrors } from './core/support/defineErrors';
-import { Response } from './Response';
+import { Response, Headers } from './applicationTypes';
 import { resolveFilePath } from './fs';
 import { isReadable } from './support/streams';
-import { Headers } from './Headers';
-import { Request } from './Request';
 import { pipeStreamAsync } from './support/pipeStreamAsync';
+import { toNodeHeaders } from './support/headers';
+import { fromNodeRequest } from './support/fromNodeRequest';
 
 const Errors = defineErrors({
   // This is a placeholder for when no route matches so we can easily identify
@@ -85,10 +85,7 @@ export const createApplication = defineAdapter((applicationOptions) => {
         expressResponse: ExpressResponse,
         next: NextFunction,
       ) => {
-        const request = Request.fromNodeRequest(
-          expressRequest,
-          applicationOptions,
-        );
+        const request = fromNodeRequest(expressRequest, applicationOptions);
         const response = await getResponse(request);
         const error = toError.get(response);
         if (error) {
@@ -114,7 +111,7 @@ export const createApplication = defineAdapter((applicationOptions) => {
             relative(allowedRoot, fullFilePath),
             {
               root: allowedRoot,
-              headers: new Headers(init.headers).toNodeHeaders(),
+              headers: toNodeHeaders(new Headers(init.headers)),
               // Note: Express always sends the ETag header
               lastModified: cachingHeaders,
               maxAge: typeof maxAge === 'number' ? maxAge * 1000 : undefined,
@@ -130,15 +127,11 @@ export const createApplication = defineAdapter((applicationOptions) => {
               expressResponse.writeHead(
                 status,
                 statusText,
-                headers.toNodeHeaders(),
+                toNodeHeaders(headers),
               ),
           });
         } else {
-          expressResponse.writeHead(
-            status,
-            statusText,
-            headers.toNodeHeaders(),
-          );
+          expressResponse.writeHead(status, statusText, toNodeHeaders(headers));
           if (body != null) {
             expressResponse.write(body);
           }

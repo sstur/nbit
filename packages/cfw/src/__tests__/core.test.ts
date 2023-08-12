@@ -44,10 +44,9 @@ describe('createApplication', () => {
     const mockRequest = new Request('http://localhost/');
     const response = await requestHandler(mockRequest);
     expect(response.status).toBe(200);
-    const headers = Object.fromEntries(response.headers.entries());
-    expect(headers).toEqual({
-      'content-type': 'application/json',
-    });
+    const contentType = response.headers.get('Content-Type') ?? '';
+    // In some implementations there will be `;charset=utf-8`
+    expect(contentType.split(';')[0]).toBe('application/json');
     const parsed = await response.json();
     expect(parsed).toEqual({ path: '/' });
   });
@@ -58,11 +57,10 @@ describe('createApplication', () => {
     const response = await requestHandler(mockRequest);
     expect(response.status).toBe(418);
     expect(response.statusText).toBe('I like tea');
-    const headers = Object.fromEntries(response.headers.entries());
-    expect(headers).toEqual({
-      'content-type': 'application/json',
-      'x-my-header': 'hello',
-    });
+    const contentType = response.headers.get('content-type') ?? '';
+    // In some implementations there will be `;charset=utf-8`
+    expect(contentType.split(';')[0]).toBe('application/json');
+    expect(response.headers.get('x-my-header')).toBe('hello');
     const parsed = await response.json();
     expect(parsed).toEqual({ foo: 42 });
   });
@@ -76,10 +74,9 @@ describe('createApplication', () => {
     });
     const response = await requestHandler(mockRequest);
     expect(response.status).toBe(200);
-    const headers = Object.fromEntries(response.headers.entries());
-    expect(headers).toEqual({
-      'content-type': 'application/json',
-    });
+    const contentType = response.headers.get('content-type') ?? '';
+    // In some implementations there will be `;charset=utf-8`
+    expect(contentType.split(';')[0]).toBe('application/json');
     const parsed = await response.json();
     expect(parsed).toEqual({ body: { foo: 1 } });
   });

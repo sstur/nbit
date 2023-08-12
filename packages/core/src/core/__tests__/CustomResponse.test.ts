@@ -1,12 +1,15 @@
-import CustomResponse from '../Response';
-import { StaticFile } from '../core/StaticFile';
+import { Response, Headers } from '../../web-io';
+import CustomResponse from '../CustomResponse';
+import { StaticFile } from '../StaticFile';
 
-describe('Response', () => {
+describe('CustomResponse', () => {
   it('should be a subclass of the native Response', async () => {
     const response = new CustomResponse('foo', { status: 418 });
     expect(response instanceof Response).toBe(true);
     expect(response.status).toBe(418);
-    expect(response.statusText).toBe('');
+    // Temporarily disabled because statusText this is broken in Bun
+    // https://github.com/oven-sh/bun/issues/866
+    // expect(response.statusText).toBe("I'm a Teapot");
     expect(response.headers instanceof Headers).toBe(true);
     expect(response.bodyUsed).toBe(false);
   });
@@ -16,10 +19,9 @@ describe('Response', () => {
     expect(response instanceof Response).toBe(true);
     expect(response instanceof CustomResponse).toBe(false);
     expect(response.status).toBe(200);
-    const headers = Object.fromEntries(response.headers.entries());
-    expect(JSON.stringify(headers)).toBe(
-      JSON.stringify({ 'content-type': 'application/json;charset=utf-8' }),
-    );
+    const contentType = response.headers.get('Content-Type') ?? '';
+    // In some implementations there will be `;charset=utf-8`
+    expect(contentType.split(';')[0]).toBe('application/json');
   });
 
   it('should have custom static method Response.file()', () => {

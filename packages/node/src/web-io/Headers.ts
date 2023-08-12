@@ -8,7 +8,7 @@ export class Headers {
   // return it without iterating so often. We might also want to store along
   // side it a lower-case -> mixed-case mapping.
   // Consider tracking copy-on-write or some other way to do less copying.
-  private headers = new Map<string, [string, Array<string>]>();
+  readonly headers = new Map<string, [string, Array<string>]>();
 
   constructor(init?: HeadersInit) {
     // TODO: Should be able to iterate this without using private `.headers`
@@ -87,29 +87,6 @@ export class Headers {
 
   [Symbol.iterator]() {
     return this.entries();
-  }
-
-  // Non-standard method to make it easy to convert headers to the  object
-  // expected by Node's response.writeHead().
-  // https://nodejs.org/docs/latest-v16.x/api/http.html#responsewriteheadstatuscode-statusmessage-headers
-  toNodeHeaders() {
-    const result: Record<string, string | Array<string>> = {};
-    for (const [name, values] of this.headers.values()) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      result[name] = values.length === 1 ? values[0]! : values;
-    }
-    return result;
-  }
-
-  // https://nodejs.org/docs/latest-v16.x/api/http.html#messagerawheaders
-  static fromNodeRawHeaders(rawHeaders: Array<string>) {
-    const headers = new Headers();
-    for (let i = 0; i < rawHeaders.length; i++) {
-      const name = rawHeaders[i] ?? '';
-      const value = rawHeaders[++i] ?? '';
-      headers.append(name, value);
-    }
-    return headers;
   }
 }
 

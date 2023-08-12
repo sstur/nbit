@@ -1,4 +1,4 @@
-import Response from '../Response';
+import Response from '../core/CustomResponse';
 import { createApplication } from '../bun';
 
 describe('serveFile', () => {

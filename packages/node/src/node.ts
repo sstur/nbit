@@ -1,14 +1,14 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 
 import { defineAdapter } from './core';
-import { Response } from './Response';
+import { Response, Headers } from './applicationTypes';
 import { isReadable } from './support/streams';
 import { StaticFile } from './core/StaticFile';
 import { resolveFilePath } from './fs';
 import { serveFile } from './support/serveFile';
 import { pipeStreamAsync } from './support/pipeStreamAsync';
-import { Request } from './Request';
-import { Headers } from './Headers';
+import { toNodeHeaders } from './support/headers';
+import { fromNodeRequest } from './support/fromNodeRequest';
 
 export const createApplication = defineAdapter((applicationOptions) => {
   // This `fromStaticFile` function is identical to that of bun.
@@ -77,10 +77,7 @@ export const createApplication = defineAdapter((applicationOptions) => {
         nodeRequest: IncomingMessage,
         nodeResponse: ServerResponse,
       ) => {
-        const request = Request.fromNodeRequest(
-          nodeRequest,
-          applicationOptions,
-        );
+        const request = fromNodeRequest(nodeRequest, applicationOptions);
         const response = await getResponse(request);
         const { status, statusText, headers, bodyRaw: body } = response;
         if (isReadable(body)) {
@@ -89,11 +86,11 @@ export const createApplication = defineAdapter((applicationOptions) => {
               nodeResponse.writeHead(
                 status,
                 statusText,
-                headers.toNodeHeaders(),
+                toNodeHeaders(headers),
               ),
           });
         } else {
-          nodeResponse.writeHead(status, statusText, headers.toNodeHeaders());
+          nodeResponse.writeHead(status, statusText, toNodeHeaders(headers));
           if (body != null) {
             nodeResponse.write(body);
           }

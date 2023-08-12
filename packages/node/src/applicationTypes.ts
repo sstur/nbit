@@ -4,6 +4,11 @@
  */
 
 export const PLATFORM = 'node';
-export { Request } from './Request';
-export { Response, type ResponseInit } from './Response';
-export { Headers, type HeadersInit } from './Headers';
+export {
+  Request,
+  type RequestInit,
+  Response,
+  type ResponseInit,
+  Headers,
+  type HeadersInit,
+} from './web-io';
