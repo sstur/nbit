@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Readable } from 'stream';
 
-import { Request } from '../web-io';
+import { Request } from '../Request';
 
 describe('Request', () => {
   it('should construct with just path', () => {
