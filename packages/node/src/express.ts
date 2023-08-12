@@ -9,7 +9,7 @@ import type {
 import { defineAdapter } from './core';
 import { StaticFile } from './core/StaticFile';
 import { defineErrors } from './core/support/defineErrors';
-import { Response, Headers } from './applicationTypes';
+import { Response, Headers } from './web-io';
 import { resolveFilePath } from './fs';
 import { isReadable } from './support/streams';
 import { pipeStreamAsync } from './support/pipeStreamAsync';

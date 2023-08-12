@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 
 import { defineAdapter } from './core';
-import { Response, Headers } from './applicationTypes';
+import { Response, Headers } from './web-io';
 import { isReadable } from './support/streams';
 import { StaticFile } from './core/StaticFile';
 import { resolveFilePath } from './fs';

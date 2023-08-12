@@ -5,7 +5,7 @@ import { type Readable } from 'stream';
 import { tryAsync } from '../core/support/tryAsync';
 import { computeHeaders } from '../fs';
 import type { StaticFileOptions } from '../core/StaticFile';
-import type { Headers } from '../applicationTypes';
+import type { Headers } from '../web-io';
 
 type FileResponse = {
   status?: number;

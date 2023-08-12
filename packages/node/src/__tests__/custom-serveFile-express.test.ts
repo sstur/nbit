@@ -1,4 +1,4 @@
-import { Request } from '../applicationTypes';
+import { Request } from '../web-io';
 import Response from '../core/CustomResponse';
 import { createApplication } from '../express';
 

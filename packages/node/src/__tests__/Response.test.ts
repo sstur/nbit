@@ -1,6 +1,6 @@
 import { Readable } from 'stream';
 
-import { Response } from '../applicationTypes';
+import { Response } from '../web-io';
 
 describe('Response', () => {
   it('should construct with no args', () => {

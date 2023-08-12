@@ -1,5 +1,5 @@
 import { createApplication, Response } from '..';
-import { Request } from '../applicationTypes';
+import { Request } from '../web-io';
 
 describe('createApplication', () => {
   const { defineRoutes, createRequestHandler } = createApplication();

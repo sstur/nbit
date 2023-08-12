@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { serveFile } from '../serveFile';
-import { Headers } from '../../applicationTypes';
+import { Headers } from '../../web-io';
 
 vi.mock('fs', async (importOriginal) => {
   const fs = await importOriginal();
