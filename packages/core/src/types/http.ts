@@ -1,4 +1,4 @@
-import type { Headers, Response } from '../applicationTypes';
+import type { Headers, Response } from '../web-io';
 import type { StaticFile, StaticFileOptions } from '../core/StaticFile';
 import type { CustomRequest } from '../core/CustomRequest';
 

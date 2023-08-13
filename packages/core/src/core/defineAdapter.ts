@@ -10,7 +10,7 @@ import type {
   Method,
   LooseUnion,
 } from '../types';
-import { type Request, Response } from '../applicationTypes';
+import { type Request, Response } from '../web-io';
 
 import { createRouter } from './Router';
 import { HttpError } from './HttpError';

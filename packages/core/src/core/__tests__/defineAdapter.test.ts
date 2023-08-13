@@ -1,6 +1,6 @@
 import { expectTypeOf } from 'expect-type';
 
-import { Request, Response } from '../../applicationTypes';
+import { Request, Response } from '../../web-io';
 import { defineAdapter } from '../defineAdapter';
 
 type BodyStream = Exclude<Request['body'], null>;

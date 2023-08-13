@@ -1,4 +1,4 @@
-import type { ResponseInit } from '../applicationTypes';
+import type { ResponseInit } from '../web-io';
 
 export type StaticFileOptions = {
   /** Max age (in seconds) for the Cache-Control header */

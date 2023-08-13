@@ -2,7 +2,7 @@
 import { extname } from 'path';
 
 import type { StaticFileOptions } from '../core/StaticFile';
-import type { Headers } from '../applicationTypes';
+import type { Headers } from '../web-io';
 import { getMimeTypeFromExt } from '../core/support/mimeTypes';
 
 import { generateEtag, shouldSend304 } from './caching';

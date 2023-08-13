@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request, type Headers } from '../applicationTypes';
+import { Request, type Headers } from '../web-io';
 import type { JSONValue, MethodNoBody } from '../types';
 
 import { HttpError } from './HttpError';

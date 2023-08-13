@@ -1,4 +1,4 @@
-import { PLATFORM } from '../../applicationTypes';
+import { PLATFORM } from '../../constants';
 
 /**
  * The sole purpose of this function is as a helper when testing that symlink'd

@@ -1,4 +1,4 @@
-import { Request } from '../../applicationTypes';
+import { Request } from '../../web-io';
 import { CustomRequest } from '../CustomRequest';
 import { HttpError } from '../HttpError';
 
