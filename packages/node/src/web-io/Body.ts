@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO: This should be available on the global object in Node v11+ but TS seems to not think so.
 import { TextDecoder } from 'util';
 import { Readable } from 'stream';
 import type { ReadableStream } from 'stream/web';
 
 import { readEntireStream } from '../support/readEntireStream';
+import { readableFromWeb } from '../support/streams';
 
 export type BodyInit =
   | Uint8Array // Includes Buffer which is a subclass of Uint8Array
@@ -169,7 +169,7 @@ function toStream(
   if (body instanceof Readable) {
     return body;
   }
-  return Readable.fromWeb(body);
+  return readableFromWeb(body);
 }
 
 function toString(body: Uint8Array): string {

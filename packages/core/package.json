@@ -12,6 +12,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@types/node": "^16.18.40",
     "eslint": "^8.19.0",
     "eslint-config-xt": "^1.7.0",
     "expect-type": "^0.13.0",

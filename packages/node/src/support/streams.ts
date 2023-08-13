@@ -18,3 +18,15 @@ function isWebReadableStream(input: unknown): input is ReadableStream {
   // in versions of Node (< 16.5) that don't have web streams.
   return typeof Object(input).getReader === 'function';
 }
+
+const fromWeb: ((readableStream: ReadableStream) => Readable) | undefined =
+  Object(Readable).fromWeb;
+
+export function readableFromWeb(readableStream: ReadableStream) {
+  if (!fromWeb) {
+    throw new Error(
+      'Readable.fromWeb() is only available in Node v18 and above',
+    );
+  }
+  return fromWeb(readableStream);
+}
