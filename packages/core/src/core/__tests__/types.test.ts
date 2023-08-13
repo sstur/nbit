@@ -1,14 +1,30 @@
 import { expectTypeOf } from 'expect-type';
 
-import { createApplication } from '../bun';
-import Response from '../core/CustomResponse';
-import type { CustomRequest } from '../core/CustomRequest';
-import type { JSONValue, Route } from '../types';
+import type { Request, Headers } from '../../web-io';
+import Response from '../CustomResponse';
+import type { CustomRequest } from '../CustomRequest';
+import type { JSONValue, Route } from '../../types';
+import { defineAdapter } from '../defineAdapter';
 
 describe('Types', () => {
-  if (!false) {
-    return;
-  }
+  const createApplication = defineAdapter((_applicationOptions) => {
+    return {
+      onError: (request, error) => {
+        return new Response(String(error), { status: 500 });
+      },
+      toResponse: async (request, result) => {
+        if (result instanceof Response) {
+          return result;
+        }
+        if (result === undefined) {
+          return new Response('Not found', { status: 404 });
+        }
+        return Response.json(result);
+      },
+      createNativeHandler: (handleRequest) => handleRequest,
+    };
+  });
+
   it('should correctly enforce types on request and params', () => {
     const { defineRoutes } = createApplication();
 
