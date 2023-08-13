@@ -2,15 +2,20 @@ name: CI
 
 on:
   push:
-    branches: ['master']
+    branches: ['main']
   pull_request:
     types: [opened, synchronize]
 
 jobs:
   build:
-    name: Build and Test
+    name: Build and Test (Node ${{ matrix.node }})
     timeout-minutes: 15
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: [14, 16]
+      fail-fast: false
 
     steps:
       - name: Check out code
@@ -18,10 +23,10 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Setup Node.js environment
+      - name: Setup Node v${{ matrix.node }}
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: ${{ matrix.node }}
           cache: 'yarn'
 
       - name: Install Bun
