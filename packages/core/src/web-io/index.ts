@@ -5,4 +5,5 @@ export {
   type ResponseInit,
   Headers,
   type HeadersInit,
+  type BodyInit,
 } from 'node-fetch';
