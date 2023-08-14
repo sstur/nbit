@@ -1,4 +1,3 @@
-export const PLATFORM = 'core';
 export {
   Request,
   type RequestInit,
@@ -6,4 +5,4 @@ export {
   type ResponseInit,
   Headers,
   type HeadersInit,
-} from './web-io';
+} from 'node-fetch';

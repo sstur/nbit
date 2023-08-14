@@ -69,7 +69,8 @@ export class CustomRequest<M extends string, Params extends string> {
     let message = 'Invalid JSON body';
     if (contentType === 'application/json') {
       try {
-        return await this.request.json<T>();
+        const parsed = await this.request.json();
+        return parsed as any;
       } catch (e) {
         message = e instanceof Error ? e.message : String(e);
       }
