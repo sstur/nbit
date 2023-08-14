@@ -16,11 +16,13 @@ function isLegacyReadableStream(input: unknown): input is Readable {
 function isWebReadableStream(input: unknown): input is ReadableStream {
   // It's important that we don't use `instanceof` here because that would throw
   // in versions of Node (< 16.5) that don't have web streams.
-  return typeof Object(input).getReader === 'function';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return typeof (input as any).getReader === 'function';
 }
 
 const fromWeb: ((readableStream: ReadableStream) => Readable) | undefined =
-  Object(Readable).fromWeb;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (Readable as any).fromWeb;
 
 export function readableFromWeb(readableStream: ReadableStream) {
   if (!fromWeb) {

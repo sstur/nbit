@@ -40,8 +40,8 @@ export class CustomRequest<M extends string, Params extends string> {
   }
 
   get body(): M extends MethodNoBody ? null : BodyStream {
-    // TODO: Remove the Object() hack when Bun types are updated
-    const body = Object(this.request).body as BodyStream | null;
+    // TODO: Remove the `as any` hack when Bun types are updated
+    const body = (this.request as any).body as BodyStream | null;
     // Ensure that for requests that can have a body we never return null
     if (!canHaveNullBody.has(this.method) && body == null) {
       const emptyBody =
@@ -52,8 +52,8 @@ export class CustomRequest<M extends string, Params extends string> {
   }
 
   get bodyUsed() {
-    // TODO: Remove the Object() hack when Bun types are updated
-    return Boolean(Object(this.request).bodyUsed);
+    // TODO: Remove the `as any` hack when Bun types are updated
+    return Boolean((this.request as any).bodyUsed);
   }
 
   arrayBuffer(..._: BodyAccessorArgs<M>) {

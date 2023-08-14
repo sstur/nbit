@@ -99,7 +99,7 @@ export class Body {
         return readableDidRead;
       }
       // If it's an IncomingMessage, we can rely on the _consuming field
-      const consuming = Object(body)._consuming;
+      const consuming = (body as any)._consuming as unknown;
       if (typeof consuming === 'boolean') {
         return consuming;
       }
