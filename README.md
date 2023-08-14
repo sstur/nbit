@@ -153,7 +153,7 @@ async function startApolloServer() {
 
 - Declarative request routing
 - Effortless body parsing
-- A type-safe approach to middleware (inspired by [Apollo Server's context](https://www.apollographql.com/docs/apollo-server/data/resolvers/#the-context-argument))
+- A type-safe approach to context (inspired by [Apollo Server's context](https://www.apollographql.com/docs/apollo-server/data/resolvers/#the-context-argument))
 - File Serving (with content-type selection, caching headers, ETag, etc)
 - Sensible, convenient defaults and conventions
 - Extensive use of TypeScript (e.g. type inference for route params)
@@ -162,15 +162,12 @@ async function startApolloServer() {
 </details>
 
 <details>
-  <summary><strong>Work-in-progress / Coming Soon</strong></summary>
+  <summary><strong>On the Roadmap</strong></summary>
 
-- Schemas and validation for JSON request body
-- Additional body parsers such as multipart/form-data
-- Tooling to statically generate an [OpenAPI schema](https://oai.github.io/Documentation/start-here.html) from a set of route handlers
-- High performance trie-based (e.g. radix3) request router
-- Better documentation
-- Performance benchmarks and comparisons with other libraries
 - Deno support
+- Schema-based validation for request body
+- Tooling to statically generate OpenAPI schema
+- Trie-based request router
 
 </details>
 
@@ -264,7 +261,7 @@ const routes = defineRoutes((app) => [
 const routes = defineRoutes((app) => [
   app.post('/auth', async (request) => {
     const { username, password } = await request.json();
-    // The following check with _throw_ if not valid; see below
+    // The following check will _throw_ if not valid; see below
     await checkLogin(username, password);
     return { success: true };
   }),
@@ -272,7 +269,7 @@ const routes = defineRoutes((app) => [
 
 async function checkLogin(username, password) {
   if (username !== 'foo' || password !== '123') {
-    throw new HttpError({ status: 403, message: 'Unauthorized' });
+    throw new HttpError(403, 'Unauthorized');
   }
 }
 ```
@@ -281,9 +278,7 @@ async function checkLogin(username, password) {
 
 Some of those examples might seem a bit boilerplatey for a hello world, but there's some important ergonomic design decisions with the `defineRoutes()` and `attachRoutes()` paradigm, as well as the fact that each route handler takes exactly one input (request) and returns exactly one result.
 
-// TODO: Add more examples
-
-Everything from middleware (which we call context) to body parsers to request params is fully typed, out of the box, using TypeScript's powerful type inference so you don't need to write type annotations everywhere.
+Everything from context to body parsers to request params is fully typed, out of the box, using TypeScript's powerful type inference so you don't need to write type annotations everywhere.
 
 ```ts
 const routes = defineRoutes((app) => [
@@ -292,7 +287,7 @@ const routes = defineRoutes((app) => [
     const foo = request.params.foo; // <-- 🚫 Type Error: foo does not exist on params
     const body = await request.json(); // <-- 🚫 Type Error: GET request doesn't have a body
     if (!isValidUsername(username)) {
-      throw new HttpError({ status: 403 }); // <-- Throw from any level deep
+      throw new HttpError(403); // <-- Throw from any level deep
     }
     const user = await db.getUserByUsername(username);
     if (!user) {
@@ -353,7 +348,7 @@ Bun.serve({
 
 See full examples for [Bun](https://github.com/sstur/nbit/blob/master/examples/bun-app/src/server.ts), [Node](https://github.com/sstur/nbit/blob/master/examples/node-app/src/server.ts) or [Express](https://github.com/sstur/nbit/blob/master/examples/express-app/src/server.ts).
 
-## Context (aka middleware)
+## Context (similar to middleware)
 
 The design choice for extensibility is influenced by the way [Apollo Server](https://www.apollographql.com/docs/apollo-server/data/resolvers/#the-context-argument) does things; this allows us to maximize type safety while still providing an ergonomic experience for developers.
 
@@ -371,7 +366,7 @@ const { defineRoutes, attachRoutes } = createApplication({
     someOtherHelper: () => {
       // We can throw a special HttpError from here
       if (!request.headers.get('foo')) {
-        throw new HttpError({ status: 403 });
+        throw new HttpError(403);
       }
     },
   }),
@@ -417,11 +412,3 @@ it('should handle a request', async () => {
   expect(data).toEqual({ hello: 'world' });
 });
 ```
-
-## Benchmarks
-
-// TODO
-
-## Project Status
-
-It is still early days, and some parts of the API will likely change (I will follow semver and a breaking change will be a major version bump). This is adapted from an internal set of tooling that has been used in production, but that doesn't mean this is stable. Please do try it out and leave feedback, criticisms and thoughts on the design choices and implementation. I know there's still a number of missing pieces, missing examples and missing documentation (file uploads, cors helpers, etc) but I wanted to get this out to gather early feedback. I hope you find this useful, even if merely as something fun to [poke around with](https://stackblitz.com/edit/node-uekcm7?file=src/server.ts)!
