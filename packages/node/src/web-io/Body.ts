@@ -15,12 +15,7 @@ export type BodyInit =
   | null
   | undefined;
 
-type BodyInitNormalized =
-  | Uint8Array
-  | Readable
-  | ReadableStream
-  | string
-  | null;
+type BodyInitNormalized = Uint8Array | Readable | string | null;
 
 // The maximum amount (bytes) we'll read into memory from a body stream.
 // Defaults to 100kb, same as Express, see https://github.com/expressjs/body-parser/blob/9db582d/lib/types/json.js#L54
@@ -43,8 +38,7 @@ export class Body {
   private options: Options;
 
   constructor(body: BodyInit, options?: Options) {
-    this._bodyInit =
-      body instanceof URLSearchParams ? body.toString() : body ?? null;
+    this._bodyInit = normalizeBody(body);
     this.options = options ?? {};
   }
 
@@ -160,16 +154,26 @@ export class Body {
   }
 }
 
-function toStream(
-  body: Uint8Array | Readable | ReadableStream | string,
-): Readable {
+function normalizeBody(body: BodyInit): BodyInitNormalized {
+  if (
+    !body ||
+    typeof body === 'string' ||
+    body instanceof Uint8Array ||
+    body instanceof Readable
+  ) {
+    return body ?? null;
+  }
+  if (body instanceof URLSearchParams) {
+    return body.toString();
+  }
+  return readableFromWeb(body);
+}
+
+function toStream(body: Uint8Array | Readable | string): Readable {
   if (body instanceof Uint8Array || typeof body === 'string') {
     return Readable.from(body, { objectMode: false });
   }
-  if (body instanceof Readable) {
-    return body;
-  }
-  return readableFromWeb(body);
+  return body;
 }
 
 function toString(body: Uint8Array): string {

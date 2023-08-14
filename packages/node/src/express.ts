@@ -1,4 +1,5 @@
 import { relative } from 'path';
+import { Readable } from 'stream';
 
 import type {
   Request as ExpressRequest,
@@ -11,7 +12,6 @@ import { StaticFile } from './core/StaticFile';
 import { defineErrors } from './core/support/defineErrors';
 import { Response, Headers } from './web-io';
 import { resolveFilePath } from './fs';
-import { isReadable } from './support/streams';
 import { pipeStreamAsync } from './support/pipeStreamAsync';
 import { toNodeHeaders } from './support/headers';
 import { fromNodeRequest } from './support/fromNodeRequest';
@@ -120,7 +120,7 @@ export const createApplication = defineAdapter((applicationOptions) => {
           return;
         }
         const { status, statusText, headers, bodyRaw: body } = response;
-        if (isReadable(body)) {
+        if (body instanceof Readable) {
           await pipeStreamAsync(body, expressResponse, {
             beforeFirstWrite: () =>
               expressResponse.writeHead(

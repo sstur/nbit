@@ -1,8 +1,8 @@
+import { Readable } from 'stream';
 import type { IncomingMessage, ServerResponse } from 'http';
 
 import { defineAdapter } from './core';
 import { Response, Headers } from './web-io';
-import { isReadable } from './support/streams';
 import { StaticFile } from './core/StaticFile';
 import { resolveFilePath } from './fs';
 import { serveFile } from './support/serveFile';
@@ -74,7 +74,7 @@ export const createApplication = defineAdapter((applicationOptions) => {
         const request = fromNodeRequest(nodeRequest, applicationOptions);
         const response = await getResponse(request);
         const { status, statusText, headers, bodyRaw: body } = response;
-        if (isReadable(body)) {
+        if (body instanceof Readable) {
           await pipeStreamAsync(body, nodeResponse, {
             beforeFirstWrite: () =>
               nodeResponse.writeHead(

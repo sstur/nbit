@@ -40,8 +40,12 @@ export function readEntireStream(stream: Readable, options: Options) {
           received: totalBytesRead,
         });
         reject(error);
-      } else {
+        return;
+      }
+      try {
         resolve(Buffer.concat(chunks, totalBytesRead));
+      } catch (e) {
+        reject(e);
       }
     });
   });
