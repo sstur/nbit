@@ -75,7 +75,7 @@ export class CustomRequest<M extends string, Params extends string> {
         message = e instanceof Error ? e.message : String(e);
       }
     }
-    throw new HttpError({ status: 400, message });
+    throw new HttpError(400, message);
   }
 
   // Note: Not implemented yet; we can implement this if we bump the minimum supported Node version to v14.18

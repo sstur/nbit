@@ -26,7 +26,7 @@ describe('CustomRequest', () => {
     });
     const customRequest = new CustomRequest(request);
     await expect(customRequest.json()).rejects.toEqual(
-      new HttpError({ status: 400, message: 'Invalid JSON body' }),
+      new HttpError(400, 'Invalid JSON body'),
     );
   });
 
@@ -37,7 +37,7 @@ describe('CustomRequest', () => {
     });
     const customRequest = new CustomRequest(request);
     await expect(customRequest.json()).rejects.toEqual(
-      new HttpError({ status: 400, message: 'Invalid JSON body' }),
+      new HttpError(400, 'Invalid JSON body'),
     );
   });
 });
