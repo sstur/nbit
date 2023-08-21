@@ -17,6 +17,20 @@ import { pipeStreamAsync } from './support/pipeStreamAsync';
 import { toNodeHeaders } from './support/headers';
 import { fromNodeRequest } from './support/fromNodeRequest';
 
+type ExpressStaticFileOpts = {
+  root: string;
+  headers: Record<string, string | Array<string>>;
+  lastModified: boolean;
+  maxAge: number | undefined;
+};
+
+// This is roughly the params needed for Express's res.sendFile()
+type ExpressStaticFile = [
+  status: number,
+  path: string,
+  options: ExpressStaticFileOpts,
+];
+
 const Errors = defineErrors({
   // This is a placeholder for when no route matches so we can easily identify
   // it as a special case of error and hand control over to Express.
@@ -24,8 +38,51 @@ const Errors = defineErrors({
 });
 
 export const createApplication = defineAdapter((applicationOptions) => {
-  const [getStaticFile, setStaticFile] = createMeta<StaticFile>();
+  const [getExpressStaticFile, setExpressStaticFile] =
+    createMeta<ExpressStaticFile>();
   const [getError, setError] = createMeta<Error>();
+
+  const fromStaticFile = async (
+    requestHeaders: Headers,
+    staticFile: StaticFile,
+  ): Promise<Response | undefined> => {
+    const { filePath, options, responseInit: init } = staticFile;
+    const resolved = resolveFilePath(filePath, applicationOptions);
+    if (!resolved) {
+      return;
+    }
+    const [fullFilePath, allowedRoot] = resolved;
+    const customServeFile = applicationOptions.serveFile;
+    if (customServeFile) {
+      const { status, statusText, headers } = new Response(null, init);
+      const maybeResponse = await customServeFile({
+        filePath,
+        fullFilePath,
+        status,
+        statusText,
+        headers,
+        options,
+      });
+      return maybeResponse ?? undefined;
+    }
+
+    const { cachingHeaders = true, maxAge } = options;
+    const response = new Response(filePath);
+    setExpressStaticFile(response, [
+      init.status ?? 200,
+      // Pass the file path relative to allowedRoot. Express will not
+      // serve the file if it does not exist within the allowed root.
+      relative(allowedRoot, fullFilePath),
+      {
+        root: allowedRoot,
+        headers: toNodeHeaders(new Headers(init.headers)),
+        // Note: Express always sends the ETag header
+        lastModified: cachingHeaders,
+        maxAge: typeof maxAge === 'number' ? maxAge * 1000 : undefined,
+      },
+    ]);
+    return response;
+  };
 
   return {
     onError: (request, error) => {
@@ -37,43 +94,14 @@ export const createApplication = defineAdapter((applicationOptions) => {
     },
     toResponse: async (request, result) => {
       if (result instanceof StaticFile) {
-        const staticFile = result;
-        const customServeFile = applicationOptions.serveFile;
-        if (customServeFile) {
-          const { filePath, options, responseInit: init } = staticFile;
-          const resolved = resolveFilePath(filePath, applicationOptions);
-          if (resolved) {
-            const [fullFilePath] = resolved;
-            const { status, statusText, headers } = new Response(null, init);
-            const maybeResponse = await customServeFile({
-              filePath,
-              fullFilePath,
-              status,
-              statusText,
-              headers,
-              options,
-            });
-            if (maybeResponse) {
-              return maybeResponse;
-            }
-          }
-          // Returning undefined here allows the caller (in defineAdapter) to
-          // construct a new 404 response.
-          return;
-        }
-        // We're creating a dummy response here and keeping a reference to the
-        // StaticFile for use below.
-        const response = new Response(staticFile.filePath);
-        setStaticFile(response, staticFile);
-        return response;
+        return await fromStaticFile(request.headers, result);
       }
       if (result === undefined) {
-        // In the other implementations we return a 404 Response here, but in
-        // this case we're throwing a special NoRouteError to signal to the
-        // calling function that control should be passed back to Express.
-        // In practice, this error will first be sent to the onError function
-        // above, which will use a separate trick to pass the error to
-        // handleRequest below.
+        // In the other implementations we return undefined here, causing the
+        // calling function to create a 404 response. But in this case we're
+        // throwing a special NoRouteError which will be sent to the onError
+        // function above, which will use a separate trick to pass the error to
+        // handleRequest below where we can call Express's next().
         throw new Errors.NoRouteError();
       }
       return result;
@@ -90,33 +118,11 @@ export const createApplication = defineAdapter((applicationOptions) => {
         if (error) {
           return error instanceof Errors.NoRouteError ? next() : next(error);
         }
-        const staticFile = getStaticFile(response);
+        const staticFile = getExpressStaticFile(response);
         if (staticFile) {
-          const { filePath, options, responseInit: init } = staticFile;
-          const { cachingHeaders = true, maxAge } = options;
-          // Resolve the file path relative to the project root.
-          const resolved = resolveFilePath(filePath, applicationOptions);
-          if (!resolved) {
-            // For consistency with the other implementations, send a 404 here
-            expressResponse.writeHead(404);
-            expressResponse.end('Not found');
-            return;
-          }
-          const [fullFilePath, allowedRoot] = resolved;
-          expressResponse.status(init.status ?? 200);
-          expressResponse.sendFile(
-            // Pass the file path relative to allowedRoot. Express will not
-            // serve the file if it does not exist within the allowed root.
-            relative(allowedRoot, fullFilePath),
-            {
-              root: allowedRoot,
-              headers: toNodeHeaders(new Headers(init.headers)),
-              // Note: Express always sends the ETag header
-              lastModified: cachingHeaders,
-              maxAge: typeof maxAge === 'number' ? maxAge * 1000 : undefined,
-            },
-            next,
-          );
+          const [status, path, options] = staticFile;
+          expressResponse.status(status);
+          expressResponse.sendFile(path, options, next);
           return;
         }
         const { status, statusText, headers, bodyRaw: body } = response;
