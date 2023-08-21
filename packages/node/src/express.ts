@@ -9,6 +9,7 @@ import type {
 
 import { defineAdapter } from './core';
 import { StaticFile } from './core/StaticFile';
+import { createMeta } from './core/support/createMeta';
 import { defineErrors } from './core/support/defineErrors';
 import { Response, Headers } from './web-io';
 import { resolveFilePath } from './fs';
@@ -23,16 +24,15 @@ const Errors = defineErrors({
 });
 
 export const createApplication = defineAdapter((applicationOptions) => {
-  // TODO: This is pretty hacky, consider a different approach.
-  const toStaticFile = new WeakMap<Response, StaticFile>();
-  const toError = new WeakMap<Response, Error>();
+  const [getStaticFile, setStaticFile] = createMeta<StaticFile>();
+  const [getError, setError] = createMeta<Error>();
 
   return {
     onError: (request, error) => {
-      // Hacky: We're creating a dummy response here and keeping a weakmap
-      // reference to the error for use below.
+      // We're creating a dummy response here and keeping a reference to the
+      // error for use below.
       const response = new Response(String(error), { status: 500 });
-      toError.set(response, error);
+      setError(response, error);
       return response;
     },
     toResponse: async (request, result) => {
@@ -61,10 +61,10 @@ export const createApplication = defineAdapter((applicationOptions) => {
           // construct a new 404 response.
           return;
         }
-        // Hacky: We're creating a dummy response here and keeping a weakmap
-        // reference to the StaticFile for use below.
+        // We're creating a dummy response here and keeping a reference to the
+        // StaticFile for use below.
         const response = new Response(staticFile.filePath);
-        toStaticFile.set(response, staticFile);
+        setStaticFile(response, staticFile);
         return response;
       }
       if (result === undefined) {
@@ -86,11 +86,11 @@ export const createApplication = defineAdapter((applicationOptions) => {
       ) => {
         const request = fromNodeRequest(expressRequest, applicationOptions);
         const response = await getResponse(request);
-        const error = toError.get(response);
+        const error = getError(response);
         if (error) {
           return error instanceof Errors.NoRouteError ? next() : next(error);
         }
-        const staticFile = toStaticFile.get(response);
+        const staticFile = getStaticFile(response);
         if (staticFile) {
           const { filePath, options, responseInit: init } = staticFile;
           const { cachingHeaders = true, maxAge } = options;
