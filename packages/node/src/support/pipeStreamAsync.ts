@@ -8,7 +8,16 @@ export function pipeStreamAsync(
   const { beforeFirstWrite } = options;
   return new Promise((resolve, reject) => {
     readStream
-      .once('data', beforeFirstWrite)
+      .once('data', () => {
+        try {
+          beforeFirstWrite();
+        } catch (e) {
+          try {
+            readStream.unpipe(writeStream);
+          } catch (_) {}
+          reject(e);
+        }
+      })
       .pipe(writeStream)
       .on('close', () => resolve())
       .on('error', (error) => {
