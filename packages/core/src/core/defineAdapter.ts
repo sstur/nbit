@@ -113,6 +113,7 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
             return await adapter.toResponse(request, resolvedResponse);
           }
         }
+        return await adapter.toResponse(request, undefined);
       };
       return async (request: Request): Promise<Response> => {
         try {
