@@ -13,7 +13,7 @@
     "format": "prettier --write src",
     "format:check": "prettier --check src",
     "copy:lib": "rsync -aL --delete ./src/ ./lib",
-    "unit": "yarn copy:lib && BUN_ENV=test bun test --preload ./lib/test/setup.ts lib",
+    "unit": "yarn copy:lib && bun test --preload ./lib/test/setup.ts lib",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn unit",
     "clean": "rm -rf .turbo build coverage lib",
     "copy-files": "cp ../../README.md build/ && lean-package > build/package.json",

@@ -1,11 +1,9 @@
 import { type FileBlob } from 'bun';
 
-import Bun from '../builtins/Bun';
-import { tryAsync } from '../core/support/tryAsync';
+import fs from '../builtins/fs';
 import { computeHeaders } from '../fs';
+import { tryAsync } from '../core/support/tryAsync';
 import type { StaticFileOptions } from '../core/StaticFile';
-
-import { statAsync } from './statAsync';
 
 type FileResponse = {
   status?: number;
@@ -13,15 +11,15 @@ type FileResponse = {
   body?: FileBlob;
 };
 
-// This implementation is identical to that of node, except it uses a custom
-// statAsync (which should be no longer necessary) and returns a Bun.file()
-// instead of a ReadableStream (more performant according to Bun docs).
+// This implementation is identical to that of node, except it returns a
+// Bun.file() instead of a ReadableStream which is more performant according to
+// Bun docs.
 export async function serveFile(
   requestHeaders: Headers,
   fullFilePath: string,
   options: StaticFileOptions = {},
 ): Promise<FileResponse | null> {
-  const fileStats = await tryAsync(() => statAsync(fullFilePath));
+  const fileStats = await tryAsync(() => fs.stat(fullFilePath));
   if (!fileStats || !fileStats.isFile()) {
     return null;
   }

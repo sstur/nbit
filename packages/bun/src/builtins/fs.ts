@@ -1,7 +1,6 @@
-import { stat } from 'fs';
+import { stat } from 'fs/promises';
 
-import { mockable } from '../support/testHelpers';
-
-export default mockable({
+// This is re-exported here so it can be easily mocked for tests.
+export default {
   stat,
-});
+};

@@ -12,7 +12,7 @@ export default [
       strict: false,
       esModule: false,
     },
-    external: ['fs', 'path'],
+    external: ['fs/promises', 'path'],
     plugins: [
       typescript({
         module: 'esnext',
@@ -22,12 +22,9 @@ export default [
         preventAssignment: true,
         delimiters: ['', ''],
         values: {
-          'import Bun': '// import Bun',
           'import { Request': '// import { Request',
           'import { Response': '// import { Response',
           '(..._)': '()',
-          'mockable(': '(',
-          'process.env.BUN_ENV': 'undefined',
         },
       }),
       cleanup({

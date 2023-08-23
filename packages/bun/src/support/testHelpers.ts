@@ -1,40 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const isTest = process.env.BUN_ENV === 'test';
-
-type ResetMock = () => void;
-
-let weakMap = new WeakMap<object, Record<string | symbol, any>>();
-
-export const mockable = <T extends object>(obj: T): T =>
-  isTest ? proxy(obj) : obj;
-
-function proxy<T extends object>(target: T): T {
-  return new Proxy(target, {
-    get(obj, key, proxied) {
-      const mocks = weakMap.get(proxied);
-      return mocks && Object.hasOwn(mocks, key)
-        ? mocks[key]
-        : obj[key as never];
+// For situations where we can't set properties on an object, e.g. the global
+// `Bun`, we'll use this helper to create a Proxy
+export function mockable<T extends object>(obj: T): T {
+  const mocks: Record<string | symbol, unknown> = {};
+  const target = obj as Record<string | symbol, unknown>;
+  const receiver = new Proxy(target, {
+    get(target, key) {
+      return Object.hasOwn(mocks, key) ? mocks[key] : target[key];
+    },
+    set(target, key, value) {
+      if (value === target[key]) {
+        delete mocks[key];
+      } else {
+        mocks[key] = value;
+      }
+      return true;
     },
   });
+  return receiver as T;
 }
 
 export function mockMethod<O extends object, K extends keyof O>(
   obj: O,
   key: K,
   mock: O[K],
-): ResetMock {
-  const mocks = weakMap.get(obj) || {};
-  weakMap.set(obj, mocks);
-  mocks[key as string] = mock;
+) {
+  const original = obj[key];
+  obj[key] = mock;
   return () => {
-    const mocks = weakMap.get(obj);
-    if (mocks) {
-      delete mocks[key as string];
-    }
+    obj[key] = original;
   };
-}
-
-export function resetAllMocks() {
-  weakMap = new WeakMap();
 }
