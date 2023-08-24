@@ -124,6 +124,7 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
         } catch (e) {
           if (e instanceof HttpError) {
             const { status, message } = e;
+            // TODO: Support a custom renderer from applicationOptions
             return new Response(message, { status });
           }
           const error = toError(e);
@@ -136,6 +137,7 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
           }
           return await adapter.onError(request, error);
         }
+        // TODO: Support a custom 404 renderer from applicationOptions
         return new Response('Not found', { status: 404 });
       };
     };
