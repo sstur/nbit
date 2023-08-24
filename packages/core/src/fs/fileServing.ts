@@ -57,7 +57,7 @@ export async function computeHeaders(
     headers['ETag'] = etag;
     headers['Last-Modified'] = lastModified.toGMTString();
   }
-  if (maxAge) {
+  if (maxAge !== undefined) {
     headers['Cache-Control'] = `max-age=${maxAge}`;
   }
 

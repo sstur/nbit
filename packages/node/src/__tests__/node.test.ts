@@ -34,6 +34,11 @@ const routes = defineRoutes((app) => [
   app.get('/file', () => {
     return Response.file('public/foo.txt');
   }),
+  app.get('/file2', () => {
+    return Response.file('public/foo.txt', {
+      maxAge: 0,
+    });
+  }),
   app.get('/stream', () => {
     const data = 'Hello';
     return new Response(Readable.from(data, { objectMode: false }));
@@ -129,6 +134,23 @@ describe('node', () => {
       'Content-Type': 'text/plain',
       ETag: 'W/"c18a1eeaccf8"',
       'Last-Modified': 'Tue, 22 Aug 2023 20:23:39 GMT',
+    });
+    expect(res.write).toHaveBeenCalledTimes(1);
+    expect(res.write).toHaveBeenCalledWith(Buffer.from('Some content'));
+    expect(res.end).toHaveBeenCalledTimes(1);
+  });
+
+  it('should honor caching options', async () => {
+    const [req, res, promise] = createMockNode('/file2');
+    nodeHandler(req, res);
+    await promise;
+    expect(res.writeHead).toHaveBeenCalledTimes(1);
+    expect(res.writeHead).toHaveBeenCalledWith(200, '', {
+      'Content-Length': '12',
+      'Content-Type': 'text/plain',
+      ETag: 'W/"c18a1eeaccf8"',
+      'Last-Modified': 'Tue, 22 Aug 2023 20:23:39 GMT',
+      'Cache-Control': 'max-age=0',
     });
     expect(res.write).toHaveBeenCalledTimes(1);
     expect(res.write).toHaveBeenCalledWith(Buffer.from('Some content'));
