@@ -1,6 +1,7 @@
 import { type FileBlob } from 'bun';
 
 import fs from '../builtins/fs';
+import Bun from '../builtins/Bun';
 import { computeHeaders } from '../fs';
 import { tryAsync } from '../core/support/tryAsync';
 import type { StaticFileOptions } from '../core/StaticFile';
@@ -34,7 +35,6 @@ export async function serveFile(
   }
   return {
     headers: result.headers,
-    // TODO: When bun supports it, make this a real stream
     body: Bun.file(fullFilePath),
   };
 }

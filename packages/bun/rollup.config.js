@@ -22,6 +22,7 @@ export default [
         preventAssignment: true,
         delimiters: ['', ''],
         values: {
+          'import Bun': '// import Bun',
           'import { Request': '// import { Request',
           'import { Response': '// import { Response',
           '(..._)': '()',

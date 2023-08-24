@@ -9,8 +9,9 @@ import {
   afterEach,
 } from 'bun:test';
 
-import { mockMethod, mockable } from '../support/testHelpers';
 import fs from '../builtins/fs';
+import Bun from '../builtins/Bun';
+import { mockMethod } from '../support/testHelpers';
 
 Object.assign(globalThis, {
   describe,
@@ -21,8 +22,6 @@ Object.assign(globalThis, {
   afterAll,
   afterEach,
 });
-
-const Bun = (globalThis.Bun = mockable(globalThis.Bun));
 
 const files = [
   {
