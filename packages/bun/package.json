@@ -46,5 +46,12 @@
     "trailingComma": "all",
     "arrowParens": "always"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sstur/nbit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sstur/nbit/issues"
+  }
 }
