@@ -14,7 +14,7 @@ type BodyAccessorArgs<M> = M extends MethodNoBody
 const canHaveNullBody = new Set(['GET', 'DELETE', 'HEAD', 'OPTIONS']);
 
 export class CustomRequest<M extends string, Params extends string> {
-  private request: Request;
+  public request: Request;
   readonly method: M;
   readonly url: string;
   readonly headers: Headers;
