@@ -23,7 +23,7 @@ export class CustomRequest<M extends string, Params extends string> {
   readonly search: string;
   readonly query: URLSearchParams;
   readonly params: { [K in Params]: string };
-  private _fallbackBody: BodyStream | undefined;
+  public _fallbackBody: BodyStream | undefined;
 
   constructor(request: Request) {
     this.request = request;
