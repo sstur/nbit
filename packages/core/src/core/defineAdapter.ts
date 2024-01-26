@@ -23,10 +23,47 @@ const Errors = defineErrors({
     'Failed to stringify value returned from route handler: {route}',
 });
 
+type ResponseTransformer = (response: Response) => Response | undefined;
+
+class RequestEvent {
+  constructor(
+    public request: Request,
+    private responseTransformers: Array<ResponseTransformer>,
+  ) {}
+
+  addListener(key: 'response', listener: ResponseTransformer) {
+    this.responseTransformers.push(listener);
+  }
+}
+
+class RouteMatchEvent {
+  route: {
+    method: string;
+    pattern: string;
+    params: Record<string, string>;
+  };
+
+  constructor(
+    public request: Request,
+    private responseTransformers: Array<ResponseTransformer>,
+    route: [method: string, pattern: string],
+    params: Record<string, string>,
+  ) {
+    const [method, pattern] = route;
+    this.route = { method, pattern, params };
+  }
+
+  addListener(key: 'response', listener: ResponseTransformer) {
+    this.responseTransformers.push(listener);
+  }
+}
+
 type Options<CtxGetter> = Expand<
   RequestOptions &
     ResponseOptions &
     FileServingOptions & {
+      onRequest?: (event: RequestEvent) => void;
+      onRouteMatch?: (event: RouteMatchEvent) => void;
       /**
        * An optional way to define extra context (e.g. an auth method) that will
        * be added to each Request instance.
@@ -64,7 +101,8 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
   >(
     applicationOptions: Options<CtxGetter> = {},
   ) => {
-    const { getContext, errorHandler } = applicationOptions;
+    const { getContext, onRequest, onRouteMatch, errorHandler } =
+      applicationOptions;
     type RequestContext = ReturnType<CtxGetter>;
     const app = getApp<RequestContext>();
     type App = typeof app;
@@ -85,7 +123,12 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
         }
       }
       const routeRequest = async (request: Request) => {
+        const responseTransformers: Array<ResponseTransformer> = [];
         const context = getContext?.(request);
+        if (onRequest) {
+          const event = new RequestEvent(request, responseTransformers);
+          onRequest(event);
+        }
         const customRequest = new CustomRequest(request);
         if (context) {
           Object.assign(customRequest, context);
@@ -93,6 +136,15 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
         const { method, path } = customRequest;
         const matches = router.getMatches(method, path);
         for (const [handler, captures, route] of matches) {
+          if (onRouteMatch) {
+            const event = new RouteMatchEvent(
+              request,
+              responseTransformers,
+              route,
+              captures,
+            );
+            onRouteMatch(event);
+          }
           Object.assign(customRequest, { params: captures });
           const result = await handler(customRequest);
           if (result !== undefined) {
@@ -110,7 +162,21 @@ export function defineAdapter<NativeHandler extends AnyFunction>(
                 );
               }
             }
-            return await adapter.toResponse(request, resolvedResponse);
+            const maybeResponse = await adapter.toResponse(
+              request,
+              resolvedResponse,
+            );
+            if (maybeResponse !== undefined) {
+              let response = maybeResponse;
+              for (const responseTransformer of responseTransformers) {
+                const newResponse = responseTransformer(response);
+                if (newResponse !== undefined) {
+                  response = newResponse;
+                }
+              }
+              return response;
+            }
+            return maybeResponse;
           }
         }
         return await adapter.toResponse(request, undefined);
